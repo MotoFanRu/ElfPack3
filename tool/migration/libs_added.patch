@@ -1,0 +1,415 @@
+--- L1.sym	2026-02-17 18:05:46.832278200 +0700
++++ L2.sym	2026-02-17 18:05:51.847606100 +0700
+@@ -18,6 +18,7 @@
+ __rt_memcpy
+ __rt_memcpy_w
+ __rt_memmove
++__rt_memmove_w
+ __rt_memset
+ __rt_sdiv
+ __rt_sdiv10
+@@ -42,6 +43,7 @@
+ _dsub
+ _itoa
+ _ll_cmpu
++_ll_mullu
+ _ll_rsblu
+ _ll_sdiv
+ _ll_sub
+@@ -471,12 +473,14 @@
+ DL_FsMoveFile
+ DL_FsOpenFile
+ DL_FsReadFile
++DL_FsReadFileAsIs
+ DL_FsRenameFile
+ DL_FsRmDir
+ DL_FsSearch
+ DL_FsSearchClose
+ DL_FsSearchResults
+ DL_FsSeekFile
++DL_FsSetAttr
+ DL_FsSFGetFileName
+ DL_FsSGetAttr
+ DL_FsSGetCreateTime
+@@ -654,10 +658,16 @@
+ GAIN_TABLE
+ get_connection_status
+ get_number_of_active_calls
++GFGxBlt
+ GFGxCopyColorBitmap
+ GFGxCopyMonoBitmap
+ GFGxGetProperty
++GFGxSetAttribute
+ GFRmComponentGet
++GFRmComponentRelease
++GFRmInterfaceGetAddress
++GFRmInterfaceGetRead
++GFRmInterfaceGetWrite
+ GFRmOSEnterCS
+ GFRmOSExitCS
+ GFRmSurfaceAlloc
+@@ -889,6 +899,7 @@
+ suDeleteSem
+ suDeleteTask
+ suDisableAllInt
++suDisableInt
+ suDisableLowPowerFlag
+ suEnableLowPowerFlag
+ suError
+@@ -944,88 +955,227 @@
+ u_uitoa
+ u_ultou
+ u_utoa
++UIS_ActivateKSTgroup
++UIS_ActivateRTLrules
++UIS_AddColorScheme
++UIS_AdjustContrast
++UIS_bdm_get_base_direction
++UIS_CanvasAddDirtyRegion
++UIS_CanvasAllocateSafeFrame
++UIS_CanvasAllocateSafeFrameWithOffset
+ UIS_CanvasCloseImage
++UIS_CanvasConvertAttribToId
++UIS_CanvasConvertFont
+ UIS_CanvasDecodeImageToPointer
+ UIS_CanvasDrawArc
++UIS_CanvasDrawBitmap
+ UIS_CanvasDrawColorBitmap
++UIS_CanvasDrawColorProgressBar
+ UIS_CanvasDrawColorScrollBar
+ UIS_CanvasDrawColorSoftkey
+ UIS_CanvasDrawColorText
++UIS_CanvasDrawColorTextInBuffer
+ UIS_CanvasDrawColorTextWithClipping
++UIS_CanvasDrawCursor
++UIS_CanvasDrawDisabledColorSoftkey
+ UIS_CanvasDrawImage
++UIS_CanvasDrawImageWithMask
++UIS_CanvasDrawJustifiedBitmap
+ UIS_CanvasDrawLine
++UIS_CanvasDrawMenuIndicator
+ UIS_CanvasDrawPicture
+ UIS_CanvasDrawPixel
+ UIS_CanvasDrawPoly
+ UIS_CanvasDrawRect
+ UIS_CanvasDrawRoundRect
++UIS_CanvasDrawScrollBar
++UIS_CanvasDrawSoftkey
+ UIS_CanvasDrawText
+ UIS_CanvasDrawTitleBar
+ UIS_CanvasDrawTitleBarWithIcon
+ UIS_CanvasDrawWallpaper
++UIS_CanvasFillBufferWithWallpaperOrDefaultColor
+ UIS_CanvasFillRect
++UIS_CanvasFillRegion
++UIS_CanvasFitStringIntoRegion
++UIS_CanvasFitStringIntoRegionFontID
++UIS_CanvasFontPtToPx
++UIS_CanvasFontPxToPt
++UIS_CanvasGetAntialiasMode
+ UIS_CanvasGetAttributesFromFontID
++UIS_CanvasGetAvailableFonts
+ UIS_CanvasGetBackgroundColor
+ UIS_CanvasGetCharacterSize
++UIS_CanvasGetClipboardContent
++UIS_CanvasGetClipboardContentLength
+ UIS_CanvasGetClippingRegion
+ UIS_CanvasGetColor
+ UIS_CanvasGetColorDepth
+ UIS_CanvasGetCurrentFonts
++UIS_CanvasGetCurrentFontsFontID
++UIS_CanvasGetDashPattern
+ UIS_CanvasGetDefaultDisplayBuffer
+ UIS_CanvasGetDisplaySize
++UIS_CanvasGetDisplayType
++UIS_CanvasGetEndStyle
+ UIS_CanvasGetFillColor
++UIS_CanvasGetFontAttrib
++UIS_CanvasGetFontAttributes
++UIS_CanvasGetFontHeight
++UIS_CanvasGetFontHeightMetrics
++UIS_CanvasGetFontHeightMetricsFontID
++UIS_CanvasGetFontHeightMetricsForDisplay
++UIS_CanvasGetFontHeightMetricsForDisplayFontID
+ UIS_CanvasGetFontSize
+ UIS_CanvasGetFontStyle
++UIS_CanvasGetFontTypeface
+ UIS_CanvasGetForegroundColor
++UIS_CanvasGetGlyphData
++UIS_CanvasGetGlyphDataEx
++UIS_CanvasGetGlyphDataForDisplay
++UIS_CanvasGetGlyphDataForDisplayEx
++UIS_CanvasGetGlyphDataForDisplayExNonSync
++UIS_CanvasGetGlyphDataForDisplayFontID
++UIS_CanvasGetGlyphDataForDisplayFontIDEx
++UIS_CanvasGetGlyphDataForDisplayFontIDExNonSync
++UIS_CanvasGetGlyphDataForDisplayFontIDNonSync
++UIS_CanvasGetGlyphDataForDisplayNonSync
++UIS_CanvasGetGlyphDataWithAttrib
++UIS_CanvasGetGlyphWidth
+ UIS_CanvasGetImageAttribute
++UIS_CanvasGetImageEventFlag
++UIS_CanvasGetImageInfo
++UIS_CanvasGetImageLastError
+ UIS_CanvasGetImageSize
++UIS_CanvasGetImageSizeInBytes
++UIS_CanvasGetIntersections
++UIS_CanvasGetKeySequence
++UIS_CanvasGetKeyTable
+ UIS_CanvasGetLineWidth
++UIS_CanvasGetLRSLineSpacing
+ UIS_CanvasGetMainDisplaySoftkeyArea
++UIS_CanvasGetMaxStringWidth
++UIS_CanvasGetMinimalReadableFontSize
++UIS_CanvasGetParsingType
+ UIS_CanvasGetPictureSize
++UIS_CanvasGetRastImagePointer
++UIS_CanvasGetResizedImageInBytes
+ UIS_CanvasGetSoftkeyRegion
+ UIS_CanvasGetSoftkeyTextRegion
+ UIS_CanvasGetStringRegion
+ UIS_CanvasGetStringSize
++UIS_CanvasGetTargetedDisplayWorkingArea
++UIS_CanvasGetTextBackgroundColor
++UIS_CanvasGetTextForegroundColor
++UIS_CanvasGetTextScaleFactor
++UIS_CanvasGetTextSizeInBytes
++UIS_CanvasGetWallpaperFlag
+ UIS_CanvasGetWorkingArea
+ UIS_CanvasInsert
++UIS_CanvasInsertWithAlpha
+ UIS_CanvasIsImageAnimated
++UIS_CanvasJustifyBoxRegion
++UIS_CanvasMeasureCursor
+ UIS_CanvasMoveRegion
++UIS_CanvasNextPosition
+ UIS_CanvasOpenImage
+ UIS_CanvasOpenImageAndGetSize
++UIS_CanvasPanImage
++UIS_CanvasParseToSeparator
+ UIS_CanvasPauseAnimation
++UIS_CanvasPointsToPpem
++UIS_CanvasPpemToPoints
++UIS_CanvasPrevPosition
+ UIS_CanvasRefreshDisplayBuffer
+ UIS_CanvasRefreshDisplayRegion
++UIS_CanvasReleaseSafeFrame
+ UIS_CanvasRenderImageToBuffer
++UIS_CanvasResizeBuffer
++UIS_CanvasResizeBufferAndInsert
+ UIS_CanvasResizeImage
++UIS_CanvasScrollingSafeFrame
++UIS_CanvasSetAntialiasMode
++UIS_CanvasSetAttributesFromFontID
+ UIS_CanvasSetBackgroundColor
+ UIS_CanvasSetBackLight
++UIS_CanvasSetBidirectionFlag
++UIS_CanvasSetClipboardContent
+ UIS_CanvasSetClippingRegion
++UIS_CanvasSetDashPattern
+ UIS_CanvasSetDefaultDisplayBuffer
++UIS_CanvasSetEndStyle
+ UIS_CanvasSetFillColor
+ UIS_CanvasSetFont
++UIS_CanvasSetFontAttrib
+ UIS_CanvasSetFontSize
+ UIS_CanvasSetFontStyle
++UIS_CanvasSetFontTypeface
+ UIS_CanvasSetForegroundColor
+ UIS_CanvasSetImageAttribute
++UIS_CanvasSetImageEventFlag
++UIS_CanvasSetInterestingKeys
+ UIS_CanvasSetLineWidth
++UIS_CanvasSetParsingType
++UIS_CanvasSetSoftIconUsage
++UIS_CanvasSetTextBackgroundColor
++UIS_CanvasSetTextForegroundColor
++UIS_CanvasSetTextScaleFactor
++UIS_CanvasSetUpdateDirtyRegionsFlag
+ UIS_CanvasSetWallpaperFlag
++UIS_CanvasStartExclusiveAccessToFontManager
++UIS_CanvasStopExclusiveAccessToFontManager
++UIS_CanvasTextInsert
++UIS_CanvasUpdateDirtyRegions
++UIS_CanvasUpdateSafeFrame
+ UIS_ClearAndSetActionList
++UIS_ClearNestedMenu
++UIS_ConvertDigitsToArabic
+ UIS_CreateBrandIdentityNotice
++UIS_CreateBrw_MediaDialog
+ UIS_CreateCalculator
+ UIS_CreateCanvas
++UIS_CreateCanvasForkJava
++UIS_CreateCanvasOnCLI
+ UIS_CreateCharacterEditor
++UIS_CreateCharacterEditorEx
++UIS_CreateCleanupPicker
+ UIS_CreateColorCanvas
+ UIS_CreateColorCanvasWithWallpaper
++UIS_CreateComboBinaryCharacterEditor
++UIS_CreateComboBinaryNumberEditor
+ UIS_CreateConfirmation
++UIS_CreateContinuousList
++UIS_CreateDatePicker
+ UIS_CreateDialingEditor
++UIS_CreateDurationPicker
++UIS_CreateEmDialingEditor
++UIS_CreateEnhancedTextViewer
+ UIS_CreateExtendedNotice
++UIS_CreateExtendedPicker
++UIS_CreateForm
+ UIS_CreateFormattedEditor
+ UIS_CreateIconicAppPickerTab
+ UIS_CreateIconicMenu
++UIS_CreateIdleDisplay
++UIS_CreateInCallDialingEditor
++UIS_CreateInCallDisplay
+ UIS_CreateIncomingCallNotice
++UIS_CreateInteractiveViewer
++UIS_CreateKSTentry
+ UIS_CreateList
++UIS_CreateLowPower
++UIS_CreateMainMenuList
++UIS_CreateMediaSlider
++UIS_CreateMeter
++UIS_CreateMeterEditor
++UIS_CreateMiniTransient
++UIS_CreateMmsPicker
++UIS_CreateMonthview
++UIS_CreateMPlayer
++UIS_CreateMultipleSelectionList
+ UIS_CreateMultiSelectionPictureandText
+ UIS_CreateNamedList
++UIS_CreateNotesEditor
+ UIS_CreateNotice
+ UIS_CreateNullDialog
+ UIS_CreateNumberEditor
+@@ -1033,49 +1183,128 @@
+ UIS_CreatePictureAndTextList
+ UIS_CreatePictureViewer
+ UIS_CreateProgressBar
++UIS_CreateProgressBarEditor
++UIS_CreateProgressBarEx
++UIS_CreateProxyIdleDisplay
++UIS_CreatePTTDialingEditor
++UIS_CreatePTTNamedList
++UIS_CreatePTVIncallList
++UIS_CreateQuadIdleDisplay
++UIS_CreateRVCDialog
++UIS_CreateSafeFrame
+ UIS_CreateScreenSaver
+ UIS_CreateScreenSaverPicAlbum
++UIS_CreateSegmentedDataList
+ UIS_CreateSelectionEditor
++UIS_CreateSpeedCallNumberEditor
+ UIS_CreateSplashScreen
+ UIS_CreateSplashScreenFs
++UIS_CreateSplashScreenVideoFs
++UIS_CreateSplashScreenWithOnlyText
++UIS_CreateSplashScreenWithText
+ UIS_CreateStaticList
+ UIS_CreateStaticSelectionEditor
++UIS_CreateTabNumberedList
++UIS_CreateTabScrollableList
++UIS_CreateTabScrollableListMark
++UIS_CreateThemePreview
++UIS_CreateTimePicker
++UIS_CreateTimeSortedList
++UIS_CreateToneViewer
+ UIS_CreateTransientNotice
++UIS_CreateTWVTDialog
+ UIS_CreateViewer
+ UIS_CreateViewerWithTitle
++UIS_CreateVolumeMeterEditor
++UIS_CreateWeekview
++UIS_DeactivateKSTgroup
++UIS_DelayedDeactivateKSTgroup
+ UIS_Delete
++UIS_DeleteCanvasForkJava
++UIS_deleteColorScheme
++UIS_DeleteKSTentry
++UIS_ESD_Complete_Notification
++UIS_ESD_Start_Notification
+ UIS_FONT_INFO
+ UIS_ForceRefresh
+ UIS_FormatDate
+ UIS_FormatTime
+ uis_get_active_dialog
+ uis_get_dialog_ptr
++UIS_GetActiveDialogHandle
+ UIS_GetActiveDialogType
++UIS_GetCurrentColorScheme
+ UIS_GetCurrentSkinIndex
+ UIS_GetCurrentStatusValue
+ UIS_GetDefaultSkinIndex
++UIS_GetDRMIdOfColorSchemeName
++UIS_GetEditorPosition
++UIS_GetIsRtlPhone
++UIS_GetNumColorSchemes
+ UIS_GetNumSkins
++UIS_GetRenderedDialogType
++UIS_GetSafeFrameInfo
+ UIS_GetSkinName
+ UIS_GetSkinStorageFolder
++UIS_GetZoomStatus
+ UIS_HandleEvent
++UIS_Init
++UIS_IsDisplayOrientationRTL
+ UIS_ITAPClose
+ UIS_ITAPMasterClear
+ UIS_ITAPOpen
++UIS_kJavaReleasedATIResource
++UIS_kJavaRestoreATIResource
+ UIS_MakeContentFromResource
+ UIS_MakeContentFromString
++UIS_MakeStringFromContent
++UIS_MergeContents
++UIS_ModifyKSTentry
+ UIS_NULL_DIALOG_TYPE
++UIS_OtaCreateMonthview
+ UIS_Refresh
++UIS_RefreshSurface
++UIS_register_esd_callback
++UIS_ResumeKST
+ UIS_SetActionList
++UIS_SetAnimation
++UIS_SetApplicationWallpaper
+ UIS_SetBacklight
+ UIS_SetBacklightWithIntensity
+ UIS_SetCenterSelectAction
+ UIS_SetClearKeyAction
++UIS_SetCLIActionList
++UIS_SetColorScheme
++UIS_SetCurrency
++UIS_SetDateFormat
++UIS_SetIlluminationMode
++UIS_SetInactivityReportingMode
++UIS_SetKSTattribute
+ UIS_SetLanguage
++UIS_SetListWrapAround
+ UIS_SetNewTitle
++UIS_SetNMOptionsOrder
+ UIS_SetNoticeStatus
++UIS_SetPhoneNumberFormat
+ UIS_SetSkin
++UIS_SetSpeedCallDisplay
++UIS_SetSpeedCallRange
++UIS_SetSpeedCallRangeStopStart
+ UIS_SetStatus
++UIS_SetStatusEmphasis
++UIS_SetStatusOff
++UIS_SetSurface
++UIS_SetTimeFormat
++UIS_SetTranslationMode
+ UIS_SetWallpaper
++UIS_SetWallpaperAfterDriveInit
++UIS_SetWallpErrorEvFlag
++UIS_SetZoom
++UIS_suAllocMem
++UIS_suFreeMem
++UIS_SuspendKST
++UIS_UpdateDialogTable
++UIS_UserEventP
+ uisAllocateMemory
+ uisFreeMemory
+ uisReAllocMemory
