@@ -36,10 +36,16 @@
   * ✅ Primitives like bool, RESULT_OK, etc.
   * ✅ Feature file and List of Features.
 
-* 🟨 EP1/EP2/EP3 ELF format differences.
-* 🟩 General "ElfLoaderStrap" patch.
+* ✅ EP1/EP2/EP3 ELF format differences.
+* 🟨 Prepare some firmwares and environments for further developing.
 
-  * 🟩 Research EM2 ElfLoaderStrap.
+  * 🟩 E1, R373_49R, +MOOSE
+  * 🟩 V3i, R4441D_03R, +MOOSE
+  * 🟩 V3x, R252211LD_E6P
+
+* 🟩 General "ElfLoaderStrap" patch.
+ 
+  * ✅ Research EM2 ElfLoaderStrap.
   * 🟩 Research '0' pushing determining.
 
 ...
