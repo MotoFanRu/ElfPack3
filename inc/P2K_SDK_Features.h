@@ -1,12 +1,5 @@
-/**
-* @file P2kFeatures.h
- * @brief Base feature definitions and descriptions for the P2K platform SDK.
- * @defgroup P2K_Features P2K Features Definitions
- * @{
- */
-
-#ifndef P2K_FEATURES_H
-#define P2K_FEATURES_H
+#ifndef P2K_SDK_FEATURES_H
+#define P2K_SDK_FEATURES_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,11 +14,11 @@ extern "C" {
 	#define FTR_DONT_DEFINE_SDK_BOOL                       (0)
 	#define FTR_DONT_DEFINE_SDK_RESULT                     (0)
 	#define FTR_DONT_DEFINE_SDK_BYTEWORDS                  (0)
-	#define FTR_DONT_DEFINE_SDK_WCHAR                      (0)
+	#define FTR_DONT_DEFINE_SDK_WIDECHAR                   (0)
 #endif
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !P2K_FEATURES_H */
+#endif /* !P2K_SDK_FEATURES_H */

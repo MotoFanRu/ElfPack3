@@ -37,16 +37,17 @@
   * ✅ Feature file and List of Features.
 
 * ✅ EP1/EP2/EP3 ELF format differences.
-* 🟨 Prepare some firmwares and environments for further developing.
+* ✅ Prepare some firmwares and environments for further developing.
 
-  * 🟩 E1, R373_49R, +MOOSE
-  * 🟩 V3i, R4441D_03R, +MOOSE
-  * 🟩 V3x, R252211LD_E6P
+  * ✅ E1, R373_49R, +MOOSE, NoRSA, E398_R373 Patch
+  * ✅ V3i, R4441D_03R, +MOOSE, NoRSA, PDS secver Patch
+  * ✅ V3x, R252211LD_E6P, NoRSA
 
-* 🟩 General "ElfLoaderStrap" patch.
+* 🟨 General "ElfLoaderStrap" patch + binary.
  
-  * ✅ Research EM2 ElfLoaderStrap.
-  * 🟩 Research '0' pushing determining.
+  * 🟨 Research EM2 ElfLoaderStrap.
+  * 🟨 Research '0' pushing determining.
+  * 🟨 Create a Minimal SDK + compiler subset
 
 ...
 
@@ -105,6 +106,8 @@ https://t.me/motofan_ru/1100646/1291598
 5. Перенести наши наработки с EP1 в EP3 по IRAM'у и по прочему. Добиться работы сегментов...
 
 6. Объединённый SDK.
+
+7. Первентирование повторного запуска ELF'а.
 ```
 
 ### Plan #3

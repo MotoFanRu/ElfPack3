@@ -1,14 +1,7 @@
-/**
-* @file P2kBase.h
- * @brief Base type definitions and common macros for the P2K platform SDK.
- * @defgroup P2K_Base P2K Base Definitions
- * @{
- */
+#ifndef P2K_SDK_BASE_H
+#define P2K_SDK_BASE_H
 
-#ifndef P2K_BASE_H
-#define P2K_BASE_H
-
-#include "P2kFeatures.h"
+#include "P2K_SDK_Features.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,7 +26,6 @@ extern "C" {
 
 	typedef float                                          FLOAT32;  /* IEEE 754 single. */
 	typedef double                                         FLOAT64;  /* IEEE 754 double. */
-	typedef double                                         DOUBLE;   /* IEEE 754 double. */
 
 	typedef void                                           VOID;
 #endif /* !FTR_DONT_DEFINE_SDK_P2K_TYPES */
@@ -57,7 +49,6 @@ extern "C" {
 
 	typedef float                                          float32_t;  /* IEEE 754 single. */
 	typedef double                                         float64_t;  /* IEEE 754 double. */
-	typedef double                                         double64_t; /* IEEE 754 double. */
 #endif /* !FTR_DONT_DEFINE_SDK_CLIKE_TYPES */
 
 /* Rust-like Types (modern embedded style). */
@@ -76,7 +67,6 @@ extern "C" {
 
 	typedef float                                          f32;  /* IEEE 754 single. */
 	typedef double                                         f64;  /* IEEE 754 double. */
-	typedef double                                         d64;  /* IEEE 754 double. */
 #endif /* !FTR_DONT_DEFINE_SDK_RUST_TYPES */
 
 /* NULL */
@@ -99,11 +89,11 @@ extern "C" {
 
 /* RESULT */
 #if !defined(FTR_DONT_DEFINE_SDK_RESULT)
-	typedef unsigned long                                  RESULT;
-	typedef unsigned long                                  STATUS;
+	typedef unsigned long                                  RESULT_T;
+	typedef unsigned long                                  STATUS_T;
 
-	#define RESULT_OK                                      ((RESULT) 0)
-	#define RESULT_FAIL                                    ((RESULT) 1)
+	#define RESULT_OK                                      ((RESULT_T) 0)
+	#define RESULT_FAIL                                    ((RESULT_T) 1)
 #endif /* !FTR_DONT_DEFINE_SDK_RESULT */
 
 /* BYTE / WORD / DWORD / QWORD */
@@ -115,13 +105,13 @@ extern "C" {
 #endif /* !FTR_DONT_DEFINE_SDK_BYTEWORDS */
 
 // TODO: Should it moves to some ustr function file?
-/* WCHAR */
-#if !defined(FTR_DONT_DEFINE_SDK_WCHAR)
-	typedef unsigned short                                 WCHAR;
-#endif /* !FTR_DONT_DEFINE_SDK_WCHAR */
+/* W_CHAR */
+#if !defined(FTR_DONT_DEFINE_SDK_WIDECHAR)
+	typedef unsigned short                                 W_CHAR;
+#endif /* !FTR_DONT_DEFINE_SDK_WIDECHAR */
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* !P2K_BASE_H */
+#endif /* !P2K_SDK_BASE_H */
