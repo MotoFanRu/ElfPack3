@@ -10,9 +10,7 @@
 * ✅ All-in-One ent. file from SDK headers.
 
   * ✅ Create a migration report file.
-
   * 🟦 Create a tool which merge all SDK entities to one file for diffing.
-
   * ✅ Prepare a different SDK sources for comparing entities and their mutable and immutable (gold) versions.
 
     * ✅ EP1 General.
@@ -50,12 +48,16 @@
   * 🟨 Create a Minimal SDK + compiler subset.
 
 * 🟨 Rework and research EP3 Logging system.
+
   * 🟨 JAL Logger.
   * 🟨 SUAPI Logger.
   * 🟨 File Logger.
   * 🟨 Some Old Loggers like E380_Logger, KOSI_Logger, etc.
 
 * 🟨 Aleph Library
+* 🟨 Create `build.py` and `config.py` scripts.
+
+  * ✅ A minimal working skeleton of building and config scripts.
 
 ...
 
