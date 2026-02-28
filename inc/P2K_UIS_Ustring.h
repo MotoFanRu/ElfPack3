@@ -1,5 +1,5 @@
-#ifndef P2K_UIS_UNICODE_STRING_H
-#define P2K_UIS_UNICODE_STRING_H
+#ifndef P2K_UIS_USTRING_H
+#define P2K_UIS_USTRING_H
 
 #include "P2K_SDK_Base.h"
 
@@ -359,4 +359,4 @@ extern UIS_STRING_T *u_ultou(
 }
 #endif /* __cplusplus */
 
-#endif /* !P2K_UIS_UNICODE_STRING_H */
+#endif /* !P2K_UIS_USTRING_H */

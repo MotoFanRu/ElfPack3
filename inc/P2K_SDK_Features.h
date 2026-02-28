@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* P2kBase.h */
+/* P2K_SDK_Base.h */
 #if (0)
 	#define FTR_DONT_DEFINE_SDK_P2K_TYPES                  (0)
 	#define FTR_DONT_DEFINE_SDK_CLIKE_TYPES                (0)
@@ -15,6 +15,11 @@ extern "C" {
 	#define FTR_DONT_DEFINE_SDK_RESULT                     (0)
 	#define FTR_DONT_DEFINE_SDK_BYTEWORDS                  (0)
 	#define FTR_DONT_DEFINE_SDK_WIDECHAR                   (0)
+#endif
+
+/* P2K_Logger.h */
+#if (0)
+	#define DEBUG                                          (0)
 #endif
 
 #ifdef __cplusplus

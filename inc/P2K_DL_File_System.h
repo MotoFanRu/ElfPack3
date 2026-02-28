@@ -56,7 +56,7 @@ typedef UINT8                                              DL_FS_SEEK_FROM_T;
  * and DL_FS_HANDLE_INVALID on failure.
  */
 extern DL_FS_HANDLE_T DL_FsOpenFile(
-	const W_CHAR *file_uri,
+	const WCHAR *file_uri,
 	const DL_FS_OPEN_MODE_T open_mode,
 	const DL_FS_OWNER_T owner_id
 );
@@ -110,7 +110,7 @@ extern DL_FS_SIZE_T DL_FsGetFileSize(
  * This function is called by application to find out size of the file by file path.
  */
 extern DL_FS_SIZE_T DL_FsSGetFileSize(
-	const W_CHAR *file_uri,
+	const WCHAR *file_uri,
 	const DL_FS_OWNER_T owner_id
 );
 

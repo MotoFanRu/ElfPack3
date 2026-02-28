@@ -1,9 +1,13 @@
 # SDK and EP3 Migration/Development Log
 
+## 22-Feb-2026...01-Mar-2026
+
+* Working on Aleph library
+
 ## 20-Feb-2026
 
 * E1, V3i, V3x kitchens
-* Functions:
+* Migrated functions:
 
   ```
   0472 A DL_FsOpenFile

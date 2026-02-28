@@ -15,18 +15,18 @@
 
   * ✅ Prepare a different SDK sources for comparing entities and their mutable and immutable (gold) versions.
 
-    * ✅ EP1 General
-    * ✅ EM1 General
-    * ✅ EP2 General
-    * ✅ EM2 General
-    * ✅ P2K-ELF-SDK Intermediate
-    * ✅ Andy51 SDK
-    * ✅ om2804 SDK
-    * ✅ G-Xad SDK
-    * ✅ Cool-T SDK
-    * ✅ E1 Leak
-    * ✅ E1000 Leak
-    * ✅ V9 Leak
+    * ✅ EP1 General.
+    * ✅ EM1 General.
+    * ✅ EP2 General.
+    * ✅ EM2 General.
+    * ✅ P2K-ELF-SDK Intermediate.
+    * ✅ Andy51 SDK.
+    * ✅ om2804 SDK.
+    * ✅ G-Xad SDK.
+    * ✅ Cool-T SDK.
+    * ✅ E1 Leak.
+    * ✅ E1000 Leak.
+    * ✅ V9 Leak.
 
 * ✅ Basic SDK skeleton (typedefs, core header files).
 
@@ -37,17 +37,25 @@
   * ✅ Feature file and List of Features.
 
 * ✅ EP1/EP2/EP3 ELF format differences.
-* ✅ Prepare some firmwares and environments for further developing.
+* ✅ Prepare FWs and environment for further developing.
 
-  * ✅ E1, R373_49R, +MOOSE, NoRSA, E398_R373 Patch
-  * ✅ V3i, R4441D_03R, +MOOSE, NoRSA, PDS secver Patch
-  * ✅ V3x, R252211LD_E6P, NoRSA
+  * ✅ E1, R373_49R, +MOOSE, NoRSA, E398_R373 Patch.
+  * ✅ V3i, R4441D_03R, +MOOSE, NoRSA, PDS SecVer Patch.
+  * ✅ V3x, R252211LD_E6P, NoRSA.
 
 * 🟨 General "ElfLoaderStrap" patch + binary.
- 
+
   * 🟨 Research EM2 ElfLoaderStrap.
   * 🟨 Research '0' pushing determining.
-  * 🟨 Create a Minimal SDK + compiler subset
+  * 🟨 Create a Minimal SDK + compiler subset.
+
+* 🟨 Rework and research EP3 Logging system.
+  * 🟨 JAL Logger.
+  * 🟨 SUAPI Logger.
+  * 🟨 File Logger.
+  * 🟨 Some Old Loggers like E380_Logger, KOSI_Logger, etc.
+
+* 🟨 Aleph Library
 
 ...
 

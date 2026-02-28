@@ -104,10 +104,9 @@ extern "C" {
 	typedef unsigned long long                             QWORD;  /* 64-bit. */
 #endif /* !FTR_DONT_DEFINE_SDK_BYTEWORDS */
 
-// TODO: Should it moves to some ustr function file?
-/* W_CHAR */
+/* WCHAR */
 #if !defined(FTR_DONT_DEFINE_SDK_WIDECHAR)
-	typedef unsigned short                                 W_CHAR;
+	typedef unsigned short                                 WCHAR;
 #endif /* !FTR_DONT_DEFINE_SDK_WIDECHAR */
 
 #ifdef __cplusplus

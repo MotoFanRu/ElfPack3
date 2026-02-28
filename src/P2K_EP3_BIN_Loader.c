@@ -1,6 +1,7 @@
 #include <P2K_SDK_Base.h>
 #include <P2K_SUAPI.h>
 #include <P2K_DL_FileSystem.h>
+#include <P2K_UIS_Ustring.h>
 
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_BIN_Loader.h>
@@ -21,7 +22,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 	if (!IsNoLoadKeyPressed()) {
 
 	} else {
-		LOG("[EP3 BIN Loader]: No Load Key was pressed. Disable EP3 loading!\n")
+		PFprintf("[EP3 BIN Loader]: No Load Key was pressed. Disable EP3 loading!\n")
 	}
 }
 
@@ -41,10 +42,10 @@ static BOOL Load_EP3_ELF_Loader_as_BIN(void) {
 	}
 }
 
-static W_CHAR *Find_EP3_ELF_Loader_File(void) {
-	const W_CHAR *ep3_elf_ldr_path = Find_EP3_ELF_Loader_File_On_Root();
-	if (ep3_elf_ldr_path == NULL) {
-		ep3_elf_ldr_path = Find_EP3_ELF_Loader_File_On_Disk("");
+static WCHAR *Find_EP3_ELF_Loader_File(void) {
+	const WCHAR *ep3_elf_ldr_file_path = Find_EP3_ELF_Loader_File_On_Root();
+	if (!ep3_elf_ldr_file_path) {
+		ep3_elf_ldr_file_path = Find_EP3_ELF_Loader_File_On_Disk("");
 	}
 }
 
@@ -60,7 +61,21 @@ static W_CHAR *Find_EP3_ELF_Loader_File_On_Disk(const W_CHAR *path) {
 
 }
 
+static void LOG(const char *format, ...) {
+	char buffer[LOG_BUFFER_SIZE];
 
+	va_list args;
+
+	if (!format || !format[0]) {
+		return;
+	}
+
+	va_start(args, format);
+	vsprintf(log_buffer, format, args);
+	va_end(args);
+
+	suLogData(0, 0x5151, 1, strlen(buffer) + 1, buffer);
+}
 
 
 

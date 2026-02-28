@@ -1,2 +1,11 @@
 .idea
 .venv
+
+__pycache__
+
+build
+
+arm-gcc-win
+arm-gcc-lin
+mcore-gcc-win
+mcore-gcc-lin

@@ -95,6 +95,18 @@ extern void suFreeMem(
 	void *buffer_ptr
 );
 
+/*
+ * TODO:
+ * SU_PORT_HANDLE phandle -- typedef struct SU_PORT_HANDLE_STRUCT *SU_PORT_HANDLE;
+ * Huge port struct, not needed here.
+ */
+extern void suLogData(
+	UINT32 *phandle,
+	UINT32 msgid,
+	UINT32 num_pairs,
+	...
+);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
