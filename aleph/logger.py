@@ -14,14 +14,8 @@ def set_logger(verbose: bool) -> None:
 
 logger = logging.getLogger(__name__)
 
-def log_wrapper(level_func):
-	def wrapper(msg, indent=0, *args, **kwargs):
-		prefix = f'{"=" * indent}> ' if indent > 0 else ''
-		return level_func(f'{prefix}{msg}', *args, **kwargs)
-	return wrapper
-
-D = log_wrapper(logger.debug)
-I = log_wrapper(logger.info)
-W = log_wrapper(logger.warning)
-E = log_wrapper(logger.error)
-C = log_wrapper(logger.critical)
+D = logger.debug
+I = logger.info
+W = logger.warning
+E = logger.error
+C = logger.critical

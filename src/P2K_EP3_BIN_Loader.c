@@ -1,12 +1,11 @@
 #include <P2K_SDK_Base.h>
 #include <P2K_SUAPI.h>
-#include <P2K_DL_FileSystem.h>
+#include <P2K_DL_File_System.h>
 #include <P2K_UIS_Ustring.h>
 
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_BIN_Loader.h>
-
-static BOOL IsNoLoadKeyPressed(void);
+#include <P2K_EP3_File_System.h>
 
 void EP3_BIN_Loader_MainRegister(void) {
 	/*
@@ -20,117 +19,40 @@ void EP3_BIN_Loader_MainRegister(void) {
 	 * just disable BIN Loader loading and running.
 	 */
 	if (!IsNoLoadKeyPressed()) {
-
-	} else {
-		PFprintf("[EP3 BIN Loader]: No Load Key was pressed. Disable EP3 loading!\n")
-	}
-}
-
-static BOOL IsNoLoadKeyPressed(void) {
-	// Call DL_KeyKjavaGetKeyState()
-	// If phone have no Java implement key port reading here.
-	return FALSE;
-}
-
-static BOOL Load_EP3_ELF_Loader_as_BIN(void) {
-	const W_CHAR *ep3_elf_ldr_path = NULL;
-	if (ep3_elf_ldr_path == NULL) {
-		ep3_elf_ldr_path = Find_EP3_ELF_Loader_File("");
-	}
-	if (ep3_elf_ldr_path == NULL) {
-		ep3_elf_ldr_path = Find_EP3_ELF_Loader_File("");
-	}
-}
-
-static WCHAR *Find_EP3_ELF_Loader_File(void) {
-	const WCHAR *ep3_elf_ldr_file_path = Find_EP3_ELF_Loader_File_On_Root();
-	if (!ep3_elf_ldr_file_path) {
-		ep3_elf_ldr_file_path = Find_EP3_ELF_Loader_File_On_Disk("");
-	}
-}
-
-static W_CHAR *Find_EP3_ELF_Loader_File_On_Root(void) {
-	W_CHAR path[MAX_PATH];
-
-}
-
-static W_CHAR *Find_EP3_ELF_Loader_File_On_Disk(const W_CHAR *path) {
-	if (path == NULL) {
-		return NULL;
-	}
-
-}
-
-static void LOG(const char *format, ...) {
-	char buffer[LOG_BUFFER_SIZE];
-
-	va_list args;
-
-	if (!format || !format[0]) {
-		return;
-	}
-
-	va_start(args, format);
-	vsprintf(log_buffer, format, args);
-	va_end(args);
-
-	suLogData(0, 0x5151, 1, strlen(buffer) + 1, buffer);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-static void Load_ELF_Loader(void) {
-	FILE *elf_loader = Find_ELF_Loader();
-	if (elf_loader != NULL) {
-		RESULT result;
-		SIZE_T fsize = DL_FsGetFileSize(elf_loader);
-		// ALLOC using:
-		// FIXED_ADDRESS IN IRAM, ETC?
-		// SUAPI
-		// uisAllocate
-		// JAVA ALLOC?
-		allocated_in_ram = suAllocMem(fsize, &result);
-		if (allocated_in_ram != NULL && (result == RESULT_OK)) {
-			allocated_in_ram();
+		WCHAR file_path[PATH_MAX_SHORT];
+		if (EP3_Find_Internal_System_Component(EP3_ELF_LDR_NAME, file_path)) {
+			DL_FS_HANDLE_T file_handle = DL_FsOpenFile(file_path, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
+			if (file_handle != DL_FS_HANDLE_INVALID) {
+				DL_FS_SIZE_T file_size = DL_FsGetFileSize(file_handle);
+				if (file_size > 32) {
+					BYTE *load_addr = EP3_AllocateMemory(file_size);
+					if (load_addr != NULL) {
+						DL_FS_COUNT_T elements_read;
+						DL_FS_RESULT_T result = DL_FsReadFile(load_addr, file_size, 1, file_handle, &elements_read);
+						if (result == DL_FS_RESULT_SUCCESS) {
+							if (DL_FsCloseFile(file_handle) == DL_FS_HANDLE_INVALID) {
+								L("[EP3 BIN]: Cannot close '%s' file!\n", EP3_ELF_LDR_NAME);
+							}
+							((void (*) (void)) load_addr)();
+						} else {
+							L("[EP3 BIN]: Cannot read '%s' file to 0x%08X address!\n", EP3_ELF_LDR_NAME, load_addr);
+						}
+					} else {
+						L("[EP3 BIN]: Cannot allocate %d bytes of memory!\n", file_size);
+					}
+				} else {
+					L("[EP3 BIN]: File '%s' < 32 bytes, too small!\n", EP3_ELF_LDR_NAME);
+				}
+				if (DL_FsCloseFile(file_handle) == DL_FS_HANDLE_INVALID) {
+					L("[EP3 BIN]: Cannot close '%s' file!\n", EP3_ELF_LDR_NAME);
+				}
+			} else {
+				L("[EP3 BIN]: Cannot open '%s' file!\n", EP3_ELF_LDR_NAME);
+			}
 		} else {
-			LOG("[EP3 BIN Loader]: Cannot allocate memory!\n");
+			L("[EP3 BIN]: Cannot find '%s' file!\n", EP3_ELF_LDR_NAME);
 		}
 	} else {
-		LOG("[EP3 BIN Loader]: Cannot find ELF loader file!\n");
+		L("[EP3 BIN]: No Load Key was pressed. Disable '%s' loading!\n", EP3_ELF_LDR_NAME);
 	}
 }
-
-static FILE* Find_ELF_Loader(void) {
-	// Check this:
-	//
-	// /elf.ldr (FlatFS variant, V60i/C350L)
-	// /a/elf.ldr
-	// /a/Elf/elf.ldr
-	//
-	// Disks:
-	// /a/
-	// /b/
-	// /c/
-	// /e/
-	// /g/
-	//
-	// Variants w/ file:// scheme.
-}
-

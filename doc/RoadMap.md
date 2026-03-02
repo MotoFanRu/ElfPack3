@@ -41,6 +41,8 @@
   * ✅ V3i, R4441D_03R, +MOOSE, NoRSA, PDS SecVer Patch.
   * ✅ V3x, R252211LD_E6P, NoRSA.
 
+* 🟨 Python CLI tool skeleton.
+
 * 🟨 General "ElfLoaderStrap" patch + binary.
 
   * 🟨 Research EM2 ElfLoaderStrap.

@@ -109,6 +109,11 @@ extern "C" {
 	typedef unsigned short                                 WCHAR;
 #endif /* !FTR_DONT_DEFINE_SDK_WIDECHAR */
 
+/* ARRAY_SIZE */
+#if !defined(FTR_DONT_DEFINE_ARRAY_SIZE)
+	#define ARRAY_SIZE(array)                              (sizeof(array) / sizeof((array)[0]))
+#endif /* !FTR_DONT_DEFINE_ARRAY_SIZE */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

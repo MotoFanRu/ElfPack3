@@ -29,6 +29,10 @@ from config import RECIPES
 
 def build_bin_ldr(recipe: Recipe) -> bool:
 	build_files = [
+		(P2K_SDK_SRC / 'P2K_EP3_Logger.c', P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
+		(P2K_SDK_SRC / 'P2K_EP3_File_System.c', P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
+		(P2K_SDK_SRC / 'P2K_EP3_Allocator.c', P2K_SDK_BUILD / 'P2K_EP3_Allocator.o'),
+		(P2K_SDK_SRC / 'P2K_EP3_Keyboard.c', P2K_SDK_BUILD / 'P2K_EP3_Keyboard.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c', P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
 	]
 
@@ -39,13 +43,13 @@ def build_bin_ldr(recipe: Recipe) -> bool:
 	return True
 
 def build_elf_ldr(recipe: Recipe) -> bool:
-	pass
+	return True
 
 def build_so_lib(recipe: Recipe) -> bool:
-	pass
+	return True
 
 def build_patches(recipe: Recipe) -> bool:
-	pass
+	return True
 
 def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
 	I(f'Cooking {recipe_name} recipe.')
@@ -69,7 +73,7 @@ def do_work(args: Namespace) -> bool:
 	if args.recipe == 'all':
 		I('Cooking all recipes.')
 		for recipe in RECIPES.keys():
-			if not cook_recipe(args.recipe, RECIPES[recipe]):
+			if not cook_recipe(recipe, RECIPES[recipe]):
 				return False
 		return True
 	return cook_recipe(args.recipe, RECIPES[args.recipe])

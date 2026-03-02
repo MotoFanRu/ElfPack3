@@ -17,8 +17,9 @@ class Toolchain:
 @dataclass
 class Flags:
 	cpu: list[str]
-	gen: list[str]
 	build: list[str]
+	feature: list[str]
+	general: list[str]
 
 @dataclass
 class Addresses:

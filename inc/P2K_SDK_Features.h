@@ -15,6 +15,7 @@ extern "C" {
 	#define FTR_DONT_DEFINE_SDK_RESULT                     (0)
 	#define FTR_DONT_DEFINE_SDK_BYTEWORDS                  (0)
 	#define FTR_DONT_DEFINE_SDK_WIDECHAR                   (0)
+	#define FTR_DONT_DEFINE_ARRAY_SIZE                     (0)
 #endif
 
 /* P2K_Logger.h */

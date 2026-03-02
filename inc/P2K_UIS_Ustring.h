@@ -7,6 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define UNICODE_NULL                                       (L'0')
+
 typedef UINT16                                             UIS_STRING_T;
 
 /*

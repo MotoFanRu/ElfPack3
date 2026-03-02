@@ -40,15 +40,16 @@ P2K_SDK_GCC_MCORE = Toolchain(
 )
 
 def compile_c(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str] | None = None) -> bool:
-	I(f'Compiling "{p_in.name}" to "{p_out.name}"', 1)
+	I(f'Compiling "{p_in.name}" to "{p_out.name}"')
 	D(f'"{p_in}" => "{p_out}"')
 
 	command = [
 		recipe.toolchain.gcc,
 		'-I', str(P2K_SDK_INC),
 		*recipe.flags.cpu,
-		*recipe.flags.gen,
 		*recipe.flags.build,
+		*recipe.flags.feature,
+		*recipe.flags.general,
 		*(custom_flags or []),
 		'-c', p_in, '-o', p_out,
 	]
