@@ -1,4 +1,6 @@
+#include <P2K_SDK_Base.h>
 #include <P2K_C_Lib.h>
+#include <P2K_Logger.h>
 #include <P2K_DL_File_System.h>
 #include <P2K_UIS_Ustring_Portable.h>
 
@@ -46,16 +48,21 @@ BOOL EP3_Find_Internal_System_Component(const char *file_name, WCHAR *out_path) 
 
 		/* Check 1: `file_name` directly. */
 		if (snprintf(out_path_str, PATH_MAX_SHORT, "%s%s", prefix, file_name) < PATH_MAX_SHORT) {
+			D("Will check: %s\n", out_path_str);
 			PORTABLE_u_atou(out_path_str, out_path);
 			if (DL_FsSGetFileSize(out_path, DL_FS_OWNER_RESERVED) > 0) {
+				D("Found: %s\n", out_path_str);
 				return TRUE;
 			}
 		}
 
+		// TODO: Should I use it for V60, C350L?
 		/* Check 2: `/` + `file_name` directly. */
 		if (snprintf(out_path_str, PATH_MAX_SHORT, "%s/%s", prefix, file_name) < PATH_MAX_SHORT) {
+			D("Will check: %s\n", out_path_str);
 			PORTABLE_u_atou(out_path_str, out_path);
 			if (DL_FsSGetFileSize(out_path, DL_FS_OWNER_RESERVED) > 0) {
+				D("Found: %s\n", out_path_str);
 				return TRUE;
 			}
 		}
@@ -64,16 +71,20 @@ BOOL EP3_Find_Internal_System_Component(const char *file_name, WCHAR *out_path) 
 		for (i = 0; i < ARRAY_SIZE(disks); ++i) {
 			/* Check 3: `/disk/` + `file_name` in loop. */
 			if (snprintf(out_path_str, PATH_MAX_SHORT, "%s/%s/%s", prefix, disks[i], file_name) < PATH_MAX_SHORT) {
+				D("Will check: %s\n", out_path_str);
 				PORTABLE_u_atou(out_path_str, out_path);
 				if (DL_FsSGetFileSize(out_path, DL_FS_OWNER_RESERVED) > 0) {
+					D("Found: %s\n", out_path_str);
 					return TRUE;
 				}
 			}
 
 			/* Check 4: `/disk/elf/` + `file_name` in loop. */
 			if (snprintf(out_path_str, PATH_MAX_SHORT, "%s/%s/elf/%s", prefix, disks[i], file_name) < PATH_MAX_SHORT) {
+				D("Will check: %s\n", out_path_str);
 				PORTABLE_u_atou(out_path_str, out_path);
 				if (DL_FsSGetFileSize(out_path, DL_FS_OWNER_RESERVED) > 0) {
+					D("Found: %s\n", out_path_str);
 					return TRUE;
 				}
 			}
@@ -82,5 +93,6 @@ BOOL EP3_Find_Internal_System_Component(const char *file_name, WCHAR *out_path) 
 
 	/* Clear `out_path` on failure. */
 	out_path[0] = UNICODE_NULL;
+	D("Not found: %s\n", file_name);
 	return FALSE;
 }

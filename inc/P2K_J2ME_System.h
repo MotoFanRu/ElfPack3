@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-extern void PFprintf(char *format, ...);
+extern void PFprintf(const char *format, ...);
 
 #ifdef __cplusplus
 }

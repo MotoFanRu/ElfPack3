@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* P2K_SDK_Base.h */
+/* General Settings */
 #if (0)
 	#define FTR_DONT_DEFINE_SDK_P2K_TYPES                  (0)
 	#define FTR_DONT_DEFINE_SDK_CLIKE_TYPES                (0)
@@ -18,9 +18,37 @@ extern "C" {
 	#define FTR_DONT_DEFINE_ARRAY_SIZE                     (0)
 #endif
 
-/* P2K_Logger.h */
+/* Compiler & CPU Settings */
 #if (0)
-	#define DEBUG                                          (0)
+	#define FTR_ARM                                        (0)
+	#define FTR_ARM7                                       (0)
+	#define FTR_ARM11                                      (0)
+	#define FTR_MCORE                                      (0)
+	#define FTR_MCORE210                                   (0)
+	#define FTR_MCORE340                                   (0)
+	#define FTR_NEPTUNE                                    (0)
+	#define FTR_NEPTUNE_LT_LCA                             (0)
+	#define FTR_NEPTUNE_LTS                                (0)
+	#define FTR_NEPTUNE_ULS                                (0)
+	#define FTR_NEPTUNE_LTE                                (0)
+	#define FTR_NEPTUNE_LTE2                               (0)
+	#define FTR_NEPTUNE_LTE2_ROM4                          (0)
+	#define FTR_PATRIOT                                    (0)
+	#define FTR_RAINBOW                                    (0)
+	#define FTR_RAINBOW_POG                                (0)
+	#define FTR_ARGON                                      (0)
+	#define FTR_ARGON_PLUS                                 (0)
+	#define FTR_ARGON_LV                                   (0)
+#endif
+
+/* Logging Settings */
+#if (0)
+	#define FTR_DEBUG                                      (0)
+	#define FTR_LOGGER                                     (0)
+	#define FTR_LOGGER_JAL                                 (0)
+	#define FTR_LOGGER_SUAPI                               (0)
+	#define FTR_LOGGER_FILE                                (0)
+	#define FTR_LOGGER_FILE_PREDIFINED                     (0)
 #endif
 
 #ifdef __cplusplus

@@ -9,14 +9,7 @@ extern "C" {
 #define EP3_ELF_LDR_NAME                                   "ep3.ldr"
 #define EP3_ELF_LDR_LIB_NAME                               "ep3.so"
 #define EP3_ELF_LDR_CFG_NAME                               "ep3.ini"
-
-#define LOG_BUFFER_SIZE                                    (255)
-
-typedef enum {
-	LOGGER_SUAPI,
-	LOGGER_JAL,
-	LOGGER_ALL
-} EP3_LOGGER_T;
+#define EP3_ELF_LDR_LOG_NAME                               "ep3.log"
 
 #ifdef __cplusplus
 }
