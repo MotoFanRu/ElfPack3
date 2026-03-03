@@ -1,11 +1,13 @@
 #include <P2K_SDK_Base.h>
+#include <P2K_Logger.h>
 #include <P2K_SUAPI.h>
 #include <P2K_DL_File_System.h>
 #include <P2K_UIS_Ustring.h>
 
 #include <P2K_EP3_Base.h>
-#include <P2K_EP3_BIN_Loader.h>
+#include <P2K_EP3_Memory.h>
 #include <P2K_EP3_File_System.h>
+#include <P2K_EP3_BIN_Loader.h>
 
 void EP3_BIN_Loader_MainRegister(void) {
 	/*
@@ -25,7 +27,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 			if (file_handle != DL_FS_HANDLE_INVALID) {
 				DL_FS_SIZE_T file_size = DL_FsGetFileSize(file_handle);
 				if (file_size > 32) {
-					BYTE *load_addr = EP3_AllocateMemory(file_size);
+					BYTE *load_addr = EP3_Memory_Alloc(file_size);
 					if (load_addr != NULL) {
 						DL_FS_COUNT_T elements_read;
 						DL_FS_RESULT_T result = DL_FsReadFile(load_addr, file_size, 1, file_handle, &elements_read);

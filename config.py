@@ -12,7 +12,7 @@ RECIPES: dict[str, Recipe] = {
 		flags=Flags(
 			cpu=['-mbig-endian', '-march=armv4t', '-mtune=arm7tdmi-s', '-mthumb', '-mthumb-interwork'],
 			build=['-DFTR_E1', '-DFTR_NEPTUNE', '-DFTR_NEPTUNE_LTE', '-DFTR_ARM', '-DFTR_ARM7'],
-			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL'],
+			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 			general=['-O2', '-fshort-wchar'],
 		),
 		addresses=Addresses(
@@ -26,7 +26,7 @@ RECIPES: dict[str, Recipe] = {
 		flags=Flags(
 			cpu=['-mbig-endian', '-march=armv4t', '-mtune=arm7tdmi-s', '-mthumb', '-mthumb-interwork'],
 			build=['-DFTR_V3I', '-DFTR_NEPTUNE', '-DFTR_NEPTUNE_LTE2', '-DFTR_ARM', '-DFTR_ARM7'],
-			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL'],
+			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 			general=['-O2', '-fshort-wchar'],
 		),
 		addresses=Addresses(
@@ -40,7 +40,7 @@ RECIPES: dict[str, Recipe] = {
 		flags=Flags(
 			cpu=['-mbig-endian', '-m340', '-m4align'],
 			build=['-DFTR_V3X', '-DFTR_RAINBOW', '-DFTR_RAINBOW_POG', '-DFTR_MCORE', '-DFTR_MCORE340'],
-			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL'],
+			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 			general=['-O2', '-fshort-wchar'],
 		),
 		addresses=Addresses(
@@ -54,7 +54,7 @@ RECIPES: dict[str, Recipe] = {
 		flags=Flags(
 			cpu=['-mbig-endian', '-mbe32', '-march=armv6j', '-mtune=arm1136jf-s', '-mthumb', '-mthumb-interwork'],
 			build=['-DFTR_V3XX', '-DFTR_ARGON', '-DFTR_ARGON_LV', '-DFTR_ARM', '-DFTR_ARM11'],
-			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL'],
+			feature=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 			general=['-O2', '-fshort-wchar'],
 		),
 		addresses=Addresses(

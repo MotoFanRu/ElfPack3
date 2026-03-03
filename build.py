@@ -31,9 +31,9 @@ def build_bin_ldr(recipe: Recipe) -> bool:
 	build_files = [
 		(P2K_SDK_SRC / 'P2K_EP3_Logger.c', P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_File_System.c', P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_Allocator.c', P2K_SDK_BUILD / 'P2K_EP3_Allocator.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_Keyboard.c', P2K_SDK_BUILD / 'P2K_EP3_Keyboard.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c', P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
+		(P2K_SDK_SRC / 'P2K_EP3_Memory.c', P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
+		#(P2K_SDK_SRC / 'P2K_EP3_Keyboard.c', P2K_SDK_BUILD / 'P2K_EP3_Keyboard.o'),
+		#(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c', P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
 	]
 
 	for c_src, c_out in build_files:

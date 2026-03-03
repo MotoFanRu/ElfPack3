@@ -75,5 +75,5 @@ void EP3_Logger(const char *format, ...) {
 void EP3_Logger_Unicode(const WCHAR *message) {
 	char buffer[LOG_BUFFER_SIZE];
 	PORTABLE_u_utoa(message, buffer);
-	EP3_Logger(buffer);
+	EP3_Logger("%s", buffer);
 }
