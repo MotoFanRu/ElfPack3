@@ -46,15 +46,18 @@
 * 🟨 General "ElfLoaderStrap" patch + binary.
 
   * 🟨 Research EM2 ElfLoaderStrap.
+  * 🟨 Collect a general compiler flags.
   * 🟨 Research '0' pushing determining.
+  * 🟨 Research allocator system.
   * 🟨 Create a Minimal SDK + compiler subset.
 
 * 🟨 Rework and research EP3 Logging system.
 
+  * 🟨 Check va_args and logging functions.
   * 🟨 JAL Logger.
   * 🟨 SUAPI Logger.
   * 🟨 File Logger.
-  * 🟨 Some Old Loggers like E380_Logger, KOSI_Logger, etc.
+  * 🟨 Some Old Loggers like E380_Logger, KOSI_Logger, etc?
 
 * 🟨 Aleph Library
 * 🟨 Create `build.py` and `config.py` scripts.

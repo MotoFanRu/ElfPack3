@@ -1,8 +1,23 @@
 # SDK and EP3 Migration/Development Log
 
-## 22-Feb-2026...01-Mar-2026
+## 22-Feb-2026...03-Mar-2026
 
 * Working on Aleph library
+
+* Migrated functions:
+
+DL_KeyQueryKeypadActivity
+sprintf
+snprintf
+vsprintf
+vsnprintf
+LOGGER_FUNCTIONS
+VAARGS STUFF
+AmMemAllocPointer
+AmMemFreePointer
+extern void *uisAllocateMemory(UIS_PARTITION_BLOCK_SIZE_T num_bytes, UIS_ALLOCATION_ERROR_T *status);
+extern void *uisReAllocMemory(void *address, UIS_PARTITION_BLOCK_SIZE_T new_size, UIS_ALLOCATION_ERROR_T *status);
+extern void uisFreeMemory(void *address);
 
 ## 20-Feb-2026
 

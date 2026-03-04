@@ -5,6 +5,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define FILE_SIZE_TOO_SMALL                                (32)
+
+typedef void (*EP3_ELF_LDR_ENTRY_POINT_T) (void);
+
 /*
  * Since the calculator is the most common stock P2K/Synergy application,
  * we can use an injection into its registration function address and hook it back.

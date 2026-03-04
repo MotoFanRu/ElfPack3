@@ -12,22 +12,36 @@ P2K_SDK_GCC = P2K_SDK_TOOL / 'gcc'
 
 @dataclass
 class Toolchain:
+	@dataclass
+	class CompilerFlags:
+		general: list[str]
+		warnings: list[str]
+		features: list[str]
+		optimization: list[str]
+	@dataclass
+	class LinkerFlags:
+		general: list[str]
+		bin_ldr: list[str]
+		elf_ldr: list[str]
+		so_lib: list[str]
 	gcc: Path
-
-@dataclass
-class Flags:
-	cpu: list[str]
-	build: list[str]
-	feature: list[str]
-	general: list[str]
-
-@dataclass
-class Addresses:
-	register: int
-	inject: int
+	cflags: CompilerFlags
+	lflags: LinkerFlags
 
 @dataclass
 class Recipe:
+	@dataclass
+	class RecipeFlags:
+		cpu: list[str]
+		cpu_flavor: list[str]
+		build: list[str]
+		bin_ldr: list[str]
+		elf_ldr: list[str]
+		so_lib: list[str]
+	@dataclass
+	class RecipeAddresses:
+		register: int
+		inject: int
 	toolchain: Toolchain
-	flags: Flags
-	addresses: Addresses
+	flags: RecipeFlags
+	addresses: RecipeAddresses

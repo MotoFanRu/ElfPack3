@@ -18,7 +18,8 @@ from aleph import D
 from aleph import I
 from aleph import E
 from aleph import Recipe
-from aleph import compile_c
+from aleph import gcc_compile
+from aleph import gcc_link
 from aleph import set_logger
 from aleph import P2K_SDK_SRC
 from aleph import P2K_SDK_BUILD
@@ -27,28 +28,38 @@ from aleph import create_clean_dir
 
 from config import RECIPES
 
-def build_bin_ldr(recipe: Recipe) -> bool:
+def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
+	I(f'Building {recipe_name} BIN loader.')
+
+	# TODO: Generate a stub library.
+
 	build_files = [
+		(P2K_SDK_SRC / 'P2K_EP3_LIB_Stubs.S', P2K_SDK_BUILD / 'P2K_EP3_LIB_Stubs.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_Logger.c', P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_File_System.c', P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_Memory.c', P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
-		#(P2K_SDK_SRC / 'P2K_EP3_Keyboard.c', P2K_SDK_BUILD / 'P2K_EP3_Keyboard.o'),
-		#(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c', P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
+		(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c', P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
 	]
 
 	for c_src, c_out in build_files:
-		if not compile_c(recipe, c_src, c_out):
+		if not gcc_compile(recipe, c_src, c_out, recipe.flags.bin_ldr):
 			return False
 
+	objs = []
+	for _, c_out in build_files:
+		objs.append(c_out)
+	if not gcc_link(recipe, objs, P2K_SDK_BUILD / 'ldr.elf', recipe.toolchain.lflags.bin_ldr):
+		return False
+
 	return True
 
-def build_elf_ldr(recipe: Recipe) -> bool:
+def build_elf_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	return True
 
-def build_so_lib(recipe: Recipe) -> bool:
+def build_so_lib(recipe_name: str, recipe: Recipe) -> bool:
 	return True
 
-def build_patches(recipe: Recipe) -> bool:
+def build_patches(recipe_name: str, recipe: Recipe) -> bool:
 	return True
 
 def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
@@ -56,10 +67,10 @@ def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
 
 	build_steps = [
 		(create_clean_dir, [P2K_SDK_BUILD], 'Cannot create build directory'),
-		(build_bin_ldr, [recipe], 'Cannot build BIN Loader'),
-		(build_elf_ldr, [recipe], 'Cannot build ELF Loader'),
-		(build_so_lib, [recipe], 'Cannot build SO Library'),
-		(build_patches, [recipe], 'Cannot build Final Patches'),
+		(build_bin_ldr, [recipe_name, recipe], 'Cannot build BIN Loader'),
+		(build_elf_ldr, [recipe_name, recipe], 'Cannot build ELF Loader'),
+		(build_so_lib, [recipe_name, recipe], 'Cannot build SO Library'),
+		(build_patches, [recipe_name, recipe], 'Cannot build Final Patches'),
 	]
 
 	for func, args, error_msg in build_steps:
@@ -71,7 +82,7 @@ def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
 
 def do_work(args: Namespace) -> bool:
 	if args.recipe == 'all':
-		I('Cooking all recipes.')
+		I('Cooking all recipes.\n')
 		for recipe in RECIPES.keys():
 			if not cook_recipe(recipe, RECIPES[recipe]):
 				return False

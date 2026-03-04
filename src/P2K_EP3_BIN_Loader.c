@@ -1,8 +1,7 @@
 #include <P2K_SDK_Base.h>
 #include <P2K_Logger.h>
-#include <P2K_SUAPI.h>
+#include <P2K_DL_Keypad.h>
 #include <P2K_DL_File_System.h>
-#include <P2K_UIS_Ustring.h>
 
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_Memory.h>
@@ -17,44 +16,53 @@ void EP3_BIN_Loader_MainRegister(void) {
 	APP_CALC_MainRegister();
 
 	/*
-	 * We need to check the state of the some "No Load" key, and if it is pressed during power-on phone,
-	 * just disable BIN Loader loading and running.
+	 * We need to check keyboard state, and if it is pressed any key during power-on phone, disable loading and running.
 	 */
-	if (!IsNoLoadKeyPressed()) {
-		WCHAR file_path[PATH_MAX_SHORT];
-		if (EP3_Find_Internal_System_Component(EP3_ELF_LDR_NAME, file_path)) {
-			DL_FS_HANDLE_T file_handle = DL_FsOpenFile(file_path, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
-			if (file_handle != DL_FS_HANDLE_INVALID) {
-				DL_FS_SIZE_T file_size = DL_FsGetFileSize(file_handle);
-				if (file_size > 32) {
-					BYTE *load_addr = EP3_Memory_Alloc(file_size);
-					if (load_addr != NULL) {
-						DL_FS_COUNT_T elements_read;
-						DL_FS_RESULT_T result = DL_FsReadFile(load_addr, file_size, 1, file_handle, &elements_read);
-						if (result == DL_FS_RESULT_SUCCESS) {
-							if (DL_FsCloseFile(file_handle) == DL_FS_HANDLE_INVALID) {
-								L("[EP3 BIN]: Cannot close '%s' file!\n", EP3_ELF_LDR_NAME);
-							}
-							((void (*) (void)) load_addr)();
-						} else {
-							L("[EP3 BIN]: Cannot read '%s' file to 0x%08X address!\n", EP3_ELF_LDR_NAME, load_addr);
-						}
-					} else {
-						L("[EP3 BIN]: Cannot allocate %d bytes of memory!\n", file_size);
-					}
-				} else {
-					L("[EP3 BIN]: File '%s' < 32 bytes, too small!\n", EP3_ELF_LDR_NAME);
-				}
-				if (DL_FsCloseFile(file_handle) == DL_FS_HANDLE_INVALID) {
-					L("[EP3 BIN]: Cannot close '%s' file!\n", EP3_ELF_LDR_NAME);
-				}
-			} else {
-				L("[EP3 BIN]: Cannot open '%s' file!\n", EP3_ELF_LDR_NAME);
-			}
-		} else {
-			L("[EP3 BIN]: Cannot find '%s' file!\n", EP3_ELF_LDR_NAME);
-		}
-	} else {
-		L("[EP3 BIN]: No Load Key was pressed. Disable '%s' loading!\n", EP3_ELF_LDR_NAME);
+	if (DL_KeyQueryKeypadActivity() > 0) {
+		L("[EP3 BIN]: Keypress detected during registration; loading of '%s' disabled.\n", EP3_ELF_LDR_NAME);
+		return;
 	}
+
+	WCHAR file_path[PATH_MAX_SHORT];
+	if (!EP3_Find_Internal_System_Component(EP3_ELF_LDR_NAME, file_path)) {
+		L("[EP3 BIN]: Failed to find '%s' system component.\n", EP3_ELF_LDR_NAME);
+		return;
+	}
+
+	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(file_path, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
+	if (file_handle == DL_FS_HANDLE_INVALID) {
+		L("[EP3 BIN]: Failed to open '%s' file.\n", EP3_ELF_LDR_NAME);
+		return;
+	}
+
+	DL_FS_SIZE_T file_size = DL_FsGetFileSize(file_handle);
+	if (file_size < FILE_SIZE_TOO_SMALL) {
+		L("[EP3 BIN]: File '%s' too small (%d bytes).\n", EP3_ELF_LDR_NAME, file_size);
+		DL_FsCloseFile(file_handle);
+		return;
+	}
+
+	BYTE *load_addr = (BYTE *) EP3_Memory_Alloc(file_size);
+	if (load_addr == NULL) {
+		L("[EP3 BIN]: Failed to allocate %d bytes of memory.\n", file_size);
+		DL_FsCloseFile(file_handle);
+		return;
+	}
+
+	DL_FS_COUNT_T elements_read;
+	if (DL_FsReadFile(load_addr, file_size, 1, file_handle, &elements_read) != DL_FS_RESULT_SUCCESS) {
+		L("[EP3 BIN]: Failed to read '%s' into memory at '0x%08X' address.\n", EP3_ELF_LDR_NAME, (UINT32) load_addr);
+		DL_FsCloseFile(file_handle);
+		return;
+	}
+
+	DL_FsCloseFile(file_handle);
+
+	/*
+	 * Execute the loaded binary.
+	 */
+	// TODO:
+	//((EP3_ELF_LDR_ENTRY_POINT_T) load_addr)();
+
+	((EP3_ELF_LDR_ENTRY_POINT_T) (UINTPTR) load_addr)();
 }
