@@ -12,13 +12,13 @@
  */
 
 MEMORY {
-	IROM  (RX)  : ORIGIN = 0x00000000, LENGTH = 0x001C0000 /* 1.75  MiB     */
-	IRAM  (RWX) : ORIGIN = 0x03FC0000, LENGTH = 0x00040000 /* 256   KiB     */
-	ROM   (RX)  : ORIGIN = 0x10000000, LENGTH = 0x02000000 /* 16-32 MiB     */
-	RAM   (RWX) : ORIGIN = 0x12000000, LENGTH = 0x00800000 /* 4-8   MiB     */
+	IROM  (rx)  : ORIGIN = 0x00000000, LENGTH = 0x001C0000 /* 1.75  MiB     */
+	IRAM  (rwx) : ORIGIN = 0x03FC0000, LENGTH = 0x00040000 /* 256   KiB     */
+	ROM   (rx)  : ORIGIN = 0x10000000, LENGTH = 0x02000000 /* 16-32 MiB     */
+	RAM   (rwx) : ORIGIN = 0x12000000, LENGTH = 0x00800000 /* 4-8   MiB     */
 
 	/* Entry point origin address. */
-	PATCH (RX)  : ORIGIN = %addr_entry%, LENGTH = ORIGIN(ROM) + LENGTH(ROM) - ORIGIN(PATCH)
+	PATCH (rx)  : ORIGIN = %addr_entry%, LENGTH = ORIGIN(ROM) + LENGTH(ROM) - ORIGIN(PATCH)
 }
 
 /* Generate Big-Endian ARM ELFs. */
@@ -31,10 +31,12 @@ ENTRY(%entry_point_function%)
 
 SECTIONS {
 	.text : {
+		KEEP(*(.text.entry_point))
 		*(.text .text.*)
 		*(.rodata .rodata.*)
 		*(.data .data.*)
 		*(.bss .bss.*)
-		*(COMMON COMMON.*)
+		*(COMMON)
+		. = ALIGN(4);
 	} > PATCH
 }

@@ -52,7 +52,7 @@ P2K_SDK_GCC_ARM = Toolchain(
 )
 
 P2K_SDK_GCC_MCORE = Toolchain(
-	gcc=resolve_tool(P2K_SDK_GCC_ARM_BIN, 'mcore-elf-gcc'),
+	gcc=resolve_tool(P2K_SDK_GCC_MCORE_BIN, 'mcore-elf-gcc'),
 	objcopy=resolve_tool(P2K_SDK_GCC_MCORE_BIN, 'mcore-elf-objcopy'),
 	cflags=GCC_CFLAGS,
 	lflags=GCC_LFLAGS

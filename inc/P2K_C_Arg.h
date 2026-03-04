@@ -7,14 +7,12 @@ extern "C" {
 
 /* TODO: RECHECK THIS!!! */
 #if defined(FTR_ARM7) || defined(FTR_NEPTUNE)
-	typedef struct {
-		__builtin_va_list args;
-	} va_list;
+	typedef __builtin_va_list                              va_list[1];
 
-	#define va_start(v, l)                                 __builtin_va_start((v).args, l)
-	#define va_arg(v, type)                                __builtin_va_arg((v).args, type)
-	#define va_end(v)                                      __builtin_va_end((v).args)
-	#define va_copy(d, s)                                  __builtin_va_copy((d).args, (s).args)
+	#define va_start(v, l)                                 __builtin_va_start(v[0], l)
+	#define va_end(v)                                      __builtin_va_end(v[0])
+	#define va_arg(v, l)                                   __builtin_va_arg(v[0], l)
+	#define va_copy(d, s)                                  __builtin_va_copy(d[0], s[0])
 #else
 	typedef __builtin_va_list                              va_list;
 

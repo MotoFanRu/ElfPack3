@@ -8,6 +8,7 @@
 #include <P2K_EP3_File_System.h>
 #include <P2K_EP3_BIN_Loader.h>
 
+__attribute__((used, section(".text.entry_point")))
 void EP3_BIN_Loader_MainRegister(void) {
 	/*
 	 * There should be a call to `APP_CALC_MainRegister()` inside this function so that the
@@ -61,7 +62,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 	/*
 	 * Execute the loaded binary.
 	 */
-	// TODO:
+	// TODO: Log address?
 	//((EP3_ELF_LDR_ENTRY_POINT_T) load_addr)();
 
 	((EP3_ELF_LDR_ENTRY_POINT_T) (UINTPTR) load_addr)();

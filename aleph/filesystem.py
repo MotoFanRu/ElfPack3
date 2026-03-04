@@ -3,6 +3,7 @@ from typing import Callable
 
 from .logger import D
 from .logger import W
+from .logger import E
 
 def check_paths_aux(paths: Path | list[Path], check_method: Callable[[Path], bool], warn: bool = False) -> bool:
 	if isinstance(paths, Path):
@@ -28,7 +29,11 @@ def create_clean_dir(dir_path: Path) -> bool:
 		for item in dir_path.iterdir():
 			if item.is_file() or item.is_symlink():
 				D(f'Deleting "{item.name}" file.')
-				item.unlink()
+				try:
+					item.unlink()
+				except Exception as e:
+					E(f'Failed to delete file {item}: {e}')
+					return False
 	else:
 		dir_path.mkdir(parents=True, exist_ok=True)
 

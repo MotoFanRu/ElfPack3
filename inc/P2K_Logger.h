@@ -12,7 +12,7 @@ extern "C" {
 		EP3_Logger("%s:%d: " format, __func__, __LINE__, ##__VA_ARGS__); \
 	} while (0)
 
-#define L(format, ...)                                     P2K_LOG(format, ##__VA_ARGS__)
+#define L(format, ...)                                     EP3_Logger(format, ##__VA_ARGS__)
 #define LU(message)                                        EP3_Logger_Unicode(message)
 
 #if defined(FTR_DEBUG)
