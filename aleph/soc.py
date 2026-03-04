@@ -1,0 +1,83 @@
+from pathlib import Path
+
+from .skeleton import P2K_SDK_LDS
+from .skeleton import SoC
+
+CPU_ARM = ['-DFTR_ARM']
+CPU_ARM_MODE_ARM = ['-marm', '-mthumb-interwork']
+CPU_ARM_MODE_THUMB = ['-mthumb', '-mthumb-interwork']
+CPU_ARM7_BIG_ENDIAN = ['-mbig-endian', '-DFTR_BIG_ENDIAN']
+CPU_ARM11_BIG_ENDIAN = ['-mbig-endian', '-mbe32', '-DFTR_BIG_ENDIAN']
+CPU_ARM7_FLAVOR = ['-march=armv4t', '-mtune=arm7tdmi-s', '-DFTR_ARM7']
+CPU_ARM11_FLAVOR = ['-march=armv6j', '-mtune=arm1136jf-s', '-DFTR_ARM11']
+
+CPU_MCORE = ['-DFTR_MCORE']
+CPU_MCORE_BIG_ENDIAN = ['-mbig-endian']
+CPU_MCORE210_FLAVOR = ['-m210', '-DFTR_MCORE210']
+CPU_MCORE340_FLAVOR = ['-m340', '-DFTR_MCORE340']
+CPU_MCORE_M4ALIGN = ['-m4align']
+
+FTR_PATRIOT = ['-DFTR_PATRIOT']
+FTR_RAINBOW = ['-DFTR_RAINBOW']
+FTR_ARGON = ['-DFTR_ARGON']
+FTR_NEPTUNE = ['-DFTR_NEPTUNE']
+
+PATRIOT_FLAGS = CPU_MCORE + CPU_MCORE210_FLAVOR + CPU_MCORE_BIG_ENDIAN + CPU_MCORE_M4ALIGN + FTR_PATRIOT
+RAINBOW_FLAGS = CPU_MCORE + CPU_MCORE340_FLAVOR + CPU_MCORE_BIG_ENDIAN + CPU_MCORE_M4ALIGN + FTR_RAINBOW
+NEPTUNE_FLAGS = CPU_ARM + CPU_ARM_MODE_THUMB + CPU_ARM7_BIG_ENDIAN + CPU_ARM7_FLAVOR + FTR_NEPTUNE
+ARGON_FLAGS = CPU_ARM + CPU_ARM_MODE_THUMB + CPU_ARM11_BIG_ENDIAN + CPU_ARM11_FLAVOR + FTR_ARGON
+
+SOC_PATRIOT = SoC(
+	cflags=PATRIOT_FLAGS,
+	lds=Path(),
+)
+
+SOC_RAINBOW = SoC(
+	cflags=RAINBOW_FLAGS,
+	lds=Path(),
+)
+
+SOC_RAINBOW_POG = SoC(
+	cflags=RAINBOW_FLAGS + ['-DFTR_RAINBOW_POG'],
+	lds=Path(),
+)
+
+SOC_NEPTUNE_LT_LCA = SoC(
+	cflags=NEPTUNE_FLAGS + ['-DFTR_NEPTUNE_LT_LCA'],
+	lds=Path(),
+)
+
+SOC_NEPTUNE_LTS = SoC(
+	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTS'],
+	lds=Path(),
+)
+
+SOC_NEPTUNE_ULS = SoC(
+	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_ULS'],
+	lds=Path(),
+)
+
+SOC_NEPTUNE_LTE = SoC(
+	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE'],
+	lds=P2K_SDK_LDS / 'SoC_Neptune_LTE.lds',
+)
+
+SOC_NEPTUNE_LTE2 = SoC(
+	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2'],
+	lds=Path(),
+)
+
+SOC_NEPTUNE_LTE2_ROM4 = SoC(
+	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2_ROM4'],
+	lds=Path(),
+)
+
+SOC_ARGON_PLUS = SoC(
+	cflags=ARGON_FLAGS + ['-DFTR_ARGON_PLUS'],
+	lds=Path(),
+)
+
+SOC_ARGON_LV = SoC(
+	cflags=ARGON_FLAGS + ['-DFTR_ARGON_LV'],
+	lds=P2K_SDK_LDS / 'SoC_Argon_LV.lds',
+)

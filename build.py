@@ -20,35 +20,49 @@ from aleph import E
 from aleph import Recipe
 from aleph import gcc_compile
 from aleph import gcc_link
+from aleph import gcc_bin
 from aleph import set_logger
 from aleph import P2K_SDK_SRC
 from aleph import P2K_SDK_BUILD
 from aleph import elapsed_format
 from aleph import create_clean_dir
+from aleph import patch_text_file
 
 from config import RECIPES
+from config import BIN_LDR_ENTRY_POINT_FUNC
+
+def patch_linker_script(recipe: Recipe) -> bool:
+	I(f'Patching "{recipe.soc.lds.name}" linker script.')
+	markers = ['%addr_entry%',               '%entry_point_function%']
+	patches = [str(recipe.addresses.inject), BIN_LDR_ENTRY_POINT_FUNC]
+	return patch_text_file(markers, patches, recipe.soc.lds, P2K_SDK_BUILD / recipe.soc.lds.name)
 
 def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	I(f'Building {recipe_name} BIN loader.')
 
-	# TODO: Generate a stub library.
+	lds_res = P2K_SDK_BUILD / recipe.soc.lds.name
+	elf_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
+	bin_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.bin'
 
-	build_files = [
-		(P2K_SDK_SRC / 'P2K_EP3_LIB_Stubs.S', P2K_SDK_BUILD / 'P2K_EP3_LIB_Stubs.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_Logger.c', P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_File_System.c', P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_Memory.c', P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c', P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
-	]
-
-	for c_src, c_out in build_files:
-		if not gcc_compile(recipe, c_src, c_out, recipe.flags.bin_ldr):
-			return False
+	sources = [P2K_SDK_SRC / f for f in (
+		'P2K_EP3_LIB_Stubs.S',
+		'P2K_EP3_Logger.c',
+		'P2K_EP3_File_System.c',
+		'P2K_EP3_Memory.c',
+		'P2K_EP3_BIN_Loader.c'
+	)]
 
 	objs = []
-	for _, c_out in build_files:
-		objs.append(c_out)
-	if not gcc_link(recipe, objs, P2K_SDK_BUILD / 'ldr.elf', recipe.toolchain.lflags.bin_ldr):
+	for src in sources:
+		obj = P2K_SDK_BUILD / src.with_suffix('.o').name
+		if not gcc_compile(recipe, src, obj, recipe.flags.bin_ldr):
+			return False
+		objs.append(obj)
+
+	if not gcc_link(recipe, objs, elf_res, ['-T', lds_res]):
+		return False
+
+	if not gcc_bin(recipe, elf_res, bin_res):
 		return False
 
 	return True
@@ -66,7 +80,8 @@ def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
 	I(f'Cooking {recipe_name} recipe.')
 
 	build_steps = [
-		(create_clean_dir, [P2K_SDK_BUILD], 'Cannot create build directory'),
+		(create_clean_dir, [P2K_SDK_BUILD], 'Cannot create and clean build directory'),
+		(patch_linker_script, [recipe], 'Cannot patch linker script'),
 		(build_bin_ldr, [recipe_name, recipe], 'Cannot build BIN Loader'),
 		(build_elf_ldr, [recipe_name, recipe], 'Cannot build ELF Loader'),
 		(build_so_lib, [recipe_name, recipe], 'Cannot build SO Library'),
