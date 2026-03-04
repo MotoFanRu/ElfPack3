@@ -8,16 +8,18 @@ A general tool for building ELF Loader, BIN Loader, and libraries for a selected
 
 import sys
 
+from pathlib import Path
+
 from datetime import datetime
 
 from argparse import Namespace
-from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
 from aleph import D
 from aleph import I
 from aleph import E
 from aleph import Recipe
+from aleph import Arguments
 from aleph import gcc_compile
 from aleph import gcc_link
 from aleph import gcc_bin
@@ -105,20 +107,15 @@ def do_work(args: Namespace) -> bool:
 	return cook_recipe(args.recipe, RECIPES[args.recipe])
 
 def args_and_help() -> Namespace:
-	class Args(ArgumentParser):
-		def error(self, message: str) -> None:
-			self.print_help(sys.stderr)
-			self.exit(2, f'\n{self.prog}: error: {message}\n')
-		def parse_and_check_args(self) -> Namespace:
-			args = self.parse_args()
+	class Args(Arguments):
+		def check_args(self, args: Namespace) -> None:
 			if (args.recipe not in RECIPES) and (args.recipe != 'all'):
 				self.error(f'Recipe "{args.recipe}" not supported!')
-			return args
 
 	epl = 'examples:\n'
-	epl += '  python build.py all\n'
+	epl += f'  python {Path(__file__).name} all\n'
 	for recipe in RECIPES.keys():
-		epl += f'  python build.py {recipe}\n'
+		epl += f'  python {Path(__file__).name} {recipe}\n'
 	hlp = {
 		'D': 'EP3 Build Tool for Motorola phones on P2K platform, 01-Mar-2026',
 		'R': 'Phone and firmware recipe to build',

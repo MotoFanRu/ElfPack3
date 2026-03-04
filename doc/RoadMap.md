@@ -41,7 +41,9 @@
   * ✅ V3i, R4441D_03R, +MOOSE, NoRSA, PDS SecVer Patch.
   * ✅ V3x, R252211LD_E6P, NoRSA.
 
-* 🟨 Python CLI tool skeleton.
+* ✅ Python CLI tool skeleton.
+
+  * ✅ Port migration tools to Aleph library.
 
 * 🟨 General "ElfLoaderStrap" patch + binary.
 

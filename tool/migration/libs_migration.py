@@ -8,9 +8,17 @@ Extract function names and types, ensure uniqueness, and output combined file.
 """
 
 import sys
-import argparse
 
 from pathlib import Path
+
+from datetime import datetime
+
+from argparse import Namespace
+from argparse import RawDescriptionHelpFormatter
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
+from aleph import *
 
 def format_output_line(num, func_type, func_name, show_nums=False, show_types=False):
 	if show_nums and show_types:
@@ -53,18 +61,7 @@ def parse_asm_line(line: str) -> tuple[str, str] | None:
 				return func_type, func_name
 	return None
 
-def main() -> None:
-	parser = argparse.ArgumentParser(description='EP1/EP2/EM1/EM2 => EP3 Library Migration Tool')
-	parser.add_argument('directory', type=Path, help='Directory to recursively walk through')
-	parser.add_argument('-o', '--output', type=Path, default=None, help='Output file')
-	parser.add_argument('-n', '--enumerate', action='store_true', help='Enumerate symbols')
-	parser.add_argument('-t', '--show-types', action='store_true', help='Show types of symbols')
-	args = parser.parse_args()
-
-	if not args.directory.is_dir():
-		print(f'Error: "{args.directory}" is not a directory!', file=sys.stderr)
-		sys.exit(1)
-
+def do_work(args: Namespace) -> bool:
 	symbols: dict[str, str] = {}
 
 	for suffix in ('.sym', '.asm'):
@@ -77,7 +74,7 @@ def main() -> None:
 							func_type, func_name = res
 							symbols[func_name] = func_type
 			except Exception as e:
-				print(f'Warning: could not read {file_path}: {e}', file=sys.stderr)
+				W(f'Warning: could not read {file_path}: {e}')
 
 	sorted_symbols = sorted(symbols.items(), key=lambda item: item[0].lower())
 
@@ -86,13 +83,49 @@ def main() -> None:
 			with open(args.output, 'w', encoding='utf-8', newline='\n') as f:
 				for count, (func_name, func_typ) in enumerate(sorted_symbols, 1):
 					f.write(format_output_line(count, func_typ, func_name, args.enumerate, args.show_types) + '\n')
-			print(f'Output written to {args.output}', file=sys.stderr)
+			I(f'Output written to {args.output}')
 		except Exception as e:
-			print(f'Error writing to {args.output}: {e}', file=sys.stderr)
-			sys.exit(1)
+			E(f'Error writing to {args.output}: {e}')
+			return False
 	else:
 		for count, (func_name, func_typ) in enumerate(sorted_symbols, 1):
 			print(format_output_line(count, func_typ, func_name, args.enumerate, args.show_types))
+
+	return True
+
+def args_and_help() -> Namespace:
+	class Args(Arguments):
+		def check_args(self, args: Namespace) -> None:
+			if not args.directory.is_dir():
+				self.error(f'Error: "{args.directory}" is not a directory!')
+
+	epl = 'examples:\n'
+	epl += f'  python {Path(__file__).name} symbols_directory\n'
+	epl += f'  python {Path(__file__).name} symbols_directory -n -t\n'
+	epl += f'  python {Path(__file__).name} symbols_directory -o result.sym\n'
+	epl += f'  python {Path(__file__).name} symbols_directory -n -t -o result.sym\n'
+	hlp = {
+		'D': 'EP1/EP2/EM1/EM2 => EP3 Library Migration Tool, 01-Mar-2026',
+		'v': 'Enable verbose output'
+	}
+
+	parser = Args(description=hlp['D'], epilog=epl, formatter_class=RawDescriptionHelpFormatter)
+	parser.add_argument('directory', type=Path, help='Directory to recursively walk through')
+	parser.add_argument('-o', '--output', type=Path, default=None, help='Output file')
+	parser.add_argument('-n', '--enumerate', action='store_true', help='Enumerate symbols')
+	parser.add_argument('-t', '--show-types', action='store_true', help='Show types of symbols')
+	parser.add_argument('-v', '--verbose', action='store_true', help=hlp['v'])
+	return parser.parse_and_check_args()
+
+def main() -> None:
+	args = args_and_help()
+	set_logger(args.verbose)
+
+	start_time = datetime.now()
+
+	do_work(args)
+
+	I(f'Time elapsed: "{elapsed_format(datetime.now() - start_time)}".')
 
 if __name__ == '__main__':
 	main()
