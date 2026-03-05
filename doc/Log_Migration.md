@@ -33,7 +33,7 @@ extern void uisFreeMemory(void *address);
   0485 A DL_FsSGetFileSize
 
   0194 T APP_CALC_MainRegister
-
+  
   0879 A suAllocMem
   0895 A suFreeMem
 
