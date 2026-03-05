@@ -1,3 +1,4 @@
+from datetime import datetime
 from datetime import timedelta
 
 def elapsed_format(td: timedelta) -> str:
@@ -6,3 +7,6 @@ def elapsed_format(td: timedelta) -> str:
 	minutes, seconds = divmod(remainder, 60)
 	milliseconds = td.microseconds // 1000
 	return f'{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}'
+
+def date_format(dt: datetime) -> str:
+	return dt.strftime("%d-%b-%Y")

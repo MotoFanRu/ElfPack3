@@ -34,3 +34,7 @@ from .soc import SOC_ARGON_LV
 from .soc import SOC_ARGON_PLUS
 
 from .patcher import patch_text_file
+
+from .definitions import read_definitions
+from .definitions import compare_definitions
+from .definitions import convert_asm_to_def

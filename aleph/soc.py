@@ -3,6 +3,8 @@ from pathlib import Path
 from .skeleton import SoC
 from .skeleton import P2K_SDK_LDS
 
+CPU_ARCH = ['ARM7', 'ARM9', 'ARM11', 'MCORE210', 'MCORE340', 'NONE']
+
 CPU_ARM = ['-DFTR_ARM']
 CPU_ARM_MODE_ARM = ['-marm', '-mthumb-interwork']
 CPU_ARM_MODE_THUMB = ['-mthumb', '-mthumb-interwork']
@@ -27,56 +29,67 @@ NEPTUNE_FLAGS = CPU_ARM + CPU_ARM_MODE_THUMB + CPU_ARM7_BIG_ENDIAN + CPU_ARM7_FL
 ARGON_FLAGS = CPU_ARM + CPU_ARM_MODE_THUMB + CPU_ARM11_BIG_ENDIAN + CPU_ARM11_FLAVOR + FTR_ARGON
 
 SOC_PATRIOT = SoC(
+	cpu='MCORE210',
 	cflags=PATRIOT_FLAGS,
 	lds=Path(),
 )
 
 SOC_RAINBOW = SoC(
+	cpu='MCORE340',
 	cflags=RAINBOW_FLAGS,
 	lds=Path(),
 )
 
 SOC_RAINBOW_POG = SoC(
+	cpu='MCORE340',
 	cflags=RAINBOW_FLAGS + ['-DFTR_RAINBOW_POG'],
 	lds=Path(),
 )
 
 SOC_NEPTUNE_LT_LCA = SoC(
+	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-DFTR_NEPTUNE_LT_LCA'],
 	lds=Path(),
 )
 
 SOC_NEPTUNE_LTS = SoC(
+	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTS'],
 	lds=Path(),
 )
 
 SOC_NEPTUNE_ULS = SoC(
+	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_ULS'],
 	lds=Path(),
 )
 
 SOC_NEPTUNE_LTE = SoC(
+	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE'],
 	lds=P2K_SDK_LDS / 'SoC_Neptune_LTE.lds',
 )
 
 SOC_NEPTUNE_LTE2 = SoC(
+	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2'],
 	lds=Path(),
 )
 
 SOC_NEPTUNE_LTE2_ROM4 = SoC(
+	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2_ROM4'],
 	lds=Path(),
 )
 
 SOC_ARGON_PLUS = SoC(
+	cpu='ARM11',
 	cflags=ARGON_FLAGS + ['-DFTR_ARGON_PLUS'],
 	lds=Path(),
 )
 
 SOC_ARGON_LV = SoC(
+	cpu='ARM11',
 	cflags=ARGON_FLAGS + ['-DFTR_ARGON_LV'],
 	lds=P2K_SDK_LDS / 'SoC_Argon_LV.lds',
 )

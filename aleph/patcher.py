@@ -1,33 +1,39 @@
 from pathlib import Path
 
 from .logger import E
-from .filesystem import check_files
+from .stringer import is_blank
+from .filesystem import read_text_file
+from .filesystem import write_text_file
 
-def patch_text_file(markers: list[str], patches: list[str], p_in: Path, p_out: Path) -> bool:
+def patch_text(markers: list[str], patches: list[str], str_in: str) -> str | None:
+	if is_blank(str_in):
+		E('The text is blank!')
+		return None
+
 	if len(markers) != len(patches):
 		E('The size of the patches and markers does not match!')
-		return False
+		return None
 
-	if not check_files(p_in, True):
-		return False
+	if not any(marker in str_in for marker in markers):
+		E('No markers found in text.')
+		return None
 
-	try:
-		original_text = p_in.read_text(encoding="utf-8")
-	except Exception as e:
-		E(f'Failed to read input file {p_in}: {e}')
-		return False
-
-	if not any(marker in original_text for marker in markers):
-		E(f'No markers found in file: {p_in}')
-		return False
-
-	text = original_text
+	text = str_in
 	for marker, patch in zip(markers, patches):
 		text = text.replace(marker, patch)
 
-	try:
-		p_out.write_text(text, encoding="utf-8")
-		return True
-	except Exception as e:
-		E(f'Failed to write output file {p_out}: {e}')
+	return text
+
+def patch_text_file(markers: list[str], patches: list[str], p_in: Path, p_out: Path) -> bool:
+	original_text = read_text_file(p_in)
+	if not original_text:
 		return False
+
+	text = patch_text(markers, patches, original_text)
+	if not text:
+		return False
+
+	if not write_text_file(p_out, text):
+		return False
+
+	return True

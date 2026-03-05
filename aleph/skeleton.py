@@ -3,13 +3,13 @@ from dataclasses import dataclass
 
 P2K_SDK_ROOT: Path = Path(__file__).resolve().parent.parent
 
-P2K_SDK_BUILD = P2K_SDK_ROOT / 'build'
 P2K_SDK_RES = P2K_SDK_ROOT / 'res'
 P2K_SDK_INC = P2K_SDK_ROOT / 'inc'
 P2K_SDK_LDS = P2K_SDK_ROOT / 'lds'
 P2K_SDK_SRC = P2K_SDK_ROOT / 'src'
-P2K_SDK_TOOL = P2K_SDK_ROOT / 'tool'
-P2K_SDK_GCC = P2K_SDK_TOOL / 'gcc'
+P2K_SDK_GCC = P2K_SDK_ROOT / 'gcc'
+P2K_SDK_BUILD = P2K_SDK_ROOT / 'build'
+P2K_SDK_RELEASE = P2K_SDK_ROOT / 'release'
 
 @dataclass
 class Toolchain:
@@ -20,6 +20,7 @@ class Toolchain:
 
 @dataclass
 class SoC:
+	cpu: str
 	cflags: list[str]
 	lds: Path
 
@@ -38,3 +39,18 @@ class Recipe:
 	toolchain: Toolchain
 	flags: RecipeFlags
 	addresses: RecipeAddresses
+
+@dataclass
+class Definitions:
+	@dataclass
+	class Header:
+		pfw: str
+		ver: str
+		cpu: str
+	@dataclass
+	class Definition:
+		addr: int
+		type: str
+		name: str
+	head: Header
+	defs: list[Definition]

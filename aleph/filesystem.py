@@ -38,3 +38,20 @@ def create_clean_dir(dir_path: Path) -> bool:
 		dir_path.mkdir(parents=True, exist_ok=True)
 
 	return True
+
+def read_text_file(file_path_in: Path) -> str | None:
+	if not check_files(file_path_in, True):
+		return None
+	try:
+		return file_path_in.read_text(encoding="utf-8")
+	except Exception as e:
+		E(f'Failed to read input file {file_path_in}: {e}')
+		return None
+
+def write_text_file(file_path_out: Path, text: str) -> bool:
+	try:
+		file_path_out.write_text(text, encoding="utf-8")
+		return True
+	except Exception as e:
+		E(f'Failed to write output file {file_path_out}: {e}')
+	return False
