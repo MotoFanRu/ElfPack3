@@ -106,14 +106,18 @@ def args_and_help() -> Namespace:
 	epl += f'  python {Path(__file__).name} symbols_directory -n -t -o result.sym\n'
 	hlp = {
 		'D': 'EP1/EP2/EM1/EM2 => EP3 Library Migration Tool, 01-Mar-2026',
-		'v': 'Enable verbose output'
+		'P': 'directory to recursively walk through',
+		'o': 'output file',
+		'n': 'enumerate symbols',
+		't': 'show types of symbols',
+		'v': 'enable verbose output'
 	}
 
 	parser = Args(description=hlp['D'], epilog=epl, formatter_class=RawDescriptionHelpFormatter)
-	parser.add_argument('directory', type=Path, help='Directory to recursively walk through')
-	parser.add_argument('-o', '--output', type=Path, default=None, help='Output file')
-	parser.add_argument('-n', '--enumerate', action='store_true', help='Enumerate symbols')
-	parser.add_argument('-t', '--show-types', action='store_true', help='Show types of symbols')
+	parser.add_argument('directory', type=Path, help=hlp['P'])
+	parser.add_argument('-o', '--output', type=Path, default=None, help=hlp['o'])
+	parser.add_argument('-n', '--enumerate', action='store_true', help=hlp['n'])
+	parser.add_argument('-t', '--show-types', action='store_true', help=hlp['t'])
 	parser.add_argument('-v', '--verbose', action='store_true', help=hlp['v'])
 	return parser.parse_and_check_args()
 

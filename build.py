@@ -118,8 +118,8 @@ def args_and_help() -> Namespace:
 		epl += f'  python {Path(__file__).name} {recipe}\n'
 	hlp = {
 		'D': 'EP3 Build Tool for Motorola phones on P2K platform, 01-Mar-2026',
-		'R': 'Phone and firmware recipe to build',
-		'v': 'Enable verbose output'
+		'R': 'phone and firmware recipe to build',
+		'v': 'enable verbose output'
 	}
 
 	parser = Args(description=hlp['D'], epilog=epl, formatter_class=RawDescriptionHelpFormatter)
