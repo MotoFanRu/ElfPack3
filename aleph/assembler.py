@@ -2,7 +2,6 @@ from pathlib import Path
 
 from .skeleton import Definitions
 from .filesystem import read_text_file
-from .stringer import is_blank
 from .hexer import is_valid_32bit_addr
 
 def generate_arm_assembler_listing(definitions: Definitions) -> str | None:
@@ -28,9 +27,8 @@ def parse_equ_assembler_line(line: str, mcore_asm: bool = False) -> tuple[str, s
 
 def read_equ_assembler_listing(p_in: Path, mcore_asm: bool = False) -> list[Definitions.Definition] | None:
 	content = read_text_file(p_in)
-	if not content or is_blank(content):
+	if not content:
 		return None
-	content = content.strip()
 	lines_content = [line.strip() for line in content.splitlines()]
 
 	definitions = []

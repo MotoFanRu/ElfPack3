@@ -8,11 +8,8 @@ Extract function names and types, ensure uniqueness, and output combined file.
 """
 
 import sys
-
 from pathlib import Path
-
 from datetime import datetime
-
 from argparse import Namespace
 from argparse import RawDescriptionHelpFormatter
 

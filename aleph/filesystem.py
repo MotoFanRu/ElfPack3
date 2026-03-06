@@ -4,6 +4,7 @@ from typing import Callable
 from .logger import D
 from .logger import W
 from .logger import E
+from .stringer import is_blank
 
 def check_paths_aux(paths: Path | list[Path], check_method: Callable[[Path], bool], warn: bool = False) -> bool:
 	if isinstance(paths, Path):
@@ -43,15 +44,22 @@ def read_text_file(file_path_in: Path) -> str | None:
 	if not check_files(file_path_in, True):
 		return None
 	try:
-		return file_path_in.read_text(encoding="utf-8")
+		text = file_path_in.read_text(encoding="utf-8").strip()
+		if not text or is_blank(text):
+			E(f'Text file is empty: "{file_path_in}"')
+			return None
+		return text
 	except Exception as e:
-		E(f'Failed to read input file {file_path_in}: {e}')
+		E(f'Failed to read input file "{file_path_in}": "{e}"')
 		return None
 
 def write_text_file(file_path_out: Path, text: str) -> bool:
 	try:
+		if is_blank(text):
+			E(f'Cannot write empty content to file: "{file_path_out}"')
+			return False
 		file_path_out.write_text(text, encoding="utf-8")
 		return True
 	except Exception as e:
-		E(f'Failed to write output file {file_path_out}: {e}')
+		E(f'Failed to write output file "{file_path_out}": "{e}"')
 	return False

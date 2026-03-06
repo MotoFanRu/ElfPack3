@@ -219,9 +219,8 @@ def sort_definitions(defs: list[Definitions.Definition], by_addresses: bool) -> 
 	return consts + addrs + funcs
 
 def parse_definitions_api(content: str) -> Definitions | None:
-	if not content or is_blank(content):
+	if not content:
 		return None
-	content = content.strip()
 
 	definitions = parse_validate_definitions_body(content, True)
 	if (not definitions) or (len(definitions) == 0):
@@ -239,9 +238,8 @@ def parse_definitions_api(content: str) -> Definitions | None:
 	)
 
 def parse_definitions_symbols_content(content: str, sym_format: bool = False) -> Definitions | None:
-	if not content or is_blank(content):
+	if not content:
 		return None
-	content = content.strip()
 
 	header = parse_validate_symbols_header(content) if sym_format else parse_validate_definitions_header(content)
 	if not header:

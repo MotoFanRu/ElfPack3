@@ -1,15 +1,10 @@
 from pathlib import Path
 
 from .logger import E
-from .stringer import is_blank
 from .filesystem import read_text_file
 from .filesystem import write_text_file
 
 def patch_text(markers: list[str], patches: list[str], str_in: str) -> str | None:
-	if is_blank(str_in):
-		E('The text is blank!')
-		return None
-
 	if len(markers) != len(patches):
 		E('The size of the patches and markers does not match!')
 		return None
@@ -29,11 +24,4 @@ def patch_text_file(markers: list[str], patches: list[str], p_in: Path, p_out: P
 	if not original_text:
 		return False
 
-	text = patch_text(markers, patches, original_text)
-	if not text:
-		return False
-
-	if not write_text_file(p_out, text):
-		return False
-
-	return True
+	return write_text_file(p_out, patch_text(markers, patches, original_text))

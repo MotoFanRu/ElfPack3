@@ -7,11 +7,8 @@ A general template for creating Python tools using Aleph library.
 """
 
 import sys
-
 from pathlib import Path
-
 from datetime import datetime
-
 from argparse import Namespace
 from argparse import RawDescriptionHelpFormatter
 
