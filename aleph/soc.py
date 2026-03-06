@@ -2,6 +2,7 @@ from pathlib import Path
 
 from .skeleton import SoC
 from .skeleton import P2K_SDK_LDS
+from .skeleton import P2K_SDK_ASM
 
 CPU_ARCH = ['ARM7', 'ARM9', 'ARM11', 'MCORE210', 'MCORE340', 'NONE']
 
@@ -31,65 +32,76 @@ ARGON_FLAGS = CPU_ARM + CPU_ARM_MODE_THUMB + CPU_ARM11_BIG_ENDIAN + CPU_ARM11_FL
 SOC_PATRIOT = SoC(
 	cpu='MCORE210',
 	cflags=PATRIOT_FLAGS,
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_MCORE.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_RAINBOW = SoC(
 	cpu='MCORE340',
 	cflags=RAINBOW_FLAGS,
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_MCORE.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_RAINBOW_POG = SoC(
 	cpu='MCORE340',
 	cflags=RAINBOW_FLAGS + ['-DFTR_RAINBOW_POG'],
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_MCORE.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_NEPTUNE_LT_LCA = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-DFTR_NEPTUNE_LT_LCA'],
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_NEPTUNE_LTS = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTS'],
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_NEPTUNE_ULS = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_ULS'],
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_NEPTUNE_LTE = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE'],
-	lds=P2K_SDK_LDS / 'SoC_Neptune_LTE.lds',
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=P2K_SDK_LDS / 'SoC_Neptune_LTE.tpl.lds',
 )
 
 SOC_NEPTUNE_LTE2 = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2'],
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_NEPTUNE_LTE2_ROM4 = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2_ROM4'],
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_ARGON_PLUS = SoC(
 	cpu='ARM11',
 	cflags=ARGON_FLAGS + ['-DFTR_ARGON_PLUS'],
-	lds=Path(),
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=Path(),
 )
 
 SOC_ARGON_LV = SoC(
 	cpu='ARM11',
 	cflags=ARGON_FLAGS + ['-DFTR_ARGON_LV'],
-	lds=P2K_SDK_LDS / 'SoC_Argon_LV.lds',
+	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	lds_template=P2K_SDK_LDS / 'SoC_Argon_LV.lds',
 )

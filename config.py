@@ -1,7 +1,5 @@
 from aleph import *
 
-BIN_LDR_ENTRY_POINT_FUNC = 'EP3_BIN_Loader_MainRegister'
-
 RECIPES: dict[str, Recipe] = {
 
 	'E1_R373_G_0E.30.49R' : Recipe(

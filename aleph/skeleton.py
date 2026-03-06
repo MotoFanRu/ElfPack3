@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 P2K_SDK_ROOT: Path = Path(__file__).resolve().parent.parent
 
+P2K_SDK_ASM = P2K_SDK_ROOT / 'asm'
 P2K_SDK_RES = P2K_SDK_ROOT / 'res'
 P2K_SDK_INC = P2K_SDK_ROOT / 'inc'
 P2K_SDK_LDS = P2K_SDK_ROOT / 'lds'
@@ -22,7 +23,8 @@ class Toolchain:
 class SoC:
 	cpu: str
 	cflags: list[str]
-	lds: Path
+	asm_template: Path
+	lds_template: Path
 
 @dataclass
 class Recipe:

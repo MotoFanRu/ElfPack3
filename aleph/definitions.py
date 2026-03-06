@@ -176,7 +176,7 @@ def parse_validate_definitions_body(content: str, api_listing: bool = False) -> 
 			))
 	return definitions
 
-def validate_addresses_and_names(defs: list[Definitions.Definition]) -> bool:
+def validate_addresses_and_names(defs: list[Definitions.Definition], warn_duplicates: bool = False) -> bool:
 	addrs = []
 	names = []
 	for d in defs:
@@ -185,13 +185,14 @@ def validate_addresses_and_names(defs: list[Definitions.Definition]) -> bool:
 		addrs.append(d.addr)
 		names.append(d.name)
 
+	l = W if warn_duplicates else D
 	addrs_d = find_duplicates(addrs)
 	if len(addrs_d) > 0:
-		W('Duplicate addresses found:')
+		l('Duplicate addresses found:')
 		for addr in addrs_d:
-			W('')
+			l('')
 			for d in get_definitions_by_addr(defs, addr):
-				W(f'{format_definition_string(d)}')
+				l(f'{format_definition_string(d)}')
 
 	names_d = find_duplicates(names)
 	if len(names_d) > 0:
@@ -237,9 +238,12 @@ def parse_definitions_api(content: str) -> Definitions | None:
 		defs=definitions,
 	)
 
-def parse_definitions_symbols_content(content: str, sym_format: bool = False) -> Definitions | None:
+def read_definitions(p_in: Path, warn_duplicates: bool = False, sort_by_addrs: bool = False) -> Definitions | None:
+	content = read_text_file(p_in)
 	if not content:
 		return None
+
+	sym_format = p_in.suffix == '.sym'
 
 	header = parse_validate_symbols_header(content) if sym_format else parse_validate_definitions_header(content)
 	if not header:
@@ -250,10 +254,10 @@ def parse_definitions_symbols_content(content: str, sym_format: bool = False) ->
 	if (not definitions) or (len(definitions) == 0):
 		return None
 
-	if not validate_addresses_and_names(definitions):
+	if not validate_addresses_and_names(definitions, warn_duplicates):
 		return None
 
-	definitions = sort_definitions(definitions, False)
+	definitions = sort_definitions(definitions, sort_by_addrs)
 
 	return Definitions(
 		head=Definitions.Header(
@@ -263,9 +267,6 @@ def parse_definitions_symbols_content(content: str, sym_format: bool = False) ->
 		),
 		defs=definitions,
 	)
-
-def read_definitions(p_in: Path) -> Definitions | None:
-	return parse_definitions_symbols_content(read_text_file(p_in), (p_in.suffix == '.sym'))
 
 def generate_definitions_content(definitions: Definitions, sym_format: bool = False) -> str | None:
 	if not definitions:
@@ -295,9 +296,13 @@ def convert_def_to_sym(defs: list[Definitions.Definition]) -> list[Definitions.D
 	return defs
 
 def write_definitions(p_out: Path, definitions: Definitions) -> bool:
+	if not definitions:
+		return False
 	sym_format = p_out.suffix == '.sym'
 	if sym_format:
 		definitions.defs = convert_def_to_sym(definitions.defs)
+	# Update library version to the current date.
+	definitions.head.ver = 'EP3_' + date_format(datetime.now())
 	return write_text_file(p_out, generate_definitions_content(definitions, sym_format))
 
 def pack_def_string(d: Definitions.Definition, skip_addr: bool = False, skip_type: bool = False) -> str | None:
@@ -412,3 +417,8 @@ def convert_asm_to_def(p_in: Path, p_out: Path, mcore_asm: bool = False) -> bool
 		defs=defs,
 	)
 	return write_definitions(p_out, d)
+
+def format_definitions(p_in: Path, p_out: Path, warn_duplicates: bool = False, sort_by_addrs: bool = False) -> bool:
+	if p_out.suffix != '.def':
+		E(f'Wrong file suffix format: "{p_out.suffix}", should be .def')
+	return write_definitions(p_out, read_definitions(p_in, warn_duplicates, sort_by_addrs))

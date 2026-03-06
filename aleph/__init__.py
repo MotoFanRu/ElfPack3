@@ -14,6 +14,7 @@ from .filesystem import create_clean_dir
 from .skeleton import Recipe
 from .skeleton import P2K_SDK_SRC
 from .skeleton import P2K_SDK_BUILD
+from .skeleton import P2K_SDK_RES
 
 from .timedate import elapsed_format
 
@@ -36,9 +37,13 @@ from .soc import SOC_ARGON_LV
 from .soc import SOC_ARGON_PLUS
 
 from .patcher import patch_text_file
+from .patcher import patch_linker_script_with_addr_and_entry
 
 from .definitions import read_definitions
 from .definitions import write_definitions
 from .definitions import compare_definitions
 from .definitions import compare_definitions_with_api
 from .definitions import convert_asm_to_def
+from .definitions import format_definitions
+
+from .assembler import write_assembler_listing

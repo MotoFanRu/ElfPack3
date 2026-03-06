@@ -11,39 +11,38 @@ from datetime import datetime
 from argparse import Namespace
 from argparse import RawDescriptionHelpFormatter
 
-from aleph import D
-from aleph import I
-from aleph import E
-from aleph import Recipe
-from aleph import Arguments
-from aleph import gcc_compile
-from aleph import gcc_link
-from aleph import gcc_bin
-from aleph import set_logger
-from aleph import P2K_SDK_SRC
-from aleph import P2K_SDK_BUILD
-from aleph import elapsed_format
-from aleph import create_clean_dir
-from aleph import patch_text_file
+from aleph import *
+from config import *
 
-from config import RECIPES
-from config import BIN_LDR_ENTRY_POINT_FUNC
+def build_so_lib(recipe_name: str, recipe: Recipe) -> bool:
+	I(f'Building {recipe_name} Library.')
 
-def patch_linker_script(recipe: Recipe) -> bool:
-	I(f'Patching "{recipe.soc.lds.name}" linker script.')
-	markers = ['%addr_entry%',               '%entry_point_function%']
-	patches = [str(recipe.addresses.inject), BIN_LDR_ENTRY_POINT_FUNC]
-	return patch_text_file(markers, patches, recipe.soc.lds, P2K_SDK_BUILD / recipe.soc.lds.name)
+	asm_tpl = recipe.soc.asm_template
+	asm_src = P2K_SDK_BUILD / asm_tpl.name.replace('.tpl', '')
+	asm_obj = P2K_SDK_BUILD / asm_src.name.replace('.S', '.o')
+	def_res = P2K_SDK_RES / recipe_name / 'ep3.def'
+
+	if not write_assembler_listing(asm_tpl, asm_src, read_definitions(def_res)):
+		return False
+
+	if not gcc_compile(recipe, asm_src, asm_obj):
+		return False
+
+	# TODO: Links library to .a and .so here?
+
+	return True
 
 def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	I(f'Building {recipe_name} BIN loader.')
 
-	lds_res = P2K_SDK_BUILD / recipe.soc.lds.name
+	addr = recipe.addresses.inject
+	entry_point = 'EP3_BIN_Loader_MainRegister'
+	lds_tpl = recipe.soc.lds_template
+	lds_res = P2K_SDK_BUILD / lds_tpl.name.replace('.tpl', '')
 	elf_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
 	bin_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.bin'
 
 	sources = [P2K_SDK_SRC / f for f in (
-		'P2K_EP3_LIB_Stubs.S',
 		'P2K_EP3_Logger.c',
 		'P2K_EP3_File_System.c',
 		'P2K_EP3_Memory.c',
@@ -57,6 +56,10 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 			return False
 		objs.append(obj)
 
+	objs.append(P2K_SDK_BUILD / recipe.soc.asm_template.name.replace('.tpl.S', '.o'))
+	if not patch_linker_script_with_addr_and_entry(lds_tpl, lds_res, addr, entry_point):
+		return False
+
 	if not gcc_link(recipe, objs, elf_res, ['-T', lds_res]):
 		return False
 
@@ -68,21 +71,20 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 def build_elf_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	return True
 
-def build_so_lib(recipe_name: str, recipe: Recipe) -> bool:
-	return True
-
 def build_patches(recipe_name: str, recipe: Recipe) -> bool:
 	return True
 
 def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
 	I(f'Cooking {recipe_name} recipe.')
 
+	if not create_clean_dir(P2K_SDK_BUILD):
+		E(f'Cannot create and clean build directory: "{P2K_SDK_BUILD}"')
+		return False
+
 	build_steps = [
-		(create_clean_dir, [P2K_SDK_BUILD], 'Cannot create and clean build directory'),
-		(patch_linker_script, [recipe], 'Cannot patch linker script'),
+		(build_so_lib, [recipe_name, recipe], 'Cannot build SO Library'),
 		(build_bin_ldr, [recipe_name, recipe], 'Cannot build BIN Loader'),
 		(build_elf_ldr, [recipe_name, recipe], 'Cannot build ELF Loader'),
-		(build_so_lib, [recipe_name, recipe], 'Cannot build SO Library'),
 		(build_patches, [recipe_name, recipe], 'Cannot build Final Patches'),
 	]
 
