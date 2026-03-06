@@ -2,7 +2,8 @@ from aleph import *
 
 RECIPES: dict[str, Recipe] = {
 
-	'E1_R373_G_0E.30.49R' : Recipe(
+	# Only for debugging. Delete it later.
+	'E1_R373_G_0E.30.44R_elf': Recipe(
 		soc=SOC_NEPTUNE_LTE, toolchain=P2K_SDK_GCC_ARM,
 		flags=Recipe.RecipeFlags(
 			build=['-DFTR_E1'],
@@ -11,6 +12,18 @@ RECIPES: dict[str, Recipe] = {
 		),
 		addresses=Recipe.RecipeAddresses(
 			register=0x00000000, inject=0x108A8F1C,
+		),
+	),
+
+	'E1_R373_G_0E.30.49R' : Recipe(
+		soc=SOC_NEPTUNE_LTE, toolchain=P2K_SDK_GCC_ARM,
+		flags=Recipe.RecipeFlags(
+			build=['-DFTR_E1'],
+			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
+			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
+		),
+		addresses=Recipe.RecipeAddresses(
+			register=0x00000000, inject=0x00000000,
 		),
 	),
 

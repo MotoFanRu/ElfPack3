@@ -53,55 +53,55 @@ SOC_RAINBOW_POG = SoC(
 SOC_NEPTUNE_LT_LCA = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-DFTR_NEPTUNE_LT_LCA'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=Path(),
 )
 
 SOC_NEPTUNE_LTS = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTS'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=Path(),
 )
 
 SOC_NEPTUNE_ULS = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_ULS'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=Path(),
 )
 
 SOC_NEPTUNE_LTE = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=P2K_SDK_LDS / 'SoC_Neptune_LTE.tpl.lds',
 )
 
 SOC_NEPTUNE_LTE2 = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=Path(),
 )
 
 SOC_NEPTUNE_LTE2_ROM4 = SoC(
 	cpu='ARM7',
 	cflags=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2_ROM4'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=Path(),
 )
 
 SOC_ARGON_PLUS = SoC(
 	cpu='ARM11',
 	cflags=ARGON_FLAGS + ['-DFTR_ARGON_PLUS'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=Path(),
 )
 
 SOC_ARGON_LV = SoC(
 	cpu='ARM11',
 	cflags=ARGON_FLAGS + ['-DFTR_ARGON_LV'],
-	asm_template=P2K_SDK_ASM / 'Defs_ARM.tpl.S',
+	asm_template=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
 	lds_template=P2K_SDK_LDS / 'SoC_Argon_LV.lds',
 )

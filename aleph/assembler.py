@@ -18,6 +18,9 @@ def generate_assembler_definition(max_len: int, def_type: str, def_name: str, de
 	return f'def_{def_type} {def_name + ",":<{max_len}} {def_val}'
 
 def generate_assembler_listing(p_assembler_template: Path, definitions: Definitions) -> str | None:
+	if not definitions:
+		return None
+
 	asm_template = read_text_file(p_assembler_template)
 	phone, firmware = definitions.head.pfw.split('_', 1)
 	version = definitions.head.ver
