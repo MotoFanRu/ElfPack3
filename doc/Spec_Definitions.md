@@ -73,3 +73,18 @@ The file must not contain duplicate names. Duplicate addresses are allowed but m
 In both modes, `C` and `D` entities should come first, followed by `A`, `T`, and `M` entities in any order.
 
 Sorting must be case-insensitive.
+
+## API listing files
+
+Contains only function names. Comments should start with the `#` symbol, inline comments are forbidden. Blank lines should be skipped.
+
+```api
+# Project:
+#   EP3
+
+__16_ll_cmpu
+__call_via_r1
+LdrStartApp
+LdrUnloadELF
+UtilLogStringData
+```

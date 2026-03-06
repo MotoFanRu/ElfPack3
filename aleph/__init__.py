@@ -7,6 +7,8 @@ from .logger import set_logger
 
 from .arguments import Arguments
 
+from .filesystem import check_dirs
+from .filesystem import check_files
 from .filesystem import create_clean_dir
 
 from .skeleton import Recipe
@@ -36,5 +38,7 @@ from .soc import SOC_ARGON_PLUS
 from .patcher import patch_text_file
 
 from .definitions import read_definitions
+from .definitions import write_definitions
 from .definitions import compare_definitions
+from .definitions import compare_definitions_with_api
 from .definitions import convert_asm_to_def

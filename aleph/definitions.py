@@ -47,6 +47,9 @@ def get_definitions_by_name(defs: list[Definitions.Definition], name: str) -> li
 def format_definition_string(definition: Definitions.Definition) -> str:
 	return f'{format_32bit_addr(definition.addr)} {definition.type} {definition.name}'
 
+def format_api_string(definition: Definitions.Definition) -> str:
+	return f'{definition.name}'
+
 def validate_header_info(lines: tuple[str, str, str]) -> bool:
 	if not lines:
 		return False
@@ -120,11 +123,24 @@ def parse_validate_definitions_header(content: str) -> tuple[str, str, str] | No
 
 	return lines
 
+def parse_validate_api_line(line: str) -> tuple[int, str, str] | None:
+	parts = line.split()
+
+	if len(parts) != 1:
+		E(f'Cannot parse api listing line: "{line}"')
+		return None
+
+	if len(line) > 80:
+		E(f'Too long name "{line}" > 80 in the line: {line}')
+		return None
+
+	return 0x00000000, 'A', line
+
 def parse_validate_definition_line(line: str) -> tuple[int, str, str] | None:
 	parts = line.split()
 
 	if len(parts) != 3:
-		E(f'Cannot parse line: "{line}"')
+		E(f'Cannot parse definition line: "{line}"')
 		return None
 
 	def_addr, def_type, def_name = parts
@@ -143,13 +159,13 @@ def parse_validate_definition_line(line: str) -> tuple[int, str, str] | None:
 
 	return int(def_addr, 0), def_type, def_name
 
-def parse_validate_definitions_body(content: str) -> list[Definitions.Definition] | None:
+def parse_validate_definitions_body(content: str, api_listing: bool = False) -> list[Definitions.Definition] | None:
 	lines_content = [line.strip() for line in content.splitlines()]
 	definitions = []
 	for line in lines_content:
 		# Skip blank lines and comments.
 		if (not is_blank(line)) and (not line.startswith('#')):
-			valid_line = parse_validate_definition_line(line)
+			valid_line = parse_validate_api_line(line) if api_listing else parse_validate_definition_line(line)
 			if not valid_line:
 				return None
 			def_addr, def_type, def_name = valid_line
@@ -202,6 +218,26 @@ def sort_definitions(defs: list[Definitions.Definition], by_addresses: bool) -> 
 
 	return consts + addrs + funcs
 
+def parse_definitions_api(content: str) -> Definitions | None:
+	if not content or is_blank(content):
+		return None
+	content = content.strip()
+
+	definitions = parse_validate_definitions_body(content, True)
+	if (not definitions) or (len(definitions) == 0):
+		return None
+
+	definitions = sort_definitions(definitions, False)
+
+	return Definitions(
+		head=Definitions.Header(
+			pfw='UNK_Unknown',
+			ver='UNK_' + date_format(datetime.now()),
+			cpu='UNK',
+		),
+		defs=definitions,
+	)
+
 def parse_definitions_symbols_content(content: str, sym_format: bool = False) -> Definitions | None:
 	if not content or is_blank(content):
 		return None
@@ -212,7 +248,7 @@ def parse_definitions_symbols_content(content: str, sym_format: bool = False) ->
 		return None
 	pfw_line, ver_line, cpu_line = header
 
-	definitions = parse_validate_definitions_body(content)
+	definitions = parse_validate_definitions_body(content, False)
 	if (not definitions) or (len(definitions) == 0):
 		return None
 
@@ -292,20 +328,23 @@ def unpack_name_from_def_string(def_string: str, skip_addr: bool = False, skip_t
 	return None
 
 def comparator_report(
-	defs_a: Definitions, defs_b: Definitions, skip_addr: bool = False, skip_type: bool = False
+	defs_a: Definitions, defs_b: Definitions,
+	skip_addr: bool = False, skip_type: bool = False,
+	api_listing: bool = False
 ) -> list[Definitions.Definition] | None:
-	if not defs_a.head.pfw == defs_b.head.pfw:
-		I('Header phone firmware mismatch:')
-		I('')
-		I(f'{defs_a.head.pfw} {defs_b.head.pfw}')
-	if not defs_a.head.ver == defs_b.head.ver:
-		I('Header version mismatch:')
-		I('')
-		I(f'{defs_a.head.ver} {defs_b.head.ver}')
-	if not defs_a.head.cpu == defs_b.head.cpu:
-		I('Header CPU architecture mismatch:')
-		I('')
-		I(f'{defs_a.head.cpu} {defs_b.head.cpu}')
+	if not api_listing:
+		if not defs_a.head.pfw == defs_b.head.pfw:
+			I('Header phone firmware mismatch:')
+			I('')
+			I(f'{defs_a.head.pfw} {defs_b.head.pfw}')
+		if not defs_a.head.ver == defs_b.head.ver:
+			I('Header version mismatch:')
+			I('')
+			I(f'{defs_a.head.ver} {defs_b.head.ver}')
+		if not defs_a.head.cpu == defs_b.head.cpu:
+			I('Header CPU architecture mismatch:')
+			I('')
+			I(f'{defs_a.head.cpu} {defs_b.head.cpu}')
 
 	ds_a = [pack_def_string(d, skip_addr=skip_addr, skip_type=skip_type) for d in defs_a.defs]
 	ds_b = [pack_def_string(d, skip_addr=skip_addr, skip_type=skip_type) for d in defs_b.defs]
@@ -322,11 +361,25 @@ def comparator_report(
 		I('Definitions mismatch:')
 		I('')
 		for d in different:
-			I(format_definition_string(d))
+			I(format_api_string(d) if api_listing else format_definition_string(d))
 		return different
 
 	I('No mismatch detected.')
 	return None
+
+def compare_definitions_aux(
+	defs_a: Definitions, defs_b: Definitions,
+	skip_addr: bool = False, skip_type: bool = False,
+	api_listing: bool = False
+) -> bool:
+	if not defs_a or not defs_b:
+		return False
+
+	diffs = comparator_report(defs_a, defs_b, skip_addr, skip_type, api_listing)
+	if not diffs:
+		return False
+
+	return True
 
 def compare_definitions(
 	p_in_a: Path, p_in_b: Path,
@@ -335,14 +388,12 @@ def compare_definitions(
 ) -> bool:
 	defs_a = read_definitions(p_in_b) if swap else read_definitions(p_in_a)
 	defs_b = read_definitions(p_in_a) if swap else read_definitions(p_in_b)
-	if not defs_a or not defs_b:
-		return False
+	return compare_definitions_aux(defs_a, defs_b, skip_addr, skip_type, False)
 
-	diffs = comparator_report(defs_a, defs_b, skip_addr, skip_type)
-	if not diffs:
-		return False
-
-	return True
+def compare_definitions_with_api(p_in_a: Path, p_in_b: Path, swap: bool = False) -> bool:
+	defs_a = parse_definitions_api(read_text_file(p_in_b)) if swap else read_definitions(p_in_a)
+	defs_b = read_definitions(p_in_a) if swap else parse_definitions_api(read_text_file(p_in_b))
+	return compare_definitions_aux(defs_a, defs_b, True, True, True)
 
 def convert_asm_to_def(p_in: Path, p_out: Path, mcore_asm: bool = False) -> bool:
 	if not p_in.suffix in ['.S', '.s', '.asm']:
