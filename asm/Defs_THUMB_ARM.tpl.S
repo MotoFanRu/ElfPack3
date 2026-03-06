@@ -1,14 +1,17 @@
 .syntax unified                                            @ Unified Assembly Language (UAL) syntax.
 	.text                                                  @ Use `.text` section in object file.
 	.balign 4                                              @ Use 4-byte alignment (ARM instructions + `.word` data).
-	.arm                                                   @ Force ARM mode for the whole listing.
+	.thumb                                                 @ Force Thumb mode for the whole listing.
 
 	.macro def_T name, addr                                @ Thumb function veneer macro (sets LSB=1).
 	.global \name                                          @ Export symbol so linker can see it.
 	.type \name, %function                                 @ Mark it as function (enables interworking + debug info).
-	.arm                                                   @ Force ARM mode for function.
+	.thumb                                                 @ Force Thumb mode for function.
+	.thumb_func                                            @ Specifies that symbol is the name of a Thumb function.
 	.balign 4                                              @ Force 4-byte alignment.
 \name:                                                     @ Veneer entry point (called from Thumb or ARM code).
+		bx pc                                              @ Immediate clean mode switch.
+	.arm                                                   @ Ensure this veneer is assembled in ARM mode.
 		ldr r12, .Ltarget_\name                            @ Load from label.
 		bx r12                                             @ Branch-and-exchange, switches mode automatically if Thumb.
 .Ltarget_\name:                                            @ Label with the Thumb address target.
@@ -19,9 +22,12 @@
 	.macro def_A name, addr                                @ ARM function veneer macro (sets LSB=0).
 	.global \name
 	.type \name, %function
-	.arm
+	.thumb
+	.thumb_func
 	.balign 4
 \name:
+		bx pc
+	.arm
 		ldr r12, .Ltarget_\name
 		bx r12
 .Ltarget_\name:                                            @ Label with the ARM address target.
