@@ -6,12 +6,8 @@ EP3 Build Tool
 A general tool for building ELF Loader, BIN Loader, and libraries for a selected platform.
 """
 
-import sys
-
 from pathlib import Path
-
 from datetime import datetime
-
 from argparse import Namespace
 from argparse import RawDescriptionHelpFormatter
 

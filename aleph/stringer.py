@@ -1,6 +1,6 @@
-from .logger import D
-
 from collections import Counter
+
+from .logger import D
 
 def is_blank(text: str) -> bool:
 	return not (text and text.strip())
