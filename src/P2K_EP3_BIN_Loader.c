@@ -36,7 +36,8 @@ void EP3_BIN_Loader_MainRegister(void) {
 		return;
 	}
 
-	DL_FS_SIZE_T file_size = DL_FsGetFileSize(file_handle);
+	/* Use `DL_FsSGetFileSize()` instead `DL_FsGetFileSize()` to reduce the number of functions. */
+	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(file_path, DL_FS_OWNER_RESERVED);
 	if (file_size < FILE_SIZE_TOO_SMALL) {
 		L("[EP3 BIN]: File '%s' too small (%d bytes).\n", EP3_ELF_LDR_NAME, file_size);
 		DL_FsCloseFile(file_handle);

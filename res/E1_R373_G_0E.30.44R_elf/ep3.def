@@ -7,11 +7,10 @@
 
 0x101C00CA T APP_CALC_MainRegister
 0x1045B6A4 T DL_KeyQueryKeypadActivity
+0x103FDC4E T DL_FsSGetFileSize
 0x103FD246 T DL_FsOpenFile
 0x103FD384 T DL_FsCloseFile
 0x103FD5B6 T DL_FsReadFile
-0x103FDB94 T DL_FsGetFileSize
-0x103FDC4E T DL_FsSGetFileSize
 0x10A8596C T snprintf
 0x10A85100 T vsprintf
 0x1056382C T PFprintf
