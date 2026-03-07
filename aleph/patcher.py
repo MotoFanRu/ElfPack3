@@ -29,11 +29,3 @@ def patch_text_file(markers: list[str], patches: list[str], p_in: Path, p_out: P
 		return False
 
 	return write_text_file(p_out, patch_text(markers, patches, original_text))
-
-def patch_linker_script_with_addr_and_entry(p_in: Path, p_out: Path, addr: int, entry: str) -> bool:
-	I(f'Patching linker script: "{p_in.name}" => "{p_out.name}"')
-	D(f'"{p_in}" => "{p_out}"')
-
-	markers = ['%ADDR_ENTRY%',          '%ENTRY_POINT%']
-	patches = [format_32bit_addr(addr), entry]
-	return patch_text_file(markers, patches, p_in, p_out)

@@ -1,3 +1,5 @@
+from enum import auto
+from enum import StrEnum
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -19,12 +21,17 @@ class Toolchain:
 	cflags: list[str]
 	lflags: list[str]
 
+class Endian(StrEnum):
+	BIG = auto()
+	LITTLE = auto()
+
 @dataclass
 class SoC:
 	cpu: str
-	cflags: list[str]
-	asm_template: Path
-	lds_template: Path
+	end: Endian
+	opt: list[str]
+	asm: Path
+	lds: Path
 
 @dataclass
 class Recipe:

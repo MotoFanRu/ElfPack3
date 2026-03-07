@@ -6,7 +6,6 @@ from datetime import datetime
 from argparse import Namespace
 from argparse import RawDescriptionHelpFormatter
 
-from aleph import *
 from config import *
 
 def assembler_helper(p_in: Path, p_out: Path) -> bool:
@@ -14,7 +13,7 @@ def assembler_helper(p_in: Path, p_out: Path) -> bool:
 	if not d.head.pfw in RECIPES.keys():
 		E(f'Cannot find recipe for "{d.head.pfw}" in config!')
 		return False
-	return write_assembler_listing(RECIPES[d.head.pfw].soc.asm_template, p_out, d)
+	return write_assembler_listing(RECIPES[d.head.pfw].soc.asm, p_out, d)
 
 def convertor_helper(args: Namespace) -> bool:
 	ext_a, ext_b = args.input.suffix, args.convert.suffix

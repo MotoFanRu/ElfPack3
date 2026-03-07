@@ -37,7 +37,6 @@ from .soc import SOC_ARGON_LV
 from .soc import SOC_ARGON_PLUS
 
 from .patcher import patch_text_file
-from .patcher import patch_linker_script_with_addr_and_entry
 
 from .definitions import read_definitions
 from .definitions import write_definitions
@@ -47,3 +46,5 @@ from .definitions import convert_asm_to_def
 from .definitions import format_definitions
 
 from .assembler import write_assembler_listing
+
+from .hexer import format_32bit_addr

@@ -11,13 +11,12 @@ from datetime import datetime
 from argparse import Namespace
 from argparse import RawDescriptionHelpFormatter
 
-from aleph import *
 from config import *
 
 def build_so_lib(recipe_name: str, recipe: Recipe) -> bool:
 	I(f'Building {recipe_name} Library.')
 
-	asm_tpl = recipe.soc.asm_template
+	asm_tpl = recipe.soc.asm
 	asm_src = P2K_SDK_BUILD / asm_tpl.name.replace('.tpl', '')
 	asm_obj = P2K_SDK_BUILD / asm_src.name.replace('.S', '.o')
 	def_res = P2K_SDK_RES / recipe_name / 'ep3.def'
@@ -35,10 +34,8 @@ def build_so_lib(recipe_name: str, recipe: Recipe) -> bool:
 def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	I(f'Building {recipe_name} BIN loader.')
 
-	addr = recipe.addresses.inject
-	entry_point = 'EP3_BIN_Loader_MainRegister'
-	lds_tpl = recipe.soc.lds_template
-	lds_res = P2K_SDK_BUILD / lds_tpl.name.replace('.tpl', '')
+	lds = recipe.soc.lds
+	addr = format_32bit_addr(recipe.addresses.inject)
 	elf_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
 	bin_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.bin'
 
@@ -56,11 +53,8 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 			return False
 		objs.append(obj)
 
-	objs.append(P2K_SDK_BUILD / recipe.soc.asm_template.name.replace('.tpl.S', '.o'))
-	if not patch_linker_script_with_addr_and_entry(lds_tpl, lds_res, addr, entry_point):
-		return False
-
-	if not gcc_link(recipe, objs, elf_res, ['-T', lds_res]):
+	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
+	if not gcc_link(recipe, objs, elf_res, [f'-Wl,-Ttext={addr}', f'-Wl,-T,{lds}']):
 		return False
 
 	if not gcc_bin(recipe, elf_res, bin_res):
