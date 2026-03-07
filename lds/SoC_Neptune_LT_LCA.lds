@@ -3,19 +3,20 @@
  *   EP3: ElfPack 3.x by MotoFan.Ru for Motorola P2K phones.
  *
  * About:
- *   Linker script for Motorola P2K phones on the Neptune LTE SoC, including a memory map.
- *   Supported models: Motorola C380, C650, E398, ROKR E1, RAZR V3, V600, V635, SLVR L6, V80, etc.
+ *   Linker script for Motorola P2K phones on the Neptune LT (LCA) SoC, including a memory map.
+ *   Supported models: Motorola C330, C350, C450, C550, E380, etc.
  *
  * Author:
  *   EXL, 05-Mar-2026
  */
 
 MEMORY {
-	IROM  (rx ) : ORIGIN = 0x00000000, LENGTH = 0x001C0000 /* 1792 KiB */
-	IRAM  (rwx) : ORIGIN = 0x03FC0000, LENGTH = 0x00040000 /*  256 KiB */
+	IROM        (rx ) : ORIGIN = 0x10000000, LENGTH = 0x00318000 /* 3168 KiB */
+	IRAM_MXRAM  (rwx) : ORIGIN = 0x01400000, LENGTH = 0x00020000 /*  128 KiB */
+	IRAM_SRAM   (rwx) : ORIGIN = 0x01F93000, LENGTH = 0x0006D000 /*  436 KiB */
 
-	ROM   (rx ) : ORIGIN = 0x10000000, LENGTH = 0x02000000 /*   32 MiB */ /* 4, 8, 16, 32 MiB */
-	RAM   (rwx) : ORIGIN = 0x12000000, LENGTH = 0x00800000 /*    8 MiB */ /* 2, 4, 8 MiB */
+	ROM         (rx ) : ORIGIN = 0x00000000, LENGTH = 0x01000000 /*   16 MiB */ /* 4, 8, 16 MiB */
+	RAM         (rwx) : ORIGIN = 0x11000000, LENGTH = 0x00400000 /*    4 MiB */ /* 1, 2, 4 MiB */
 }
 
 /* Generate Big-Endian ARM ELFs. */

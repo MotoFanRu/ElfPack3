@@ -3,23 +3,24 @@
  *   EP3: ElfPack 3.x by MotoFan.Ru for Motorola P2K phones.
  *
  * About:
- *   Linker script for Motorola P2K phones on the Neptune LTE SoC, including a memory map.
- *   Supported models: Motorola C380, C650, E398, ROKR E1, RAZR V3, V600, V635, SLVR L6, V80, etc.
+ *   Linker script for Motorola and Siemens P2K phones on the Rainbow SoC, including a memory map.
+ *   Supported models: Siemens U10, Motorola A820, A830, etc.
  *
  * Author:
  *   EXL, 05-Mar-2026
  */
 
 MEMORY {
-	IROM  (rx ) : ORIGIN = 0x00000000, LENGTH = 0x001C0000 /* 1792 KiB */
-	IRAM  (rwx) : ORIGIN = 0x03FC0000, LENGTH = 0x00040000 /*  256 KiB */
+	IROM        (rx ) : ORIGIN = 0x00000000, LENGTH = 0x00004000 /*   16 KiB */
+	IRAM_SRAM   (rwx) : ORIGIN = 0x00100000, LENGTH = 0x00000800 /*    2 KiB */
+	IRAM_EDRAM  (rwx) : ORIGIN = 0x07800000, LENGTH = 0x00800000 /*    8 MiB */ /* 3, 8 MiB */
 
-	ROM   (rx ) : ORIGIN = 0x10000000, LENGTH = 0x02000000 /*   32 MiB */ /* 4, 8, 16, 32 MiB */
-	RAM   (rwx) : ORIGIN = 0x12000000, LENGTH = 0x00800000 /*    8 MiB */ /* 2, 4, 8 MiB */
+	ROM         (rx ) : ORIGIN = 0x10000000, LENGTH = 0x01000000 /*   16 MiB */ /* 8, 16 MiB */
+	/* A820, A830, U10 have not any external RAM memory. */
 }
 
-/* Generate Big-Endian ARM ELFs. */
-OUTPUT_FORMAT("elf32-bigarm")
+/* Generate Big-Endian M-CORE ELFs. */
+OUTPUT_FORMAT("elf32-mcore-big")
 
 /*
  * Entry point symbol.
