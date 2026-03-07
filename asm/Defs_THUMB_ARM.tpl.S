@@ -11,6 +11,7 @@
 	.balign 4                                              @ Force 4-byte alignment.
 \name:                                                     @ Veneer entry point (called from Thumb or ARM code).
 		bx pc                                              @ Immediate clean mode switch.
+		nop                                                @ 2-byte padding for word alignment + pipeline.
 	.arm                                                   @ Ensure this veneer is assembled in ARM mode.
 		ldr r12, .Ltarget_\name                            @ Load from label.
 		bx r12                                             @ Branch-and-exchange, switches mode automatically if Thumb.
@@ -27,6 +28,7 @@
 	.balign 4
 \name:
 		bx pc
+		nop
 	.arm
 		ldr r12, .Ltarget_\name
 		bx r12

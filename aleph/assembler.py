@@ -22,6 +22,9 @@ def generate_assembler_listing(p_assembler_template: Path, definitions: Definiti
 		return None
 
 	asm_template = read_text_file(p_assembler_template)
+	if not asm_template:
+		return None
+
 	phone, firmware = definitions.head.pfw.split('_', 1)
 	version = definitions.head.ver
 
