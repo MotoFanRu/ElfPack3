@@ -43,19 +43,26 @@
   * 🟨 Assembler generator with veneers.
   * 🟨 Compiler support.
 
-* 🟨 Linker LDS script/templates for SoCs.
+* ✅ Linker LDS script/templates for general SoCs.
 
-  * 🟨 Patriot
-  * 🟨 Rainbow
-  * 🟨 Rainbow PoG
-  * 🟨 Neptune LT/LCA
-  * 🟨 Neptune ULS
-  * 🟨 Neptune LTS
-  * 🟨 Neptune LTE
-  * 🟨 Neptune LTE2
-  * 🟨 Neptune LTE2 ROM4
-  * 🟨 Argon+
-  * 🟨 ArgonLV
+  * ✅ Wally
+  * ✅ Patriot
+  * ✅ Rainbow
+  * ✅ Rainbow PoG
+  * ✅ Neptune LT/LCA
+  * ✅ Neptune ULS
+  * ✅ Neptune LTS
+  * ✅ Neptune LTE
+  * ✅ Neptune LTE2
+  * ✅ Neptune LTE2 ROM4
+  * ✅ Argon+
+  * ✅ ArgonLV
+
+* 🟨 Setting developer environments.
+
+  * 🟨 C330-like.
+  * 🟨 A830-like.
+  * ✅ E398/E1-like.
 
 ## Feb, 2026
 
