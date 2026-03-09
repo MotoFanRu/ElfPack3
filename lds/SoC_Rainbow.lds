@@ -16,7 +16,7 @@ MEMORY {
 	IRAM_EDRAM  (rwx) : ORIGIN = 0x07800000, LENGTH = 0x00800000 /*    8 MiB */ /* 3, 8 MiB */
 
 	ROM         (rx ) : ORIGIN = 0x10000000, LENGTH = 0x01000000 /*   16 MiB */ /* 8, 16 MiB */
-	/* A820, A830, U10 have not any external RAM memory. */
+	/* A820, A830, U10 do not have any external RAM memory chip. */
 }
 
 /* Generate Big-Endian M-CORE ELFs. */

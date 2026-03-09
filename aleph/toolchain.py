@@ -98,7 +98,7 @@ def gcc_bin(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str] | N
 	command = [
 		recipe.toolchain.objcopy,
 		'-O', 'binary',
-		'-j', '.text*',
+		'-j', '.text',
 		*(custom_flags or []),
 		p_in, p_out
 	]
