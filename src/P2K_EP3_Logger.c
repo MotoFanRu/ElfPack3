@@ -16,15 +16,14 @@ void EP3_Logger(const char *format, ...) {
 		return;
 	}
 
-	char buffer[LOG_BUFFER_SIZE];
-
 	va_list args;
 	va_start(args, format);
-	/*
-	 * There is no vsnprintf on the old M-CORE based platforms like Patriot,
-	 * so use unsafe vsprintf instead.
-	 */
-	vsprintf(buffer, format, args);
+
+#if !defined(FTR_LOGGER_NULL)
+	char buffer[LOG_BUFFER_SIZE];
+	vsnprintf(buffer, LOG_BUFFER_SIZE, format, args);
+#endif /* !FTR_LOGGER_NULL */
+
 	va_end(args);
 
 #if defined(FTR_LOGGER_JAL)

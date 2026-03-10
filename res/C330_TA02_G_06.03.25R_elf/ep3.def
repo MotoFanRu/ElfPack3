@@ -1,0 +1,16 @@
+# Aleph-generated definitions
+# https://github.com/MotoFanRu/P2K-ELF-SDK
+#
+# PFW C330_TA02_G_06.03.25R_elf
+# VER EP3_10-Mar-2026
+# CPU ARM7
+
+0x00156BA6 T APP_CALC_MainRegister
+0x000C7DC0 T DL_FsOpenFile
+0x000C8178 T DL_FsSGetFileSize
+0x000C7E42 T DL_FsReadFile
+0x000C7E08 T DL_FsCloseFile
+0x0040DF8C T snprintf
+0x000AFFC4 T suAllocMem
+0x000B0172 T suFreeMem
+0x0014DF60 T DL_KeyQueryKeypadActivity

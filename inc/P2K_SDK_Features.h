@@ -45,6 +45,7 @@ extern "C" {
 #if (0)
 	#define FTR_DEBUG                                      (0)
 	#define FTR_LOGGER                                     (0)
+	#define FTR_LOGGER_NULL                                (0)
 	#define FTR_LOGGER_JAL                                 (0)
 	#define FTR_LOGGER_SUAPI                               (0)
 	#define FTR_LOGGER_FILE                                (0)

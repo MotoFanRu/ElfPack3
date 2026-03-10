@@ -3,7 +3,29 @@ from aleph import *
 RECIPES: dict[str, Recipe] = {
 
 	# Only for debugging. Delete it later.
-	'E1_R373_G_0E.30.44R_elf': Recipe(
+	'A830_TALON_U_61.06.00I' : Recipe(
+		soc=SOC_RAINBOW, toolchain=P2K_SDK_GCC_MCORE,
+		flags=Recipe.RecipeFlags(
+			build=['-DFTR_A830'],
+			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
+			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
+		),
+		addresses=Recipe.RecipeAddresses(
+			register=0x00000000, inject=0x10A57220,
+		),
+	),
+	'C330_TA02_G_06.03.25R_elf' : Recipe(
+		soc=SOC_NEPTUNE_LT_LCA, toolchain=P2K_SDK_GCC_ARM,
+		flags=Recipe.RecipeFlags(
+			build=['-DFTR_C330'],
+			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
+			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
+		),
+		addresses=Recipe.RecipeAddresses(
+			register=0x00000000, inject=0x0042FFD0,
+		),
+	),
+	'E1_R373_G_0E.30.44R_elf' : Recipe(
 		soc=SOC_NEPTUNE_LTE, toolchain=P2K_SDK_GCC_ARM,
 		flags=Recipe.RecipeFlags(
 			build=['-DFTR_E1'],
@@ -47,7 +69,7 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x00000000,
+			register=0x00000000, inject=0x108A8F1C, # TODO: Fix this.
 		),
 	),
 

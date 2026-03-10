@@ -468,3 +468,7 @@
 0x10786FD4 M vibe_StopTimer
 0x10786F9E M vibe_TurnOff
 0x10786F84 M vibe_TurnOn
+
+0x10786F84 M APP_CALC_MainRegister
+0x10786F84 M vsprintf
+0x10786F84 M snprintf

@@ -1,0 +1,16 @@
+# Aleph-generated definitions
+# https://github.com/MotoFanRu/P2K-ELF-SDK
+#
+# PFW A830_TALON_U_61.06.00I
+# VER EP3_05-Mar-2026
+# CPU MCORE340
+
+0x102833B6 M APP_CALC_MainRegister
+0x1018B836 M DL_FsOpenFile
+0x1018BFF6 M DL_FsSGetFileSize
+0x1018B9B4 M DL_FsReadFile
+0x1018B90E M DL_FsCloseFile
+0x106877D4 M snprintf
+0x10020104 M suAllocMem
+0x1002017C M suFreeMem
+0x103CC348 M DL_KeyQueryKeypadActivity
