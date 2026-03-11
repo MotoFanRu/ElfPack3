@@ -8,8 +8,8 @@ from .skeleton import P2K_SDK_ASM
 CPU_ARCH = ['ARM7', 'ARM9', 'ARM11', 'MCORE210', 'MCORE340', 'NONE']
 
 CPU_ARM = ['-DFTR_ARM']
-CPU_ARM_MODE_ARM = ['-marm', '-mthumb-interwork']
-CPU_ARM_MODE_THUMB = ['-mthumb', '-mthumb-interwork']
+CPU_ARM_MODE_ARM = ['-marm', '-mthumb-interwork', '-DFTR_ARM_MODE']
+CPU_ARM_MODE_THUMB = ['-mthumb', '-mthumb-interwork', '-DFTR_THUMB_MODE']
 CPU_ARM_LITTLE_ENDIAN = ['-mlittle-endian', '-DFTR_LITTLE_ENDIAN']
 CPU_ARM7_BIG_ENDIAN = ['-mbig-endian', '-DFTR_BIG_ENDIAN']
 CPU_ARM11_BIG_ENDIAN = ['-mbig-endian', '-mbe32', '-DFTR_BIG_ENDIAN']

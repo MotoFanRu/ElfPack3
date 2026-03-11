@@ -63,6 +63,32 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	return True
 
 def build_elf_ldr(recipe_name: str, recipe: Recipe) -> bool:
+	I(f'Building {recipe_name} BIN loader.')
+
+	lds = recipe.soc.lds
+	addr = format_32bit_addr(recipe.addresses.inject)
+	elf_res = P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.elf'
+	bin_res = P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.bin'
+
+	sources = [P2K_SDK_SRC / f for f in (
+		'P2K_EP3_Memory.c',
+		'P2K_EP3_ELF_Loader.c'
+	)]
+
+	objs = []
+	for src in sources:
+		obj = P2K_SDK_BUILD / src.with_suffix('.o').name
+		if not gcc_compile(recipe, src, obj, recipe.flags.elf_ldr):
+			return False
+		objs.append(obj)
+
+	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
+	if not gcc_link(recipe, objs, elf_res, [f'-Wl,-T,{lds}']):
+		return False
+
+	if not gcc_bin(recipe, elf_res, bin_res):
+		return False
+
 	return True
 
 def build_patches(recipe_name: str, recipe: Recipe) -> bool:

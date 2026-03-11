@@ -20,6 +20,8 @@ extern "C" {
 
 /* Compiler & CPU Settings */
 #if (0)
+	#define FTR_ARM_MODE                                   (0)
+	#define FTR_THUMB_MODE                                 (0)
 	#define FTR_ARM                                        (0)
 	#define FTR_ARM7                                       (0)
 	#define FTR_ARM11                                      (0)

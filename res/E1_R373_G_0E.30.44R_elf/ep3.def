@@ -18,3 +18,5 @@
 0x1056382C T PFprintf
 0x03FF154C T suAllocMem
 0x03FF1752 T suFreeMem
+
+0x1079129C A DAL_WriteDisplayRegion

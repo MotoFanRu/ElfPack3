@@ -14,3 +14,6 @@
 0x000AFFC4 T suAllocMem
 0x000B0172 T suFreeMem
 0x0014DF60 T DL_KeyQueryKeypadActivity
+
+0x005700F4 T PFprintf
+0x0007A334 T DL_DdWriteDisplayRegion

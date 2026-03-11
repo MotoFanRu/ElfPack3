@@ -21,6 +21,7 @@
   * 🟨 Research '0' pushing determining.
   * 🟨 Research allocator system.
   * 🟨 Create a Minimal SDK + compiler subset.
+  * 🟨 Research `-fPIE` and `-pie` flags.
 
 * ✅ Rework and research EP3 Logging system.
 

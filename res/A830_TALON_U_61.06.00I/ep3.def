@@ -14,3 +14,6 @@
 0x10020104 M suAllocMem
 0x1002017C M suFreeMem
 0x103CC348 M DL_KeyQueryKeypadActivity
+
+0x1064FCB2 M PFprintf
+0x103D16DA M DAL_WriteDisplayRegion

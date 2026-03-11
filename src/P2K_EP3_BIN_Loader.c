@@ -44,12 +44,15 @@ void EP3_BIN_Loader_MainRegister(void) {
 		return;
 	}
 
-	BYTE *load_addr = (BYTE *) EP3_Memory_Alloc(file_size);
+	BYTE *load_addr = (BYTE *) EP3_Memory_Alloc(file_size + 4);
 	if (load_addr == NULL) {
 		L("[EP3 BIN]: Failed to allocate %d bytes of memory.\n", file_size);
 		DL_FsCloseFile(file_handle);
 		return;
 	}
+
+	/* Align to 4 bytes. */
+	load_addr = (BYTE *) (((UINTPTR) load_addr + 3) & ~3UL);
 
 	DL_FS_COUNT_T elements_read;
 	if (DL_FsReadFile(load_addr, file_size, 1, file_handle, &elements_read) != DL_FS_RESULT_SUCCESS) {
@@ -63,8 +66,9 @@ void EP3_BIN_Loader_MainRegister(void) {
 	/*
 	 * Execute the loaded binary.
 	 */
-	// TODO: Log address?
-	//((EP3_ELF_LDR_ENTRY_POINT_T) load_addr)();
-
+	L("[EP3 BIN]: Loaded %d bytes to 0x%08X memory address, now jump to it.\n", file_size, (UINTPTR) load_addr);
+#if defined(FTR_THUMB_MODE)
+	load_addr += 1;
+#endif /* FTR_THUMB_MODE */
 	((EP3_ELF_LDR_ENTRY_POINT_T) (UINTPTR) load_addr)();
 }
