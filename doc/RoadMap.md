@@ -16,32 +16,33 @@
 
 * 🟨 General "ElfLoaderStrap" patch + binary.
 
-  * 🟨 Research EM2 ElfLoaderStrap.
+  * 🟨 Research EM1 and EM2 ElfLoaderStrap.
   * 🟨 Collect a general compiler flags.
   * 🟨 Research '0' pushing determining.
   * 🟨 Research allocator system.
   * 🟨 Create a Minimal SDK + compiler subset.
 
-* 🟨 Rework and research EP3 Logging system.
+* ✅ Rework and research EP3 Logging system.
 
   * 🟨 Check va_args and logging functions.
-  * 🟨 JAL Logger.
-  * 🟨 SUAPI Logger.
-  * 🟨 File Logger.
-  * 🟨 Some Old Loggers like E380_Logger, KOSI_Logger, etc?
+  * ✅ NULL Logger.
+  * ✅ JAL Logger.
+  * ✅ SUAPI Logger.
+  * ✅ File Logger.
+  * 🟦 Some Old Loggers like E380_Logger, KOSI_Logger, etc?
 
-* 🟨 Aleph Library.
-* 🟨 Create `build.py` and `config.py` scripts.
+* ✅ Aleph Library.
+* ✅ Create `build.py` and `config.py` scripts.
 
   * ✅ A minimal working skeleton of building and config scripts.
 
-* 🟨 Symbol definitions.
+* ✅ Symbol definitions.
 
   * ✅ Specification document.
   * ✅ Convert tool.
   * ✅ Validator & parser.
-  * 🟨 Assembler generator with veneers.
-  * 🟨 Compiler support.
+  * ✅ Assembler generator with veneers.
+  * ✅ Compiler support.
 
 * ✅ Linker LDS script/templates for general SoCs.
 

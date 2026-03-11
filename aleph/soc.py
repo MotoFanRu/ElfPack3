@@ -70,7 +70,7 @@ SOC_NEPTUNE_LT_LCA = SoC(
 	cpu='ARM7',
 	end=Endian.BIG,
 	opt=NEPTUNE_FLAGS + ['-DFTR_NEPTUNE_LT_LCA'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Neptune_LT_LCA.lds',
 )
 
@@ -78,7 +78,7 @@ SOC_NEPTUNE_LTS = SoC(
 	cpu='ARM7',
 	end=Endian.BIG,
 	opt=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTS'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Neptune_LTS.lds',
 )
 
@@ -86,7 +86,7 @@ SOC_NEPTUNE_ULS = SoC(
 	cpu='ARM7',
 	end=Endian.BIG,
 	opt=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_ULS'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Neptune_ULS.lds',
 )
 
@@ -94,7 +94,7 @@ SOC_NEPTUNE_LTE = SoC(
 	cpu='ARM7',
 	end=Endian.BIG,
 	opt=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Neptune_LTE.lds',
 )
 
@@ -102,7 +102,7 @@ SOC_NEPTUNE_LTE2 = SoC(
 	cpu='ARM7',
 	end=Endian.BIG,
 	opt=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Neptune_LTE2.lds',
 )
 
@@ -110,7 +110,7 @@ SOC_NEPTUNE_LTE2_ROM4 = SoC(
 	cpu='ARM7',
 	end=Endian.BIG,
 	opt=NEPTUNE_FLAGS + ['-FTR_NEPTUNE_LTE2_ROM4'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Neptune_LTE2_ROM4.lds',
 )
 
@@ -118,7 +118,7 @@ SOC_ARGON_PLUS = SoC(
 	cpu='ARM11',
 	end=Endian.BIG,
 	opt=ARGON_FLAGS + ['-DFTR_ARGON_PLUS'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Argon_Plus.lds',
 )
 
@@ -126,6 +126,6 @@ SOC_ARGON_LV = SoC(
 	cpu='ARM11',
 	end=Endian.BIG,
 	opt=ARGON_FLAGS + ['-DFTR_ARGON_LV'],
-	asm=P2K_SDK_ASM / 'Defs_THUMB.tpl.S',
+	asm=P2K_SDK_ASM / 'Defs_THUMB_ARM.tpl.S',
 	lds=P2K_SDK_LDS / 'SoC_Argon_LV.lds',
 )
