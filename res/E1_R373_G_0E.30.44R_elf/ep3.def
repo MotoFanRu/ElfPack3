@@ -12,7 +12,9 @@
 0x103FD384 T DL_FsCloseFile
 0x103FD5B6 T DL_FsReadFile
 0x10A8596C T snprintf
+0x10A859C4 T sprintf
 0x10A85100 T vsprintf
+0x10A83428 T vsnprintf
 0x1056382C T PFprintf
 0x03FF154C T suAllocMem
 0x03FF1752 T suFreeMem

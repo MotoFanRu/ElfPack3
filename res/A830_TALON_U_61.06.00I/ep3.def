@@ -7,7 +7,7 @@
 
 0x102833B6 M APP_CALC_MainRegister
 0x1018B836 M DL_FsOpenFile
-0x1018BFF6 M DL_FsSGetFileSize
+0x1018BE1C M DL_FsSGetFileSize
 0x1018B9B4 M DL_FsReadFile
 0x1018B90E M DL_FsCloseFile
 0x106877D4 M snprintf
