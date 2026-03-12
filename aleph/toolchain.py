@@ -38,27 +38,47 @@ GCC_CFLAGS_OPTIMIZATIONS = ['-O2']
 P2K_CFLAGS = ['-D__P2K__', '-DP2K']
 
 GCC_CFLAGS = GCC_CFLAGS_GENERAL + GCC_CFLAGS_WARNINGS + GCC_CFLAGS_FEATURES + GCC_CFLAGS_OPTIMIZATIONS + P2K_CFLAGS
+GCC_CFLAGS_BIN_LDR = ['-DFTR_BIN_LDR']
+GCC_CFLAGS_ELF_LDR = ['-DFTR_ELF_LDR', '-fPIC']
+GCC_CFLAGS_SO_LIB  = ['-DFTR_SO_LIB', '-fPIC']
 
-GCC_LFLAGS_GENERAL = ['-s', '-nostdlib', '-Wl,--gc-sections']
-
+GCC_LFLAGS_GENERAL = ['-nostdlib', '-Wl,--gc-sections']
 GCC_LFLAGS = GCC_LFLAGS_GENERAL
+GCC_LFLAGS_BIN_LDR = []
+GCC_LFLAGS_ELF_LDR = []
+GCC_LFLAGS_SO_LIB  = ['-shared']
 
+# TODO: Set '-fno-jump-tables' on M-CORE too when update GCC compiler.
 P2K_SDK_GCC_ARM = Toolchain(
 	gcc=resolve_tool(P2K_SDK_GCC_ARM_BIN, 'arm-none-eabi-gcc'),
 	objcopy=resolve_tool(P2K_SDK_GCC_ARM_BIN, 'arm-none-eabi-objcopy'),
+	nm=resolve_tool(P2K_SDK_GCC_ARM_BIN, 'arm-none-eabi-nm'),
 	cflags=GCC_CFLAGS,
+	cflags_bin_ldr=GCC_CFLAGS_BIN_LDR,
+	cflags_elf_ldr=GCC_CFLAGS_ELF_LDR + ['-fno-jump-tables'],
+	cflags_lib_so=GCC_CFLAGS_SO_LIB,
 	lflags=GCC_LFLAGS,
+	lflags_bin_ldr=GCC_LFLAGS_BIN_LDR,
+	lflags_elf_ldr=GCC_LFLAGS_ELF_LDR,
+	lflags_so_lib=GCC_LFLAGS_SO_LIB,
 )
 
 P2K_SDK_GCC_MCORE = Toolchain(
 	gcc=resolve_tool(P2K_SDK_GCC_MCORE_BIN, 'mcore-elf-gcc'),
 	objcopy=resolve_tool(P2K_SDK_GCC_MCORE_BIN, 'mcore-elf-objcopy'),
+	nm=resolve_tool(P2K_SDK_GCC_MCORE_BIN, 'mcore-elf-nm'),
 	cflags=GCC_CFLAGS,
-	lflags=GCC_LFLAGS
+	cflags_bin_ldr=GCC_CFLAGS_BIN_LDR,
+	cflags_elf_ldr=GCC_CFLAGS_ELF_LDR,
+	cflags_lib_so=GCC_CFLAGS_SO_LIB,
+	lflags=GCC_LFLAGS,
+	lflags_bin_ldr=GCC_LFLAGS_BIN_LDR,
+	lflags_elf_ldr=GCC_LFLAGS_ELF_LDR,
+	lflags_so_lib=GCC_LFLAGS_SO_LIB,
 )
 
 def gcc_compile(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str] | None = None) -> bool:
-	I(f'Compiling "{p_in.name}" source.')
+	I(f'  Compiling "{p_in.name}" source.')
 	D(f'"{p_in}" => "{p_out}"')
 
 	command = [
@@ -74,7 +94,7 @@ def gcc_compile(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str]
 	return invoke_run_input([p_in], command)
 
 def gcc_link(recipe: Recipe, p_in: list[Path], p_out: Path, custom_flags: list[str] | None = None) -> bool:
-	I(f'Linking "{p_out.name}" from objects.')
+	I(f'  Linking "{p_out.name}" from objects.')
 	D(f'"{", ".join(p.name for p in p_in)}" => "{p_out.name}"')
 
 	command = [
@@ -92,7 +112,7 @@ def gcc_link(recipe: Recipe, p_in: list[Path], p_out: Path, custom_flags: list[s
 	return invoke_run_input(p_in, command)
 
 def gcc_bin(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str] | None = None) -> bool:
-	I(f'Baking "{p_out.name}" binary.')
+	I(f'  Baking "{p_out.name}" binary.')
 	D(f'"{p_in}" => "{p_out}"')
 
 	command = [
@@ -104,3 +124,15 @@ def gcc_bin(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str] | N
 	]
 
 	return invoke_run_input([p_in], command)
+
+def gcc_nm(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str] | None = None) -> bool:
+	I(f'  Extracting symbols of "{p_in.name}" file.')
+	D(f'"{p_in}"')
+
+	command = [
+		recipe.toolchain.nm,
+		*(custom_flags or []),
+		p_in
+	]
+
+	return invoke_run_input([p_in], command, p_out)

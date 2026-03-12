@@ -65,14 +65,14 @@ void EP3_ELF_Loader_MainRegister(void) {
 #if defined(FTR_A830)
 	BYTE *data_ptr = suAllocMem(96 * 64 * 2, NULL);
 	for (int i = 0; i < 96 * 64 * 2; i++) {
-		data_ptr[i] = 0xF0;
+		data_ptr[i] = 0x70;
 	}
 
 	RECT_T r;
 	r.ulc.x = 0;
 	r.ulc.y = 0;
-	r.lrc.x = 95;
-	r.lrc.y = 63;
+	r.lrc.x = 175;
+	r.lrc.y = 219;
 
 	while (1) {
 		DAL_WriteDisplayRegion(&r, data_ptr, 0);

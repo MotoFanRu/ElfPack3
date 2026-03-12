@@ -471,4 +471,5 @@
 
 0x10786F84 M APP_CALC_MainRegister
 0x10786F84 M vsprintf
+0x10786F84 M vsnprintf
 0x10786F84 M snprintf

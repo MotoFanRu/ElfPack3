@@ -4,6 +4,7 @@
 __pycache__
 
 build
+release
 
 arm-gcc-win
 arm-gcc-lin

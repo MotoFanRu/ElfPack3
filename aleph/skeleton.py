@@ -14,12 +14,27 @@ P2K_SDK_GCC = P2K_SDK_ROOT / 'gcc'
 P2K_SDK_BUILD = P2K_SDK_ROOT / 'build'
 P2K_SDK_RELEASE = P2K_SDK_ROOT / 'release'
 
+# TODO: See P2kFeatures bla-bla-bla
+EP3_BIN_LDR = 'ep3.bin'
+EP3_BIN_FPA = 'ep3.fpa'
+EP3_ELF_LDR = 'ep3.ldr'
+EP3_ELF_LDR_LIB = 'ep3.so'
+EP3_ELF_LDR_CFG = 'ep3.ini'
+EP3_ELF_LDR_LOG = 'ep3.log'
+
 @dataclass
 class Toolchain:
 	gcc: Path
 	objcopy: Path
+	nm: Path
 	cflags: list[str]
+	cflags_bin_ldr: list[str]
+	cflags_elf_ldr: list[str]
+	cflags_lib_so: list[str]
 	lflags: list[str]
+	lflags_bin_ldr: list[str]
+	lflags_elf_ldr: list[str]
+	lflags_so_lib: list[str]
 
 class Endian(StrEnum):
 	BIG = auto()

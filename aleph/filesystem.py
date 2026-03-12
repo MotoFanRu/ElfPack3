@@ -1,7 +1,9 @@
+import shutil
 from pathlib import Path
 from typing import Callable
 
 from .logger import D
+from .logger import I
 from .logger import W
 from .logger import E
 from .stringer import is_blank
@@ -25,16 +27,17 @@ def check_dirs(paths: Path | list[Path], warn: bool = False) -> bool:
 def check_files(paths: Path | list[Path], warn: bool = False) -> bool:
 	return check_paths_aux(paths, lambda p: p.is_file(), warn)
 
-def create_clean_dir(dir_path: Path) -> bool:
+def create_clean_dir(dir_path: Path, delete_files: bool = True) -> bool:
 	if check_dirs(dir_path):
 		for item in dir_path.iterdir():
 			if item.is_file() or item.is_symlink():
-				D(f'Deleting "{item.name}" file.')
-				try:
-					item.unlink()
-				except Exception as e:
-					E(f'Failed to delete file {item}: {e}')
-					return False
+				if delete_files:
+					D(f'Deleting "{item.name}" file.')
+					try:
+						item.unlink()
+					except Exception as e:
+						E(f'Failed to delete file {item}: {e}')
+						return False
 	else:
 		dir_path.mkdir(parents=True, exist_ok=True)
 
@@ -63,3 +66,28 @@ def write_text_file(file_path_out: Path, text: str) -> bool:
 	except Exception as e:
 		E(f'Failed to write output file "{file_path_out}": "{e}"')
 	return False
+
+def copy_file(path_in: Path, path_out: Path, overwrite: bool = True, log: bool = False) -> bool:
+	if log:
+		I(f'  Copying "{path_in.name}" => "{path_out.name}"')
+	D(f'"{path_in}" => "{path_out}"')
+	if not check_files([path_in], True):
+		return False
+
+	if not overwrite and path_out.exists():
+		E(f'File is exist: "{path_in}"')
+		return False
+
+	try:
+		path_out.parent.mkdir(parents=True, exist_ok=True)
+	except Exception as e:
+		E(f'Cannot create directories of "{path_out}" path, error: "{e}"')
+		return False
+
+	try:
+		shutil.copy2(path_in, path_out)
+	except Exception as e:
+		E(f'Cannot copy file "{path_in}" => "{path_out}", error: "{e}"')
+		return False
+
+	return True

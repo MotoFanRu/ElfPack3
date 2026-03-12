@@ -18,6 +18,13 @@ extern "C" {
 	#define FTR_DONT_DEFINE_ARRAY_SIZE                     (0)
 #endif
 
+/* EP3 Project */
+#if (0)
+	#define FTR_BIN_LDR                                    (0)
+	#define FTR_ELF_LDR                                    (0)
+	#define FTR_SO_LIB                                     (0)
+#endif
+
 /* Compiler & CPU Settings */
 #if (0)
 	#define FTR_ARM_MODE                                   (0)

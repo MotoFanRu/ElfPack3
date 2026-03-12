@@ -7,14 +7,19 @@ from .logger import set_logger
 
 from .arguments import Arguments
 
+from .filesystem import copy_file
 from .filesystem import check_dirs
 from .filesystem import check_files
 from .filesystem import create_clean_dir
 
 from .skeleton import Recipe
 from .skeleton import P2K_SDK_SRC
-from .skeleton import P2K_SDK_BUILD
 from .skeleton import P2K_SDK_RES
+from .skeleton import P2K_SDK_BUILD
+from .skeleton import P2K_SDK_RELEASE
+from .skeleton import EP3_BIN_LDR
+from .skeleton import EP3_BIN_FPA
+from .skeleton import EP3_ELF_LDR
 
 from .timedate import elapsed_format
 
@@ -23,6 +28,7 @@ from .toolchain import P2K_SDK_GCC_MCORE
 from .toolchain import gcc_compile
 from .toolchain import gcc_link
 from .toolchain import gcc_bin
+from .toolchain import gcc_nm
 
 from .soc import SOC_PATRIOT
 from .soc import SOC_RAINBOW
