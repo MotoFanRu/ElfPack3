@@ -1,5 +1,7 @@
 ## ElfPack 3 (EP3) Specifications
 
+![ElfLoaders Research](../img/ElfLoader_Research.jpg)
+
 ### Specification #1
 
 ```

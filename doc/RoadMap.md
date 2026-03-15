@@ -10,6 +10,46 @@
 
 ## Mar, 2026
 
+* 🟨 Strap Applications research.
+
+  * ✅ EP1
+  * ✅ EG1
+  * 🟨 EP2
+  * 🟨 EM1
+  * 🟨 EM2
+  * 🟨 Other?
+
+* 🟨 Tasks SUAPI research.
+
+* 🟨 ELF Loaders in-depth research.
+
+  * ✅ Motorola EP1.
+  * 🟨 Motorola EG1.
+  * 🟨 Motorola EP2.
+  * 🟨 Motorola EM1.
+  * 🟨 Motorola EM2.
+  * 🟨 Siemens EP3.
+  * 🟨 SE farid1991/justdanpo.
+  * 🟨 Sony J70 NiMar/Andrey Z.
+  * 🟨 Other ElfLoaders from GitHub and AI.
+
+* 🟨 Work on compilers & toolchains.
+
+  * 🟩 Modern GCC 15+ for ARM
+  * 🟩 Modern GCC 15+ for M-CORE
+  * 🟩 Support libraries like libgcc for all archs.
+
+    * 🟩 m210 big
+    * 🟩 m340 big
+    * 🟩 arm7 big
+    * 🟩 arm9 big
+    * 🟩 arm11 big
+    * 🟩 arm7 little
+    * 🟩 arm9 little
+    * 🟩 arm11 little
+
+  * 🟩 M-CORE and ARM? compiler building recipes.
+
 * ✅ Python CLI tool skeleton.
 
   * ✅ Port migration tools to Aleph library.
@@ -21,7 +61,7 @@
   * 🟨 Research '0' pushing determining.
   * 🟨 Research allocator system.
   * 🟨 Create a Minimal SDK + compiler subset.
-  * 🟨 Research `-fPIE` and `-pie` flags.
+  * ✅ Research `-fPIE` and `-pie` flags.
 
 * ✅ Rework and research EP3 Logging system.
 
@@ -60,10 +100,10 @@
   * ✅ Argon+
   * ✅ ArgonLV
 
-* 🟨 Setting developer environments.
+* ✅ Setting developer environments.
 
-  * 🟨 C330-like.
-  * 🟨 A830-like.
+  * ✅ C330-like.
+  * ✅ A830-like.
   * ✅ E398/E1-like.
 
 ## Feb, 2026

@@ -19,8 +19,8 @@ CPU_ARM11_FLAVOR = ['-march=armv6j', '-mtune=arm1136jf-s', '-DFTR_ARM11']
 
 CPU_MCORE = ['-DFTR_MCORE']
 CPU_MCORE_BIG_ENDIAN = ['-mbig-endian']
-CPU_MCORE210_FLAVOR = ['-m210', '-m4align', '-DFTR_MCORE210']
-CPU_MCORE340_FLAVOR = ['-m340', '-m4align', '-DFTR_MCORE340']
+CPU_MCORE210_FLAVOR = ['-m210', '-DFTR_MCORE210']  # GCC M-CORE Flags '-m4align', '-m8align' are deprecated.
+CPU_MCORE340_FLAVOR = ['-m340', '-DFTR_MCORE340']  # GCC M-CORE Flags '-m4align', '-m8align' are deprecated.
 
 FTR_WALLY = ['-DFTR_WALLY']
 FTR_PATRIOT = ['-DFTR_PATRIOT']
