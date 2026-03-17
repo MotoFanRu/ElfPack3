@@ -70,5 +70,6 @@ void EP3_BIN_Loader_MainRegister(void) {
 #if defined(FTR_THUMB_MODE)
 	load_addr += 1;
 #endif /* FTR_THUMB_MODE */
-	((EP3_ELF_LDR_ENTRY_POINT_T) (UINTPTR) load_addr)();
+	EP3_ELF_LDR_ENTRY_POINT_T entry_point = ((EP3_ELF_LDR_ENTRY_POINT_T) (UINTPTR) load_addr);
+	entry_point();
 }
