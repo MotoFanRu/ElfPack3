@@ -114,6 +114,8 @@ extern "C" {
 	#define ARRAY_SIZE(array)                              (sizeof(array) / sizeof((array)[0]))
 #endif /* !FTR_DONT_DEFINE_ARRAY_SIZE */
 
+// TODO: MAX VALUES LIKE INT_MAX ETC.
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -15,5 +15,14 @@
 0x000B0172 T suFreeMem
 0x0014DF60 T DL_KeyQueryKeypadActivity
 
-0x005700FC T PFprintf
+#0x0057011C T PFprintf
 0x0007A334 T DL_DdWriteDisplayRegion
+
+0x00077E34 T suCreateTask
+0x00077FA8 T suDeleteTask
+
+0x00419A60 T sc_lock
+0x00419E8C T sc_unlock
+0x00077A2A T suReceiveMessageFromQueue
+0x000778EC T suDeleteMessage
+0x00077FCC T suSleep

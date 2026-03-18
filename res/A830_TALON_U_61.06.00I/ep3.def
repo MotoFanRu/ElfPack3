@@ -17,3 +17,4 @@
 
 0x1064FCB2 M PFprintf
 0x103D16DA M DAL_WriteDisplayRegion
+0x10687870 M vsprintf

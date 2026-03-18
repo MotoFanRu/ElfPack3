@@ -7,8 +7,8 @@ RECIPES: dict[str, Recipe] = {
 		soc=SOC_RAINBOW, toolchain=P2K_SDK_GCC_MCORE,
 		flags=Recipe.RecipeFlags(
 			build=['-DFTR_A830', '-DFTR_DEBUG'],
-			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
-			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
+			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
+			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
 			register=0x00000000, inject=0x10900000,

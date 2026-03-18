@@ -1,5 +1,7 @@
 # P2K-SDK-ELF / EP3 RoadMap
 
+TODO: Check arranges of ARM/Thumb/functions by 2, by 4
+
 ## Legend
 
 * ✅ — Done

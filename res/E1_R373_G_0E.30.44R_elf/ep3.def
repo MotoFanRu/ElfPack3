@@ -20,3 +20,8 @@
 0x03FF1752 T suFreeMem
 
 0x1079129C A DAL_WriteDisplayRegion
+
+0x10BA6BF4 T suCreateTask
+
+0x03FF36A4 T sc_lock
+0x03FF36AE T sc_unlock

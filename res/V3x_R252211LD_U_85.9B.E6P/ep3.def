@@ -473,3 +473,9 @@
 0x10786F84 M vsprintf
 0x10786F84 M vsnprintf
 0x10786F84 M snprintf
+
+0x10045D30 M suDisableSched
+0x10045E88 M suEnableSched
+0x10044E74 M suSuspendTask
+0x10044EF0 M suResumeTask
+0x101A8002 M HAPI_WATCHDOG_service

@@ -8,6 +8,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef UINT32                                             SU_SIZE;
+typedef INT32                                              SU_TASK_HANDLE;
+
+#define SU_SELF                                            ((SU_TASK_HANDLE) (-2))
 
 enum SU_ENUM_T {
 	SU_OK = 0,              /* Successful completion. */
@@ -106,6 +109,12 @@ extern void suLogData(
 	UINT32 num_pairs,
 	...
 );
+
+extern void sc_lock(void);
+extern void sc_unlock(void);
+
+extern void suSuspendTask(SU_TASK_HANDLE thandle, SU_RET_STATUS *err);
+extern void suResumeTask(SU_TASK_HANDLE thandle, SU_RET_STATUS *err);
 
 #ifdef __cplusplus
 }
