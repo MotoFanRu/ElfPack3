@@ -8,9 +8,23 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef UINT32                                             SU_SIZE;
+typedef INT32                                              SU_TIME;
+typedef INT64                                              SU_TIME64;
 typedef INT32                                              SU_TASK_HANDLE;
+typedef UINT32                                             SU_SEMA_HANDLE;
+typedef UINT32                                             SU_SEMA_STATE;
+typedef UINT32                                             SU_INTERRUPT;
+/* Replaced to `VOID *` due to overcomplication of structs. */
+typedef VOID *                                             SU_QUEUE_HANDLE;
+typedef VOID *                                             SU_PORT_HANDLE;
 
+#define SU_NOWAIT                                          (0)
+#define SU_WAIT_1MS                                        (1)
+#define SU_WAIT_FOREVER                                    (LONG_MAX)
 #define SU_SELF                                            ((SU_TASK_HANDLE) (-2))
+
+#define SU_SEM_LOCKED                                      (0)
+#define SU_SEM_UNLOCKED                                    (1)
 
 enum SU_ENUM_T {
 	SU_OK = 0,              /* Successful completion. */
@@ -110,11 +124,40 @@ extern void suLogData(
 	...
 );
 
-extern void sc_lock(void);
-extern void sc_unlock(void);
+// alternative name from VRTXmc
+//extern void sc_lock(void);
+extern void suDisableSched(void);
+
+// alternative name from VRTXmc
+//extern void sc_unlock(void);
+extern void suEnableSched(void);
 
 extern void suSuspendTask(SU_TASK_HANDLE thandle, SU_RET_STATUS *err);
 extern void suResumeTask(SU_TASK_HANDLE thandle, SU_RET_STATUS *err);
+
+extern SU_INTERRUPT suDisableInt(void);
+extern SU_INTERRUPT suDisableAllInt(void);
+extern SU_INTERRUPT suSetInt(SU_INTERRUPT prevstate);
+
+/*
+ * file:///C:/Users/EXL/Desktop/Kitchen/Leaks/__08F/SUAPI/SUAPI_v2.1.00.pdf
+ */
+extern SU_QUEUE_HANDLE suCreateQueue(SU_RET_STATUS *err);
+extern SU_PORT_HANDLE suCreatePortFromQueue(SU_QUEUE_HANDLE qhandle, UINT16 portid, SU_RET_STATUS *err);
+extern void suRegisterName(const char *name, UINT32 handle, SU_RET_STATUS *err);
+extern void *suReceiveMessageFromQueue(SU_QUEUE_HANDLE qhandle, SU_TIME timeout, SU_RET_STATUS *err);
+extern void *suCreateMessage(UINT32 size, UINT32 type, SU_PORT_HANDLE replyport, SU_RET_STATUS *err);
+extern void suSendMessage(void *message, SU_PORT_HANDLE phandle, SU_RET_STATUS *err);
+extern void suDeleteMessage(void *message, SU_RET_STATUS *err);
+
+extern SU_SEMA_HANDLE suCreateBSem(SU_SEMA_STATE initial_state, SU_RET_STATUS *err);
+extern SU_SEMA_HANDLE suCreateCSem(SU_SEMA_STATE initial_count, SU_SEMA_STATE bound, SU_RET_STATUS *err);
+extern SU_SEMA_HANDLE suCreateMSem(SU_SEMA_STATE initial_state, SU_RET_STATUS *err);
+extern int suAcquireSem(SU_SEMA_HANDLE shandle, SU_TIME timeout, SU_RET_STATUS *err);
+extern int suReleaseSem(SU_SEMA_HANDLE shandle, SU_RET_STATUS *err);
+extern void suDeleteSem(SU_SEMA_HANDLE shandle, SU_RET_STATUS *err);
+
+extern void suSleep(SU_TIME timeout, SU_RET_STATUS *err);
 
 #ifdef __cplusplus
 }

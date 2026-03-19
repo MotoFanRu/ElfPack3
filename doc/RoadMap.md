@@ -16,16 +16,21 @@ TODO: Check arranges of ARM/Thumb/functions by 2, by 4
 
   * ✅ EP1
   * ✅ EG1
-  * 🟨 EP2
-  * 🟨 EM1
-  * 🟨 EM2
+  * ✅ EP2
+  * ✅ EM1
+  * ✅ EM2
   * 🟨 Other?
 
-* 🟨 Tasks SUAPI research.
+* ✅ Tasks SUAPI research.
+
+  * ✅ Inside firmwares.
+  * ✅ Inside TFPG patch by Andy51.
+
+* ✅ Tasks support implemented.
 
 * 🟨 ELF Loaders in-depth research.
 
-  * ✅ Motorola EP1.
+  * 🟨 Motorola EP1.
   * 🟨 Motorola EG1.
   * 🟨 Motorola EP2.
   * 🟨 Motorola EM1.
@@ -50,7 +55,7 @@ TODO: Check arranges of ARM/Thumb/functions by 2, by 4
     * 🟩 arm9 little
     * 🟩 arm11 little
 
-  * 🟩 M-CORE and ARM? compiler building recipes.
+  * 🟩 M-CORE and ARM? GCC cross-compiler building recipes itself for PC.
 
 * ✅ Python CLI tool skeleton.
 

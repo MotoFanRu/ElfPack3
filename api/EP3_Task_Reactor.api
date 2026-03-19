@@ -1,0 +1,12 @@
+# EP3 Task Reactor needed functions and data addresses.
+
+suCreateQueue
+suCreatePortFromQueue
+suRegisterName
+suReceiveMessageFromQueue
+
+suCreateMessage
+suSendMessage
+suDeleteMessage
+
+reactor_core_port

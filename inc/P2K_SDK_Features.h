@@ -16,6 +16,10 @@ extern "C" {
 	#define FTR_DONT_DEFINE_SDK_BYTEWORDS                  (0)
 	#define FTR_DONT_DEFINE_SDK_WIDECHAR                   (0)
 	#define FTR_DONT_DEFINE_ARRAY_SIZE                     (0)
+	#define FTR_DONT_DEFINE_LIMITS                         (0)
+	#define FTR_DONT_DEFINE_DEPRECATED_MACROS              (0)
+	#define FTR_WARN_ON_RAW_DATA_ACCESS                    (0)
+	#define FTR_DONT_DEFINE_ACCESS_MACROS                  (0)
 #endif
 
 /* EP3 Project */

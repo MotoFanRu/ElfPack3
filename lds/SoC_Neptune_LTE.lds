@@ -30,22 +30,4 @@ ENTRY(%ENTRY_POINT%)
  */
 
 /* Combine all relevant code and data section to the one `.text` section. */
-SECTIONS {
-	/*
-	 * Entry point address.
-	 * Can be set using GCC command-line arguments in 0x10000000 HEX format:
-	 *   -Wl,-e,%ENTRY_ADDRESS%
-	 *
-	. = %ENTRY_ADDRESS%;
-	 */
-
-	.text : {
-		KEEP(*(.text.entry_point))
-		*(.text .text.*)
-		*(.rodata .rodata.*)
-		*(.data .data.*)
-		*(.bss .bss.*)
-		*(COMMON)
-		. = ALIGN(4);
-	}
-}
+INCLUDE "Common_Sections.lds"

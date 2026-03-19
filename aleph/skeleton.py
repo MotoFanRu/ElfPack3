@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 P2K_SDK_ROOT: Path = Path(__file__).resolve().parent.parent
 
+P2K_SDK_API = P2K_SDK_ROOT / 'api'
 P2K_SDK_ASM = P2K_SDK_ROOT / 'asm'
 P2K_SDK_RES = P2K_SDK_ROOT / 'res'
 P2K_SDK_INC = P2K_SDK_ROOT / 'inc'
@@ -60,6 +61,7 @@ class Recipe:
 		register: int
 		inject: int
 	soc: SoC
+	tasks: bool
 	toolchain: Toolchain
 	flags: RecipeFlags
 	addresses: RecipeAddresses

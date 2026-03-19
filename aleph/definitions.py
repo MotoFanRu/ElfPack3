@@ -422,3 +422,25 @@ def format_definitions(p_in: Path, p_out: Path, warn_duplicates: bool = False, s
 	if p_out.suffix != '.def':
 		E(f'Wrong file suffix format: "{p_out.suffix}", should be .def')
 	return write_definitions(p_out, read_definitions(p_in, warn_duplicates, sort_by_addrs))
+
+def get_api_from_definitions(p_def: Path, p_api: Path) ->  Definitions | None:
+	definitions = read_definitions(p_def)
+	if not definitions:
+		E(f'Cannot read and parse definitions from "{p_def.name}" file.')
+		return None
+
+	api = parse_definitions_api(read_text_file(p_api))
+	if not api:
+		E(f'Cannot read and parse API listing from "{p_api.name}" file.')
+		return None
+
+	def_map = {d.name: d for d in definitions.defs}
+	api_defs = [def_map[a.name] for a in api.defs if a.name in def_map]
+
+	if is_blank_list(api_defs):
+		E(f'Cannot find any definitions from "{p_api.name}" in "{p_def.name}" file.')
+		return None
+
+	definitions.defs = api_defs
+
+	return definitions

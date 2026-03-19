@@ -21,8 +21,24 @@
 0x00077E34 T suCreateTask
 0x00077FA8 T suDeleteTask
 
-0x00419A60 T sc_lock
-0x00419E8C T sc_unlock
+0x00419A60 T suDisableSched
+0x00419E8C T suEnableSched
 0x00077A2A T suReceiveMessageFromQueue
 0x000778EC T suDeleteMessage
 0x00077FCC T suSleep
+
+0x0007783C T suCreateQueue
+0x000B034A T suCreatePortFromQueue
+0x000B125A T suRegisterName
+0x000778B0 T suCreateMessage
+0x000B042C T suSendMessage
+
+0x000781D4 T suCreateBSem
+0x0007838C T suCreateMSem
+0x000782A4 T suCreateCSem
+0x000786F4 T suAcquireSem
+0x0007857A T suReleaseSem
+0x00078466 T suDeleteSem
+
+0x01F93070 D reactor_core_port
+0x005701D0 T EP3_Send_To_Reactor

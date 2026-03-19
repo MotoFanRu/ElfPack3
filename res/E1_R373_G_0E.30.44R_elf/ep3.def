@@ -23,5 +23,16 @@
 
 0x10BA6BF4 T suCreateTask
 
-0x03FF36A4 T sc_lock
-0x03FF36AE T sc_unlock
+0x03FF22B8 T suCreateQueue
+0x03FF1F62 T suCreatePortFromQueue
+0x03FF1ABA T suRegisterName
+0x03FF2472 T suReceiveMessageFromQueue
+0x03FF22F8 T suCreateMessage
+0x03FF2334 T suDeleteMessage
+0x03FF2026 T suSendMessage
+0x03FF3F30 T suCreateBSem
+0x03FF4388 T suReleaseSem
+0x03FF41D6 T suDeleteSem
+0x03FF2B2C T suSleep
+0x1232A838 D reactor_core_port
+0x108A90EC T EP3_Send_To_Reactor

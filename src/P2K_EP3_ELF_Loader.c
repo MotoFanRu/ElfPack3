@@ -4,6 +4,8 @@
 #include <P2K_J2ME_System.h>
 #include <P2K_DL_Keypad.h>
 
+#include <P2K_EP3_Task_Reactor.h>
+
 typedef struct {
 	INT16 x;
 	INT16 y;
@@ -17,17 +19,71 @@ typedef struct {
 extern BOOL DL_DdWriteDisplayRegion(
 		RECT_T *update_region,
 		BYTE *data_ptr,
-		UINT8 display_target);
+		UINT8 display_target
+);
 
 extern BOOL DAL_WriteDisplayRegion(
 		RECT_T *update_region,
 		BYTE *data_ptr,
-		UINT8 display_target);
+		UINT8 display_target
+);
 
-__attribute__((used, section(".text.entry_point")))
+static void some_task_loop(void) {
+	SU_RET_STATUS status;
+	SU_SEMA_HANDLE binary_semaphore = suCreateBSem(SU_SEM_LOCKED, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error creating binary semaphore!\n");
+	}
+
+	for (int i = 0; i < 100000; ++i) {
+		L("%s %d\n", "Hello Moto From Task!", i);
+
+		suSleep(SU_WAIT_1MS, &status);
+	}
+
+	suReleaseSem(binary_semaphore, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error releasing binary semaphore!\n");
+	}
+
+	suDeleteSem(binary_semaphore, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error deleting binary semaphore!\n");
+	}
+}
+
+__attribute__((used, section(".text.bin.entry_point")))
 void EP3_ELF_Loader_MainRegister(void) {
-	PFprintf("%s\n", "Hello Moto!");
+	L("%s\n", "Hello Moto!");
 
+	EP3_Send_To_Reactor((UINTPTR) &some_task_loop);
+
+#if 0
+	sc_lock();
+	some_task_loop();
+	sc_unlock();
+#endif
+
+#if 0
+	int stack_size = 30;
+	int priority = 1;
+
+	SU_TAG_ARRAY *array = suAllocMem(sizeof(SU_TAG_ARRAY) * 3, NULL);
+	array[0].tag = 3;
+	array[0].data = (void *) &stack_size;
+	array[1].tag = 4;
+	array[1].data = (void *) &priority;
+	array[2].tag = 0;
+	array[2].data = NULL;
+
+	SU_RET_STATUS res;
+	SU_TASK_HANDLE task_handle = suCreateTask(&some_task_loop, array, &res);
+	if (res != SU_OK) {
+		PFprintf("%s Status: %d %d\n", "Error creating task!", res, task_handle);
+	}
+#endif
+
+#if 0
 #if defined(FTR_C330)
 	BYTE *data_ptr = suAllocMem(96 * 64, NULL);
 	for (int i = 0; i < 96 * 64; i++) {
@@ -78,6 +134,7 @@ void EP3_ELF_Loader_MainRegister(void) {
 		DAL_WriteDisplayRegion(&r, data_ptr, 0);
 	}
 #endif
+#endif
 
-	PFprintf("%s\n", "End!");
+	L("%s\n", "End!");
 }

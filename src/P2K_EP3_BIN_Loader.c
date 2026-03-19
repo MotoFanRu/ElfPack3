@@ -8,7 +8,7 @@
 #include <P2K_EP3_File_System.h>
 #include <P2K_EP3_BIN_Loader.h>
 
-__attribute__((used, section(".text.entry_point")))
+__attribute__((used, section(".text.bin.entry_point")))
 void EP3_BIN_Loader_MainRegister(void) {
 	/*
 	 * There should be a call to `APP_CALC_MainRegister()` inside this function so that the
@@ -44,6 +44,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 		return;
 	}
 
+	/* Add additional bytes to align the address space % 4 bytes.*/
 	BYTE *load_addr = (BYTE *) EP3_Memory_Alloc(file_size + 4);
 	if (load_addr == NULL) {
 		L("[EP3 BIN]: Failed to allocate %d bytes of memory.\n", file_size);
@@ -51,7 +52,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 		return;
 	}
 
-	/* Align to 4 bytes. */
+	/* Align load address to 4 bytes. */
 	load_addr = (BYTE *) (((UINTPTR) load_addr + 3) & ~3UL);
 
 	DL_FS_COUNT_T elements_read;
@@ -63,9 +64,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 
 	DL_FsCloseFile(file_handle);
 
-	/*
-	 * Execute the loaded binary.
-	 */
+	/* Execute the loaded binary, set Thumb bit if needed (will be ignored on ARM and M-CORE). */
 	L("[EP3 BIN]: Loaded %d bytes to 0x%08X memory address, now jump to it.\n", file_size, (UINTPTR) load_addr);
 #if defined(FTR_THUMB_MODE)
 	load_addr += 1;

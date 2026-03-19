@@ -1,0 +1,18 @@
+# EP3 BIN Loader needed functions.
+
+APP_CALC_MainRegister
+
+DL_KeyQueryKeypadActivity
+
+DL_FsSGetFileSize
+DL_FsOpenFile
+DL_FsReadFile
+DL_FsCloseFile
+
+suAllocMem
+suFreeMem
+
+snprintf
+vsnprintf
+
+PFprintf

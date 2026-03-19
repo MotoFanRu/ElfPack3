@@ -1,0 +1,13 @@
+# EP3 ELF Loader needed functions.
+
+EP3_Send_To_Reactor
+
+suCreateBSem
+suReleaseSem
+suDeleteSem
+
+suSleep
+
+vsnprintf
+
+PFprintf

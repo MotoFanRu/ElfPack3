@@ -13,13 +13,14 @@ from .filesystem import check_files
 from .filesystem import create_clean_dir
 
 from .skeleton import Recipe
-from .skeleton import P2K_SDK_SRC
+from .skeleton import P2K_SDK_API
+from .skeleton import EP3_BIN_FPA
+from .skeleton import EP3_BIN_LDR
+from .skeleton import EP3_ELF_LDR
 from .skeleton import P2K_SDK_RES
+from .skeleton import P2K_SDK_SRC
 from .skeleton import P2K_SDK_BUILD
 from .skeleton import P2K_SDK_RELEASE
-from .skeleton import EP3_BIN_LDR
-from .skeleton import EP3_BIN_FPA
-from .skeleton import EP3_ELF_LDR
 
 from .timedate import elapsed_format
 
@@ -50,6 +51,7 @@ from .definitions import compare_definitions
 from .definitions import compare_definitions_with_api
 from .definitions import convert_asm_to_def
 from .definitions import format_definitions
+from .definitions import get_api_from_definitions
 
 from .assembler import write_assembler_listing
 
