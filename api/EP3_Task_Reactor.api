@@ -9,4 +9,5 @@ suCreateMessage
 suSendMessage
 suDeleteMessage
 
-reactor_core_port
+reactor_core_port_a
+reactor_core_port_b

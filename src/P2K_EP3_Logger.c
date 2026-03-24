@@ -21,7 +21,14 @@ void EP3_Logger(const char *format, ...) {
 
 #if !defined(FTR_LOGGER_NULL)
 	char buffer[LOG_BUFFER_SIZE];
+
+	/* Early M-CORE phones on Patriot and Rainbow SoC have no "vsnprintf" function, so use "vsnprintf" instead. */
+#if defined(FTR_NO_VSNPRINTF)
+	vsprintf(buffer, format, args);
+#else
 	vsnprintf(buffer, LOG_BUFFER_SIZE, format, args);
+#endif /* FTR_NO_VSNPRINTF */
+
 #endif /* !FTR_LOGGER_NULL */
 
 	va_end(args);

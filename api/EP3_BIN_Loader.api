@@ -9,10 +9,8 @@ DL_FsOpenFile
 DL_FsReadFile
 DL_FsCloseFile
 
-suAllocMem
-suFreeMem
-
 snprintf
+vsprintf
 vsnprintf
 
 PFprintf

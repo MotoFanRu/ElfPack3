@@ -25,8 +25,8 @@ TODO: Check arranges of ARM/Thumb/functions by 2, by 4
 
   * ✅ Inside firmwares.
   * ✅ Inside TFPG patch by Andy51.
-
-* ✅ Tasks support implemented.
+  * ✅ Add second task.
+  * ✅ Tasks support implemented.
 
 * 🟨 ELF Loaders in-depth research.
 
@@ -69,6 +69,8 @@ TODO: Check arranges of ARM/Thumb/functions by 2, by 4
   * 🟨 Research allocator system.
   * 🟨 Create a Minimal SDK + compiler subset.
   * ✅ Research `-fPIE` and `-pie` flags.
+  * ✅ BootStrap + ElfStrap to fixed addresses.
+  * ✅ Find at least 16 KB in RAM for ElfStrap.
 
 * ✅ Rework and research EP3 Logging system.
 

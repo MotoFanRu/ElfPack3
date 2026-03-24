@@ -27,12 +27,12 @@
 0x10020128 M suCreateMessage
 0x100201C4 M suSendMessage
 
-0x0782039C D reactor_core_port
-
 0x10020106 M suCreateBSem
 0x100200EE M suAcquireSem
 0x100201AE M suReleaseSem
 0x1002015A M suDeleteSem
 0x100201D2 M suSleep
 
-0x1090019C M EP3_Send_To_Reactor
+0x07AA0000 D reactor_core_port_a
+0x07AA0004 D reactor_core_port_b
+0x10900234 M EP3_Send_To_Reactor

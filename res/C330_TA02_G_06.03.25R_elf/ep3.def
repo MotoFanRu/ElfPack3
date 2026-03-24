@@ -40,5 +40,6 @@
 0x0007857A T suReleaseSem
 0x00078466 T suDeleteSem
 
-0x01F93070 D reactor_core_port
-0x005701D0 T EP3_Send_To_Reactor
+0x1106B010 D reactor_core_port_a
+0x1106B014 D reactor_core_port_b
+0x00570288 T EP3_Send_To_Reactor

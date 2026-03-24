@@ -33,29 +33,30 @@ def resolve_tool(bin_dir: Path, base_name: str) -> Path:
 
 GCC_CFLAGS_GENERAL = ['-std=c99', '-nostdinc']
 GCC_CFLAGS_WARNINGS = ['-Wall', '-Wextra', '-pedantic']
-GCC_CFLAGS_FEATURES = ['-ffreestanding', '-fshort-wchar', '-fshort-enums', '-funsigned-char', '-fpack-struct=4']
+GCC_CFLAGS_FEATURES = ['-ffreestanding', '-funsigned-char', '-fshort-enums', '-fshort-wchar', '-fpack-struct=4']
 GCC_CFLAGS_OPTIMIZATIONS = ['-O2']
 P2K_CFLAGS = ['-D__P2K__', '-DP2K']
 
 GCC_CFLAGS = GCC_CFLAGS_GENERAL + GCC_CFLAGS_WARNINGS + GCC_CFLAGS_FEATURES + GCC_CFLAGS_OPTIMIZATIONS + P2K_CFLAGS
 GCC_CFLAGS_BIN_LDR = ['-DFTR_BIN_LDR']
-GCC_CFLAGS_ELF_LDR = ['-DFTR_ELF_LDR', '-fPIC']
+GCC_CFLAGS_ELF_LDR = ['-DFTR_ELF_LDR']
 GCC_CFLAGS_SO_LIB  = ['-DFTR_SO_LIB', '-fPIC']
 
 GCC_LFLAGS_GENERAL = ['-nostdlib', '-Wl,--gc-sections']
+# Stripping is not good for generating map listings by `nm` calls. No symbols with it.
+GCC_LFLAGS_STRIP = ['-s']
 GCC_LFLAGS = GCC_LFLAGS_GENERAL
 GCC_LFLAGS_BIN_LDR = []
 GCC_LFLAGS_ELF_LDR = []
 GCC_LFLAGS_SO_LIB  = ['-shared']
 
-# TODO: Set '-fno-jump-tables' on M-CORE too when update GCC compiler.
 P2K_SDK_GCC_ARM = Toolchain(
 	gcc=resolve_tool(P2K_SDK_GCC_ARM_BIN, 'arm-none-eabi-gcc'),
 	objcopy=resolve_tool(P2K_SDK_GCC_ARM_BIN, 'arm-none-eabi-objcopy'),
 	nm=resolve_tool(P2K_SDK_GCC_ARM_BIN, 'arm-none-eabi-nm'),
 	cflags=GCC_CFLAGS,
 	cflags_bin_ldr=GCC_CFLAGS_BIN_LDR,
-	cflags_elf_ldr=GCC_CFLAGS_ELF_LDR + ['-fno-jump-tables'],
+	cflags_elf_ldr=GCC_CFLAGS_ELF_LDR,
 	cflags_lib_so=GCC_CFLAGS_SO_LIB,
 	lflags=GCC_LFLAGS,
 	lflags_bin_ldr=GCC_LFLAGS_BIN_LDR,

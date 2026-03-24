@@ -44,8 +44,15 @@ void EP3_BIN_Loader_MainRegister(void) {
 		return;
 	}
 
-	/* Add additional bytes to align the address space % 4 bytes.*/
-	BYTE *load_addr = (BYTE *) EP3_Memory_Alloc(file_size + 4);
+	/*
+	 * Since the M-CORE GCC cross-compiler cannot generate position-independent binaries (-fPIC, -fPIE, -pie),
+	 * we cannot use the random memory address that the system allocator gives us.
+	 * Therefore, to make things simpler, it is best to use a fixed load address.
+	 */
+	BYTE *load_addr = NULL;
+#if !defined(FTR_LOAD_TO_ADDR)
+	/* Add additional 4 bytes to align the address space.*/
+	load_addr = (BYTE *) EP3_Memory_Alloc(file_size + 4);
 	if (load_addr == NULL) {
 		L("[EP3 BIN]: Failed to allocate %d bytes of memory.\n", file_size);
 		DL_FsCloseFile(file_handle);
@@ -54,6 +61,9 @@ void EP3_BIN_Loader_MainRegister(void) {
 
 	/* Align load address to 4 bytes. */
 	load_addr = (BYTE *) (((UINTPTR) load_addr + 3) & ~3UL);
+#else
+	load_addr = (BYTE *) FTR_LOAD_TO_ADDR;
+#endif /* !FTR_LOAD_TO_ADDR */
 
 	DL_FS_COUNT_T elements_read;
 	if (DL_FsReadFile(load_addr, file_size, 1, file_handle, &elements_read) != DL_FS_RESULT_SUCCESS) {

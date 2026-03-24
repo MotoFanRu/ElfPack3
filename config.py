@@ -8,11 +8,11 @@ RECIPES: dict[str, Recipe] = {
 		tasks=True,
 		flags=Recipe.RecipeFlags(
 			build=['-DFTR_A830', '-DFTR_DEBUG'],
-			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
+			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI', '-DFTR_NO_VSNPRINTF'],
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x10900000,
+			inject=0x10900000, loader=0x07AA0000 + 0x20, register=0x106CF134, task_a=0x1053B4E4, task_b=0x1053BB44,
 		),
 	),
 	'C330_TA02_G_06.03.25R_elf' : Recipe(
@@ -24,7 +24,7 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x00570000,
+			inject=0x00570000, loader=0x1106B010 + 0x20, register=0x004307FC, task_a=0x00078F78, task_b=0x0007896C,
 		),
 	),
 	'E1_R373_G_0E.30.44R_elf' : Recipe(
@@ -36,7 +36,7 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x108A8F1C,
+			inject=0x108A8F1C, loader=0x1279A540 + 0x20, register=0x103F977C, task_a=0x10A5D494, task_b=0x10A5E5EC,
 		),
 	),
 
@@ -49,7 +49,7 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x00000000,
+			inject=0x00000000, loader=0x00000000, register=0x00000000, task_a=0x00000000, task_b=0x00000000,
 		),
 	),
 
@@ -62,7 +62,7 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x00000000,
+			inject=0x00000000, loader=0x00000000, register=0x00000000, task_a=0x00000000, task_b=0x00000000,
 		),
 	),
 
@@ -75,7 +75,8 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x108A8F1C, # TODO: Fix this.
+			# TODO: Fix this.
+			inject=0x108A8F1C, loader=0x00000000, register=0x00000000, task_a=0x00000000, task_b=0x00000000,
 		),
 	),
 
@@ -88,7 +89,7 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			register=0x00000000, inject=0x00000000,
+			inject=0x00000000, loader=0x00000000, register=0x00000000, task_a=0x00000000, task_b=0x00000000,
 		),
 	),
 }

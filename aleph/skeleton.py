@@ -58,8 +58,11 @@ class Recipe:
 		elf_ldr: list[str]
 	@dataclass
 	class RecipeAddresses:
-		register: int
 		inject: int
+		loader: int
+		register: int
+		task_a: int
+		task_b: int
 	soc: SoC
 	tasks: bool
 	toolchain: Toolchain

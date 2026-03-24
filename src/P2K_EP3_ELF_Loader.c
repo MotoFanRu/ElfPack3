@@ -28,15 +28,63 @@ extern BOOL DAL_WriteDisplayRegion(
 		UINT8 display_target
 );
 
-static void some_task_loop(void) {
+static void task_a(void) {
 	SU_RET_STATUS status;
 	SU_SEMA_HANDLE binary_semaphore = suCreateBSem(SU_SEM_LOCKED, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error creating binary semaphore!\n");
 	}
 
-	for (int i = 0; i < 100000; ++i) {
-		L("%s %d\n", "Hello Moto From Task!", i);
+	for (int i = 0; i < 10000; ++i) {
+		L("%s %06d\n", "[TASK A]: Hello Moto!", i + 1);
+
+		suSleep(SU_WAIT_1MS, &status);
+	}
+
+	suReleaseSem(binary_semaphore, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error releasing binary semaphore!\n");
+	}
+
+	suDeleteSem(binary_semaphore, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error deleting binary semaphore!\n");
+	}
+}
+
+static void task_b(void) {
+	SU_RET_STATUS status;
+	SU_SEMA_HANDLE binary_semaphore = suCreateBSem(SU_SEM_LOCKED, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error creating binary semaphore!\n");
+	}
+
+	for (int i = 0; i < 10000; ++i) {
+		L("%s %06d\n", "[TASK B]: Hello Moto!", i + 1);
+
+		suSleep(SU_WAIT_1MS, &status);
+	}
+
+	suReleaseSem(binary_semaphore, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error releasing binary semaphore!\n");
+	}
+
+	suDeleteSem(binary_semaphore, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error deleting binary semaphore!\n");
+	}
+}
+
+static void task_c(void) {
+	SU_RET_STATUS status;
+	SU_SEMA_HANDLE binary_semaphore = suCreateBSem(SU_SEM_LOCKED, &status);
+	if (status != SU_OK) {
+		L("%s\n", "Error creating binary semaphore!\n");
+	}
+
+	for (int i = 0; i < 10000; ++i) {
+		L("%s %06d\n", "[TASK C]: Hello Moto!", i + 1);
 
 		suSleep(SU_WAIT_1MS, &status);
 	}
@@ -56,7 +104,9 @@ __attribute__((used, section(".text.bin.entry_point")))
 void EP3_ELF_Loader_MainRegister(void) {
 	L("%s\n", "Hello Moto!");
 
-	EP3_Send_To_Reactor((UINTPTR) &some_task_loop);
+	EP3_Send_To_Reactor((UINTPTR) &task_a, TASK_REACTOR_A);
+	EP3_Send_To_Reactor((UINTPTR) &task_b, TASK_REACTOR_B);
+	EP3_Send_To_Reactor((UINTPTR) &task_c, TASK_REACTOR_A);
 
 #if 0
 	sc_lock();

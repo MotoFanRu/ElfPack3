@@ -6,7 +6,7 @@ __pycache__
 build
 release
 
-arm-gcc-win
-arm-gcc-lin
-mcore-gcc-win
-mcore-gcc-lin
+arm-gcc-win*
+arm-gcc-lin*
+mcore-gcc-win*
+mcore-gcc-lin*

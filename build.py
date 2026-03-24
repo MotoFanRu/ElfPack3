@@ -52,7 +52,8 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	I(f' Building "{recipe_name}" BIN loader.')
 
 	cflags = [
-		*recipe.toolchain.cflags_bin_ldr, *recipe.flags.bin_ldr
+		*recipe.toolchain.cflags_bin_ldr, *recipe.flags.bin_ldr,
+		f'-DFTR_LOAD_TO_ADDR={format_32bit_addr(recipe.addresses.loader)}',
 	]
 	src_obj = [
 		(P2K_SDK_SRC / 'P2K_EP3_Logger.c',      P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
@@ -98,8 +99,8 @@ def build_elf_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	I(f' Building "{recipe_name}" ELF loader.')
 
 	cflags = [
-		*recipe.toolchain.cflags_elf_ldr,
-		*recipe.flags.elf_ldr
+		*recipe.toolchain.cflags_elf_ldr, *recipe.flags.elf_ldr,
+		f'-DFTR_LOAD_TO_ADDR={format_32bit_addr(recipe.addresses.loader)}',
 	]
 	src_obj = [
 		(P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',  P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.o'),
@@ -113,6 +114,7 @@ def build_elf_ldr(recipe_name: str, recipe: Recipe) -> bool:
 		*cflags, *recipe.toolchain.lflags_elf_ldr,
 		f'-Wl,-L,{recipe.soc.lds.parent}',
 		f'-Wl,-T,{recipe.soc.lds.name}',
+		f'-Wl,-Ttext={format_32bit_addr(recipe.addresses.loader)}',
 	]
 	elf_res = P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.elf'
 	objs = [obj for _, obj in src_obj]

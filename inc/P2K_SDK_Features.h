@@ -27,6 +27,11 @@ extern "C" {
 	#define FTR_BIN_LDR                                    (0)
 	#define FTR_ELF_LDR                                    (0)
 	#define FTR_SO_LIB                                     (0)
+	#define FTR_ALLOC_SUAPI                                (0)
+	#define FTR_ALLOC_UIS                                  (0)
+	#define FTR_ALLOC_J2ME                                 (0)
+	#define FTR_NO_VSNPRINTF                               (0)
+	#define FTR_LOAD_TO_ADDR                               (0x00000000)
 #endif
 
 /* Compiler & CPU Settings */

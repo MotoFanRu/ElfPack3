@@ -34,5 +34,7 @@
 0x03FF4388 T suReleaseSem
 0x03FF41D6 T suDeleteSem
 0x03FF2B2C T suSleep
-0x1232A838 D reactor_core_port
-0x108A90EC T EP3_Send_To_Reactor
+
+0x1279A540 D reactor_core_port_a
+0x1279A544 D reactor_core_port_b
+0x108A91A4 T EP3_Send_To_Reactor
