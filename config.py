@@ -12,7 +12,7 @@ RECIPES: dict[str, Recipe] = {
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_JAL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(
-			inject=0x10900000, loader=0x07AA0000 + 0x20, register=0x106CF134, task_a=0x1053B4E4, task_b=0x1053BB44,
+			inject=0x10900000, loader=0x079DE2F4 + 0x20, register=0x106CF134, task_a=0x1053B4E4, task_b=0x1053BB44,
 		),
 	),
 	'C330_TA02_G_06.03.25R_elf' : Recipe(

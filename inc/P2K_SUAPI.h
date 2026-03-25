@@ -26,6 +26,9 @@ typedef VOID *                                             SU_PORT_HANDLE;
 #define SU_SEM_LOCKED                                      (0)
 #define SU_SEM_UNLOCKED                                    (1)
 
+#define SU_INVALID_HANDLE                                  (0)
+#define SU_PORT_LOG_ALWAYS                                 (SU_INVALID_HANDLE)
+
 enum SU_ENUM_T {
 	SU_OK = 0,              /* Successful completion. */
 	SU_EDELETED,            /* Resource deleted. */
@@ -118,7 +121,7 @@ extern void suFreeMem(
  * Huge port struct, not needed here.
  */
 extern void suLogData(
-	UINT32 *phandle,
+	SU_PORT_HANDLE phandle,
 	UINT32 msgid,
 	UINT32 num_pairs,
 	...

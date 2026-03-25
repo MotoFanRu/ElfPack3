@@ -33,6 +33,6 @@
 0x1002015A M suDeleteSem
 0x100201D2 M suSleep
 
-0x07AA0000 D reactor_core_port_a
-0x07AA0004 D reactor_core_port_b
+0x079DE2F4 D reactor_core_port_a
+0x079DE2F8 D reactor_core_port_b
 0x10900234 M EP3_Send_To_Reactor

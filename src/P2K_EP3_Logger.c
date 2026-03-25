@@ -42,7 +42,7 @@ void EP3_Logger(const char *format, ...) {
 #if defined(FTR_LOGGER_SUAPI)
 	{
 		UINT32 size = PORTABLE_strlen(buffer);
-		suLogData(NULL, LOG_MESSAGE_ID, 1, size, buffer);
+		suLogData(SU_PORT_LOG_ALWAYS, LOG_MESSAGE_ID, 1, size, buffer);
 	}
 #endif /* FTR_LOGGER_SUAPI */
 
