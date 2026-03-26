@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW K1s_R47121_G_08.01.11R
-# VER EP3_05-Mar-2026
+# VER EP3_26-Mar-2026
 # CPU ARM7
 
 0x105B9488 D CALL_ALERT

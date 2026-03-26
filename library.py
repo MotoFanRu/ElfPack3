@@ -40,7 +40,7 @@ def comparator_helper(args: Namespace) -> bool:
 	return False
 
 def regenerator(args: Namespace) -> bool:
-	for suffix in '.def':
+	for suffix in ['.def']:
 		for file_path in P2K_SDK_RES.rglob(f'*{suffix}'):
 			I(f'Formatting "{file_path}" file.')
 			if not format_definitions(file_path, file_path, args.warn_duplicates, args.sort_address):

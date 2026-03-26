@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW L6_R3511_G_0A.52.45R_A
-# VER EP3_05-Mar-2026
+# VER EP3_26-Mar-2026
 # CPU ARM7
 
 0x1009C424 D _region_table

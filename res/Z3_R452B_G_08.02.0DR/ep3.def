@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW Z3_R452B_G_08.02.0DR
-# VER EP3_05-Mar-2026
+# VER EP3_26-Mar-2026
 # CPU ARM7
 
 0x00000069 C AUDIO_STATUS

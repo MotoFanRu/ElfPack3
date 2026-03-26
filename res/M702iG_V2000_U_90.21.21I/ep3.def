@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW M702iG_V2000_U_90.21.21I
-# VER EP3_05-Mar-2026
+# VER EP3_26-Mar-2026
 # CPU ARM11
 
 0xA17AC068 A __rt_memclr

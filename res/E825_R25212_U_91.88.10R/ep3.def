@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW E825_R25212_U_91.88.10R
-# VER EP3_05-Mar-2026
+# VER EP3_26-Mar-2026
 # CPU ARM11
 
 0xA0CBE31C A __rt_memclr

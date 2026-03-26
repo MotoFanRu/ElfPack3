@@ -6,6 +6,7 @@ from .logger import I
 from .logger import W
 from .logger import E
 from .soc import CPU_ARCH
+from .hexer import is_valid_alignment
 from .hexer import format_32bit_addr
 from .hexer import is_valid_32bit_addr
 from .patcher import patch_text
@@ -136,6 +137,17 @@ def parse_validate_api_line(line: str) -> tuple[int, str, str] | None:
 
 	return 0x00000000, 'A', line
 
+def get_type_alignment(def_type: str) -> int:
+	if def_type in ['A']:
+		return 4
+	elif def_type in ['T', 'M']:
+		return 2
+	else:
+		return 0
+
+def check_alignment(def_addr: str, def_type: str) -> bool:
+	return is_valid_alignment(def_addr, get_type_alignment(def_type))
+
 def parse_validate_definition_line(line: str) -> tuple[int, str, str] | None:
 	parts = line.split()
 
@@ -147,6 +159,10 @@ def parse_validate_definition_line(line: str) -> tuple[int, str, str] | None:
 
 	if not is_valid_32bit_addr(def_addr):
 		E(f'Invalid 32-bit address: {def_addr} in the line: {line}')
+		return None
+
+	if not check_alignment(def_addr, def_type):
+		E(f'Address is not align by {get_type_alignment(def_type)} bytes: "{line}"')
 		return None
 
 	if def_type not in DEF_TYPES:
