@@ -1,0 +1,135 @@
+# All migrated entities from SDK.
+
+# P2K_C_Arg.h
+va_list
+va_start
+va_end
+va_arg
+va_copy
+
+# P2K_C_Lib.h
+sprintf
+snprintf
+vsprintf
+vsnprintf
+
+# P2K_C_Lib_Portable.h
+PORTABLE_strlen
+
+# P2K_DL_File_System.h
+DL_FsOpenFile
+DL_FsCloseFile
+DL_FsReadFile
+DL_FsWriteFile
+DL_FsFSeekFile
+DL_FsGetFileSize
+DL_FsSGetFileSize
+
+# P2K_DL_Keypad.h
+DL_KeyQueryKeypadActivity
+
+# P2K_EP3_BIN_Loader.h
+APP_CALC_MainRegister
+EP3_BIN_Loader_MainRegister
+
+# P2K_EP3_File_System.h
+EP3_Find_Internal_System_Component
+
+# P2K_EP3_Logger.h
+EP3_Logger
+EP3_Logger_Unicode
+
+# P2K_EP3_Memory.h
+EP3_Memory_Alloc
+EP3_Memory_Free
+
+# P2K_EP3_Task_Reactor.h
+EP3_Reactor_Task_A
+EP3_Reactor_Task_B
+EP3_Send_To_Reactor
+reactor_core_port_a
+reactor_core_port_b
+
+# P2K_J2ME_System.h
+PFprintf
+AmMemAllocPointer
+AmMemFreePointer
+
+# P2K_Logger.h
+L
+LU
+D
+DU
+P
+
+# P2K_SDK_Base.h
+ARRAY_SIZE
+GET_DATA
+GET_CONST
+GET_DATA_ADDR
+GET_FUNC_ADDR
+
+# P2K_SUAPI.h
+suAllocMem
+suFreeMem
+suLogData
+suDisableSched
+suEnableSched
+suDisableInt
+suDisableAllInt
+suSetInt
+suCreateQueue
+suCreatePortFromQueue
+suRegisterName
+suReceiveMessageFromQueue
+suCreateMessage
+suSendMessage
+suDeleteMessage
+suCreateBSem
+suCreateCSem
+suCreateMSem
+suAcquireSem
+suReleaseSem
+suDeleteSem
+suSleep
+
+# P2K_UIS_Memory.h
+uisAllocateMemory
+uisReAllocMemory
+uisFreeMemory
+
+# P2K_UIS_Ustring.h
+u_atol
+u_atou
+u_isAlpha
+u_isDigit
+u_isSpace
+u_isUpper
+u_isLower
+u_itoa
+u_uitoa
+u_itoh
+u_ltou
+u_strcat
+u_strncat
+u_strchr
+u_strcmp
+u_strncmp
+u_strncmpi
+u_strcpy
+u_strncpy
+u_strcut
+u_stristr
+u_strlen
+u_strmakelower
+u_strmakeupper
+u_strrchr
+u_strstr
+u_uint64tou
+u_ultou
+
+# P2K_UIS_Ustring_Portable.h
+PORTABLE_u_strlen
+PORTABLE_u_strncat
+PORTABLE_u_atou
+PORTABLE_u_utoa

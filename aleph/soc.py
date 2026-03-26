@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from .skeleton import SoC
 from .skeleton import Endian
 from .skeleton import P2K_SDK_LDS

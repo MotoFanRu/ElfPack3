@@ -1,9 +1,6 @@
 from pathlib import Path
 
-from .logger import D
-from .logger import I
 from .logger import E
-from .hexer import format_32bit_addr
 from .filesystem import read_text_file
 from .filesystem import write_text_file
 

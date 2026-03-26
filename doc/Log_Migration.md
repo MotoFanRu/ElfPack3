@@ -1,23 +1,53 @@
 # SDK and EP3 Migration/Development Log
 
-## 22-Feb-2026...03-Mar-2026
+## 22-Feb-2026...26-Mar-2026
 
 * Working on Aleph library
-
+* Working on Task API
+* Working on Skeleton
+* Working on Log View
+* Working on va_args
 * Migrated functions:
 
-DL_KeyQueryKeypadActivity
-sprintf
-snprintf
-vsprintf
-vsnprintf
-LOGGER_FUNCTIONS
-VAARGS STUFF
-AmMemAllocPointer
-AmMemFreePointer
-extern void *uisAllocateMemory(UIS_PARTITION_BLOCK_SIZE_T num_bytes, UIS_ALLOCATION_ERROR_T *status);
-extern void *uisReAllocMemory(void *address, UIS_PARTITION_BLOCK_SIZE_T new_size, UIS_ALLOCATION_ERROR_T *status);
-extern void uisFreeMemory(void *address);
+  ```
+  sprintf
+  snprintf
+  vsprintf
+  vsnprintf
+
+  DL_KeyQueryKeypadActivity
+
+  PFprintf
+  AmMemAllocPointer
+  AmMemFreePointer
+
+  suLogData
+  sc_lock
+  sc_unlock
+  suDisableSched
+  suEnableSched
+  suDisableInt
+  suDisableAllInt
+  suSetInt
+  suCreateQueue
+  suCreatePortFromQueue
+  suRegisterName
+  suReceiveMessageFromQueue
+  suCreateMessage
+  suSendMessage
+  suDeleteMessage
+  suCreateBSem
+  suCreateCSem
+  suCreateMSem
+  suAcquireSem
+  suReleaseSem
+  suDeleteSem
+  suSleep
+
+  uisAllocateMemory
+  uisReAllocMemory
+  uisFreeMemory
+  ```
 
 ## 20-Feb-2026
 

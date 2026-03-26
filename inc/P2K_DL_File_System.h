@@ -7,8 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define DL_FS_HANDLE_INVALID                               (0xFFFF)
 #define DL_FS_SIZE_INVALID                                 (0)
+#define DL_FS_HANDLE_INVALID                               (0xFFFF)
 
 typedef UINT16                                             DL_FS_HANDLE_T;
 typedef UINT32                                             DL_FS_SIZE_T;
