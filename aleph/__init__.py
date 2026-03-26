@@ -52,6 +52,8 @@ from .definitions import compare_definitions_with_api
 from .definitions import convert_asm_to_def
 from .definitions import format_definitions
 from .definitions import get_api_from_definitions
+from .definitions import update_definition
+from .definitions import get_address_from_map
 
 from .assembler import write_assembler_listing
 

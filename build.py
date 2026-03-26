@@ -85,6 +85,14 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 		E(f'Cannot extract symbols: "{map_res}"')
 		return False
 
+	if recipe.tasks:
+		update_definition(
+			P2K_SDK_RES / recipe_name / 'ep3.def',
+			get_address_from_map(map_res, 'EP3_Send_To_Reactor'),
+			'T' if recipe.soc.cpu.startswith('ARM') else 'M',
+			'EP3_Send_To_Reactor'
+		)
+
 	bin_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.bin'
 	if not gcc_bin(recipe, elf_res, bin_res):
 		E(f'Cannot create BIN file: "{elf_res}" => "{bin_res}"')
