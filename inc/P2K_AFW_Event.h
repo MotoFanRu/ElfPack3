@@ -33,6 +33,9 @@ typedef UINT32                         AFW_RESET_CAUSES_T;
 typedef UINT8                          AUF_EV_DATA_KEY_T;
 typedef UINT8                          AUF_EV_DATA_GENERIC_T;
 
+/* Replaced to `VOID *` due to overcomplication. */
+typedef VOID *                         AFW_START_APP_FUNCTION_T;
+
 enum tagAFW_TONE_CMD_T {
 	AFW_NO_TONE_ACTION = 0,
 	AFW_START_TONE,
@@ -42,7 +45,7 @@ typedef UINT8                          AFW_TONE_CMD_T;
 
 typedef struct tagAFW_EV_DATA_APP_REG_T {
 	AFW_EVENT_CODE_T                   ev_code_subscribing_to;
-	VOID *                             app_start_func;     /* `AFW_START_APP_FUNCTION_T` replaced by VOID * (complex) */
+	AFW_START_APP_FUNCTION_T           app_start_func;     /* replaced by `VOID *` (complex) */
 	AFW_REG_DATA_T                     app_reg_handle;     /* new opaque handle */
 	UINT32                             options;
 	AFW_APP_REGISTRY_ID_T              app_reg_id;

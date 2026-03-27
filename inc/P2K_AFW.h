@@ -22,6 +22,9 @@ typedef UINT32                         AFW_APP_DATA_HDL_T;
 typedef UINT32                         AFW_APP_PRIORITY_T;
 typedef UINT32                         AFW_APP_COUNT_T;
 
+/* Replaced to `VOID *` due to overcomplication. */
+typedef VOID *                         AFW_APP_PID_FPTR_T;
+
 enum tagAFW_CONSUMED_FLAG_T {
 	AFW_BUF_FLAG_CONSUME = 100,        /* this says you want the AFW to free it */
 	AFW_BUF_FLAG_READ_ONLY,            /* this says it's your's and the AFW or apps are not to modify it */
@@ -80,7 +83,7 @@ typedef struct tagAFW_APP_STACK_T AFW_APP_STACK_T;
 struct tagAFW_APP_STACK_T {
 	AFW_STACK_ID_T                     stackId;
 	UINT8                              create_order;
-	VOID *                             hefn;               /* `AFW_APP_PID_FPTR_T` replaced by VOID * (complex) */
+	AFW_APP_PID_FPTR_T                 hefn;               /* replaced by `VOID *` (complex) */
 	AFW_APP_CALL_API_T                 fntype;
 	AFW_APP_RSTACK_TYPE_T              process_class;
 	AFW_APP_RSTACK_POS_T               pos;

@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define FILE_SIZE_TOO_SMALL                                (32)
+#define FILE_SIZE_TOO_SMALL            (32)
 
 typedef void (*EP3_ELF_LDR_ENTRY_POINT_T)(void);
 

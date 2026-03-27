@@ -7,14 +7,14 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define REACTOR_PORT_A                                     (0xFEED)
-#define REACTOR_PORT_B                                     (0xFACE)
-#define REACTOR_MSG_TYPE_GENERAL                           (0)
-#define REACTOR_PORT_NAME_A                                "p/tar_a"
-#define REACTOR_PORT_NAME_B                                "p/tar_b"
+#define REACTOR_PORT_A                 (0xFEED)
+#define REACTOR_PORT_B                 (0xFACE)
+#define REACTOR_MSG_TYPE_GENERAL       (0)
+#define REACTOR_PORT_NAME_A            "p/tar_a"
+#define REACTOR_PORT_NAME_B            "p/tar_b"
 
 typedef enum tagTASK_REACTOR_T {
-	TASK_REACTOR_A,
+	TASK_REACTOR_A = 0,
 	TASK_REACTOR_B,
 } TASK_REACTOR_T;
 

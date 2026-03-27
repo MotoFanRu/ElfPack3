@@ -9,8 +9,8 @@ extern "C" {
 
 #define SYN_NULL                       (0)
 
-#define SYN_TRUE                       (SYN_BOOL) (1)
-#define SYN_FALSE                      (SYN_BOOL) (0)
+#define SYN_TRUE                       ((SYN_BOOL) (1))
+#define SYN_FALSE                      ((SYN_BOOL) (0))
 typedef INT8                           SYN_BOOL;
 
 #define SYN_SUCCESS                    (0)

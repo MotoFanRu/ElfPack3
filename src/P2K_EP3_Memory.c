@@ -36,7 +36,7 @@ void *EP3_Memory_Alloc(UINT32 size) {
 		return address;
 	}
 #else
-#error "Unknown memory manager! Please set FTR_ALLOC_SUAPI, FTR_ALLOC_UIS, FTR_ALLOC_J2ME, etc."
+	#error "Unknown memory manager! Please set FTR_ALLOC_SUAPI, FTR_ALLOC_UIS, FTR_ALLOC_J2ME, etc."
 #endif /* FTR_ALLOC_SUAPI, FTR_ALLOC_UIS, FTR_ALLOC_J2ME */
 }
 
@@ -54,6 +54,6 @@ void EP3_Memory_Free(void *address) {
 		AmMemFreePointer(address);
 	}
 #else
-#error "Unknown memory manager! Please set FTR_ALLOC_SUAPI, FTR_ALLOC_UIS, FTR_ALLOC_J2ME, etc."
+	#error "Unknown memory manager! Please set FTR_ALLOC_SUAPI, FTR_ALLOC_UIS, FTR_ALLOC_J2ME, etc."
 #endif /* FTR_ALLOC_SUAPI, FTR_ALLOC_UIS, FTR_ALLOC_J2ME */
 }

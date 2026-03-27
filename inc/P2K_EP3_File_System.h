@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define PATH_MAX_SHORT                                     (32)
+#define PATH_MAX_SHORT                 (32)
 
 extern BOOL EP3_Find_Internal_System_Component(const char *file_name, WCHAR *out_path);
 

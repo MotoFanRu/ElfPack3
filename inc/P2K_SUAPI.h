@@ -7,58 +7,59 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef UINT32                                             SU_SIZE;
-typedef INT32                                              SU_TIME;
-typedef INT64                                              SU_TIME64;
-typedef INT32                                              SU_TASK_HANDLE;
-typedef UINT32                                             SU_SEMA_HANDLE;
-typedef UINT32                                             SU_SEMA_STATE;
-typedef UINT32                                             SU_INTERRUPT;
-/* Replaced to `VOID *` due to overcomplication of structs. */
-typedef VOID *                                             SU_QUEUE_HANDLE;
-typedef VOID *                                             SU_PORT_HANDLE;
+typedef UINT32                         SU_SIZE;
+typedef INT32                          SU_TIME;
+typedef INT64                          SU_TIME64;
+typedef INT32                          SU_TASK_HANDLE;
+typedef UINT32                         SU_SEMA_HANDLE;
+typedef UINT32                         SU_SEMA_STATE;
+typedef UINT32                         SU_INTERRUPT;
 
-#define SU_NOWAIT                                          (0)
-#define SU_WAIT_1MS                                        (1)
-#define SU_WAIT_FOREVER                                    (LONG_MAX)
-#define SU_SELF                                            ((SU_TASK_HANDLE) (-2))
+/* Replaced to `VOID *` due to overcomplication. */
+typedef VOID *                         SU_QUEUE_HANDLE;
+typedef VOID *                         SU_PORT_HANDLE;
 
-#define SU_SEM_LOCKED                                      (0)
-#define SU_SEM_UNLOCKED                                    (1)
+#define SU_NOWAIT                      (0)
+#define SU_WAIT_1MS                    (1)
+#define SU_WAIT_FOREVER                (LONG_MAX)
+#define SU_SELF                        ((SU_TASK_HANDLE) (-2))
 
-#define SU_INVALID_HANDLE                                  (0)
-#define SU_PORT_LOG_ALWAYS                                 (SU_INVALID_HANDLE)
+#define SU_SEM_LOCKED                  (0)
+#define SU_SEM_UNLOCKED                (1)
 
-enum tagSU_ENUM_T {
-	SU_OK = 0,              /* Successful completion. */
-	SU_EDELETED,            /* Resource deleted. */
-	SU_EEMPTY,              /* Resource is empty. */
-	SU_EINUSE,              /* Resource in use. */
-	SU_EINVFUNC,            /* Invalid function. */
-	SU_EINVPARAM,           /* Invalid parameter. */
-	SU_EINVTIME,            /* Invalid timeout specified. */
-	SU_ENOEXIST,            /* Invalid object handle. */
-	SU_ENOMEM,              /* Insufficient memory. */
-	SU_ETIMEOUT,            /* Timeout occurred before service completed. */
-	SU_ETOOMANY,            /* Object resource limit exceeded. */
-	SU_EFULL,               /* Resource is full. */
-	SU_EUNIMPLEMENTED,      /* Feature not implemented on this platform. */
-	SU_EINVEVENT,           /* Event not allocated to calling task. */
-	SU_EOWN,                /* Task tried to release mutex it doesn't own. */
-	SU_EINVFLAG,            /* Specified flag is unallocated. */
-	SU_EINVLPF=SU_EINVFLAG, /* Specified LP flag is unallocated. */
-	SU_ENOTFOUND,           /* Object was not found (suFindName). */
-	SU_EINVFLGGRP,          /* Specified flag group is invalid. */
-	SU_ESTACKTRACE,         /* Error occurred during stack trace. */
-	SU_ESTACKINFO,          /* Error occurred while generating stack report. */
-	SU_ETASKINFO,           /* Error occurred while generating task report. */
-	SU_ESEMFAILED,          /* Internal RTOS call by SUAPI failed. */
-	SU_EINIT,               /* Initialization was not done. */
-	SU_ESTACKTRACE_EXCEP,   /* Stack trace failed on exception frame. */
-	SU_ESTACKTRACE_FUNC,    /* Stack trace failed on function frame. */
-	SU_ESTACKTRACE_FRSZ     /* Stack trace failed on frame size calculation. */
+#define SU_INVALID_HANDLE              (0)
+#define SU_PORT_LOG_ALWAYS             (SU_INVALID_HANDLE)
+
+enum tagSU_RET_STATUS {
+	SU_OK = 0,                         /* Successful completion. */
+	SU_EDELETED,                       /* Resource deleted. */
+	SU_EEMPTY,                         /* Resource is empty. */
+	SU_EINUSE,                         /* Resource in use. */
+	SU_EINVFUNC,                       /* Invalid function. */
+	SU_EINVPARAM,                      /* Invalid parameter. */
+	SU_EINVTIME,                       /* Invalid timeout specified. */
+	SU_ENOEXIST,                       /* Invalid object handle. */
+	SU_ENOMEM,                         /* Insufficient memory. */
+	SU_ETIMEOUT,                       /* Timeout occurred before service completed. */
+	SU_ETOOMANY,                       /* Object resource limit exceeded. */
+	SU_EFULL,                          /* Resource is full. */
+	SU_EUNIMPLEMENTED,                 /* Feature not implemented on this platform. */
+	SU_EINVEVENT,                      /* Event not allocated to calling task. */
+	SU_EOWN,                           /* Task tried to release mutex it doesn't own. */
+	SU_EINVFLAG,                       /* Specified flag is unallocated. */
+	SU_EINVLPF=SU_EINVFLAG,            /* Specified LP flag is unallocated. */
+	SU_ENOTFOUND,                      /* Object was not found (suFindName). */
+	SU_EINVFLGGRP,                     /* Specified flag group is invalid. */
+	SU_ESTACKTRACE,                    /* Error occurred during stack trace. */
+	SU_ESTACKINFO,                     /* Error occurred while generating stack report. */
+	SU_ETASKINFO,                      /* Error occurred while generating task report. */
+	SU_ESEMFAILED,                     /* Internal RTOS call by SUAPI failed. */
+	SU_EINIT,                          /* Initialization was not done. */
+	SU_ESTACKTRACE_EXCEP,              /* Stack trace failed on exception frame. */
+	SU_ESTACKTRACE_FUNC,               /* Stack trace failed on function frame. */
+	SU_ESTACKTRACE_FRSZ                /* Stack trace failed on frame size calculation. */
 };
-typedef INT32                                              SU_RET_STATUS;
+typedef INT32                          SU_RET_STATUS;
 
 /*
  * Allocate memory for general use.
@@ -91,10 +92,7 @@ typedef INT32                                              SU_RET_STATUS;
  * SU_ENOMEM     -- Fatal     -- Insufficient memory is available to fulfill request.
  * SU_EFAULT     -- Fatal     -- Memory access failure or memory corruption detected.
  */
-extern void *suAllocMem(
-	SU_SIZE buffer_size,
-	SU_RET_STATUS *error_ptr
-);
+extern void *suAllocMem(SU_SIZE buffer_size, SU_RET_STATUS *error_ptr);
 
 /*
  * Free allocated memory.
@@ -111,21 +109,14 @@ extern void *suAllocMem(
  *
  * Any failures detected by this service result in the service calling panic, which does not return any value.
  */
-extern void suFreeMem(
-	void *buffer_ptr
-);
+extern void suFreeMem(void *buffer_ptr);
 
 /*
  * TODO:
  * SU_PORT_HANDLE phandle -- typedef struct SU_PORT_HANDLE_STRUCT *SU_PORT_HANDLE;
  * Huge port struct, not needed here.
  */
-extern void suLogData(
-	SU_PORT_HANDLE phandle,
-	UINT32 msgid,
-	UINT32 num_pairs,
-	...
-);
+extern void suLogData(SU_PORT_HANDLE phandle, UINT32 msgid, UINT32 num_pairs, ...);
 
 // alternative name from VRTXmc
 //extern void sc_lock(void);

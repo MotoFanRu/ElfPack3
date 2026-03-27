@@ -8,7 +8,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define ASCII_NULL                                         ('\0')
+#define ASCII_NULL                     ('\0')
 
 extern int sprintf(char *buffer, const char *format, ...);
 extern int snprintf(char *buffer, size_t maxlen, const char *format, ...);
