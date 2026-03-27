@@ -13,7 +13,7 @@ extern "C" {
 #define REACTOR_PORT_NAME_A                                "p/tar_a"
 #define REACTOR_PORT_NAME_B                                "p/tar_b"
 
-typedef enum {
+typedef enum tagTASK_REACTOR_T {
 	TASK_REACTOR_A,
 	TASK_REACTOR_B,
 } TASK_REACTOR_T;

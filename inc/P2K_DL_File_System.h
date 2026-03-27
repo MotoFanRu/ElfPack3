@@ -15,7 +15,7 @@ typedef UINT32                                             DL_FS_SIZE_T;
 typedef UINT32                                             DL_FS_COUNT_T;
 typedef INT32                                              DL_FS_SEEK_OFFSET_T;
 
-enum DL_FS_OPEN_MODE_ENUM_T {
+enum tagDL_FS_OPEN_MODE_ENUM_T {
 	DL_FS_READ_MODE = 0,         /* Read-only at current position. */
 	DL_FS_WRITE_MODE,            /* Write-only truncate file. */
 	DL_FS_WRITE_EXIST_MODE,      /* Write-only, if file does not exist. */
@@ -27,14 +27,14 @@ enum DL_FS_OPEN_MODE_ENUM_T {
 };
 typedef UINT8                                              DL_FS_OPEN_MODE_T;
 
-enum DL_FS_OWNER_ENUM_T {
+enum tagDL_FS_OWNER_ENUM_T {
 	DL_FS_OWNER_RESERVED = 0,
 	/* Must remain last entry. */
 	DL_FS_OWNER_INVALID
 };
 typedef UINT8                                              DL_FS_OWNER_T;
 
-enum DL_FS_RESULT_ENUM_T {
+enum tagDL_FS_RESULT_ENUM_T {
 	DL_FS_RESULT_SUCCESS = 0,
 	/* 0 is OK, >= 1 is FAIL. */
 	/* TODO: This enum is not complete. */
@@ -42,7 +42,7 @@ enum DL_FS_RESULT_ENUM_T {
 };
 typedef UINT8                                              DL_FS_RESULT_T;
 
-enum DL_FS_SEEK_FROM_ENUM_T {
+enum tagDL_FS_SEEK_FROM_ENUM_T {
 	DL_FS_SEEK_SET = 0, /* The beginning of the file. */
 	DL_FS_SEEK_CUR,     /* The current position. */
 	DL_FS_SEEK_END      /* The end of the file. */

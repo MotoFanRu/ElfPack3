@@ -81,20 +81,18 @@ extern "C" {
 /* BOOL */
 #if !defined(FTR_DONT_DEFINE_SDK_BOOL)
 	typedef unsigned char                                  BOOL;
-	typedef unsigned char                                  BOOLEAN;
 
 	#define TRUE                                           ((BOOL) 1)
 	#define FALSE                                          ((BOOL) 0)
 #endif /* !FTR_DONT_DEFINE_SDK_BOOL */
 
-/* RESULT */
-#if !defined(FTR_DONT_DEFINE_SDK_RESULT)
-	typedef unsigned long                                  RESULT_T;
-	typedef unsigned long                                  STATUS_T;
+/* RESULT STATUS*/
+#if !defined(FTR_DONT_DEFINE_SDK_RESULT_STATUS)
+	typedef unsigned long                                  STATUS;
 
-	#define RESULT_OK                                      ((RESULT_T) 0)
-	#define RESULT_FAIL                                    ((RESULT_T) 1)
-#endif /* !FTR_DONT_DEFINE_SDK_RESULT */
+	#define RESULT_OK                                      ((STATUS) 0)
+	#define RESULT_FAIL                                    ((STATUS) 1)
+#endif /* !FTR_DONT_DEFINE_SDK_RESULT_STATUS */
 
 /* BYTE / WORD / DWORD / QWORD */
 #if !defined(FTR_DONT_DEFINE_SDK_BYTEWORDS)

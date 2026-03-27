@@ -7,6 +7,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef UINT8                          DL_KEY_CODES_T;
+
 extern UINT32 DL_KeyQueryKeypadActivity(void);
 
 #ifdef __cplusplus

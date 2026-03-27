@@ -29,7 +29,7 @@ typedef VOID *                                             SU_PORT_HANDLE;
 #define SU_INVALID_HANDLE                                  (0)
 #define SU_PORT_LOG_ALWAYS                                 (SU_INVALID_HANDLE)
 
-enum SU_ENUM_T {
+enum tagSU_ENUM_T {
 	SU_OK = 0,              /* Successful completion. */
 	SU_EDELETED,            /* Resource deleted. */
 	SU_EEMPTY,              /* Resource is empty. */

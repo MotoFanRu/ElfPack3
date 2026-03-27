@@ -1,6 +1,6 @@
 # SDK and EP3 Migration/Development Log
 
-## 22-Feb-2026...26-Mar-2026
+## 22-Feb-2026...28-Mar-2026
 
 * Working on Aleph library
 * Working on Task API
@@ -48,6 +48,12 @@
   uisReAllocMemory
   uisFreeMemory
   ```
+
+* Migrated structs:
+
+  * APP_INSTANCE_DATA_T (APPLICATION_T) + dependencies.
+  * DL_DB_SHORTCUT_RECORD_T (SEEM_0002_T) + dependencies.
+  * AFW_EVENT_GROUP_T (EVENT_STACK_T) + dependencies.
 
 ## 20-Feb-2026
 
