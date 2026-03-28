@@ -18,11 +18,24 @@ extern "C" {
 #define APP_NAME_SIZE                  (12)
 #define APP_STATE_NAME_SIZE            (12)
 
+#define AFW_INVALID_EVENT_CODE         (-1)
+#define APP_END_EV_TABLE               ((UINT32) AFW_INVALID_EVENT_CODE)
+#define APP_INVALID_FUNCTION_PTR       (SYN_NULL)
+
+#define APP_NO_HISTORY                 (0) /* No data saved in history. */
+#define APP_ONE_LEVEL_HISTORY          (1) /* No state history. */
+/* App priority levels are 0...10, 0 being the lowest. */
+#define APP_PRIORITY_LOW               (0) /* No priority. */
+#define APP_PRIORITY_USER              (1)
+#define APP_PRIORITY_MID               (5)
+#define APP_PRIORITY_HIGH              (10)
+
 typedef const char *                   APP_NAME_T;
 typedef const char *                   APP_STATE_NAME_T;
 
 typedef UINT8                          APP_STATE_T;
 typedef UINT8                          APP_HISTORY_DATA_T;
+typedef AFW_EVENT_CODE_T               APP_EVENT_REG_T;
 
 enum tagAPP_TOKEN_STATUS_T {
 	APP_TOKEN_NONE = 0,
@@ -78,6 +91,7 @@ typedef struct tagAPP_STATE_NAME_TABLE_T {
 	char                               state_name[APP_STATE_NAME_SIZE + 1];
 } APP_STATE_NAME_TABLE_T;
 
+/* should be first in APP_INSTANCE_T */
 /* size = 0x50, 80 bytes was used on all platforms */
 typedef struct tagAPP_INSTANCE_DATA_T {
 	AFW_TOKEN_T                        userinter_token;
@@ -103,6 +117,59 @@ typedef struct tagAPP_INSTANCE_DATA_T {
 	UINT8                              security_level;
 	BYTE                               padding[2];
 } APP_INSTANCE_DATA_T;
+
+extern SYN_RETURN_STATUS_T APP_Register(
+	const APP_EVENT_REG_T              event_reg_table[],
+	UINT8                              number_of_events,
+	const APP_STATE_TRANSIT_T *        p_state_trans_table,
+	APP_STATE_T                        max_states,
+	void *                             p_startup_function
+);
+
+extern SYN_RETURN_STATUS_T APP_HandleUITokenGranted(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+extern SYN_RETURN_STATUS_T APP_HandleUITokenRevoked(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+
+extern APP_INSTANCE_DATA_T *APP_InitAppData(
+	void *                             handle_event_function,
+	UINT32                             app_data_size,
+	AFW_APP_REGISTRY_ID_T              reg_id,
+	UINT32                             history_size,
+	UINT16                             max_state_levels,
+	AFW_APP_PRIORITY_T                 token_priority,
+	AFW_APP_CENTRICNESS_T              centricity,
+	AFW_APP_RSTACK_TYPE_T              routing_stack,
+	AFW_APP_RSTACK_POS_T               stack_priority
+);
+
+extern void APP_HandleEvent(
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd,
+	AFW_APP_INSTANCE_ID_T              app_id,
+	AFW_APP_REGISTRY_ID_T              reg_id
+);
+
+extern void APP_HandleEventPrepost (
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd,
+	AFW_APP_INSTANCE_ID_T              app_id,
+	AFW_APP_REGISTRY_ID_T              reg_id
+);
+
+extern SYN_RETURN_STATUS_T APP_Start(
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd,
+	APP_STATE_T                        init_state,
+	const APP_STATE_TRANSIT_T *        p_state_trans_table,
+	APP_HANDLER_FUNC_T *               exit_app_function,
+	const char *                       p_app_name,
+	const APP_STATE_NAME_TABLE_T *     p_state_name_table
+);
+
+extern SYN_RETURN_STATUS_T APP_HandleFailedAppStart(
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd,
+	void *                             p_data
+);
 
 #ifdef __cplusplus
 }

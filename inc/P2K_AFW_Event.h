@@ -12,6 +12,21 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/*
+ * Fits on all platforms.
+ */
+#define AFW_AFW_RANGE_START            (10)
+#define AFW_EV_NULL                    (AFW_AFW_RANGE_START + 1)
+#define AFW_EV_APP_DONE                (AFW_AFW_RANGE_START + 2)
+#define AFW_EV_SHUT_DOWN_ALL           (AFW_AFW_RANGE_START + 5)
+#define AFW_EV_POWER_DELAY_REQ         (AFW_AFW_RANGE_START + 6)
+#define AFW_EV_POWER_DN                (AFW_AFW_RANGE_START + 7)
+#define AFW_EV_GAIN_FOCUS              (AFW_AFW_RANGE_START + 10)
+#define AFW_EV_LOSE_FOCUS              (AFW_AFW_RANGE_START + 11)
+#define AFW_EV_RENDER                  (AFW_AFW_RANGE_START + 15)
+#define AFW_EV_GRANT_TOKEN             (AFW_AFW_RANGE_START + 20)
+#define AFW_EV_REVOKE_TOKEN            (AFW_AFW_RANGE_START + 21)
+
 #define AFW_GENERIC_BYTE_ARRAY_SIZE    (20)
 
 typedef UINT32                         AFW_EVENT_CODE_T;
@@ -121,6 +136,10 @@ typedef struct tagAFW_EVENT_GROUP_T {
 	AFW_REQUEUE_FLAG_T                 requeue;
 	BYTE                               padding_b;
 } AFW_EVENT_GROUP_T;
+
+extern AFW_EVENT_T *AFW_GetEv(AFW_EVENT_GROUP_T *evg);
+extern AFW_EVENT_CODE_T AFW_GetEvCode(AFW_EVENT_GROUP_T *evg);
+extern AFW_AUF_SEQ_NUM_T AFW_GetEvSeqn(AFW_EVENT_GROUP_T *evg);
 
 #ifdef __cplusplus
 }

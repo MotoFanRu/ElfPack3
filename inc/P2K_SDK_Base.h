@@ -217,7 +217,11 @@ extern "C" {
 	#define WCHAR_MAX                  (USHRT_MAX)
 #endif /* !FTR_DONT_DEFINE_LIMITS */
 
-#if defined(FTR_DONT_DEFINE_DEPRECATED_MACROS)
+#if !defined(FTR_DONT_DEFINE_UNUSED)
+	#define UNUSED(x)                  ((void) (x))
+#endif /* !FTR_DONT_DEFINE_UNUSED */
+
+#if !defined(FTR_DONT_DEFINE_DEPRECATED_MACROS)
 	#define DEPRECATED(x)              __attribute__((deprecated(x)))
 #endif /* !FTR_DONT_DEFINE_DEPRECATED_MACROS */
 

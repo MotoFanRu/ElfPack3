@@ -2,6 +2,7 @@
 #define P2K_AFW_H
 
 #include "P2K_SDK_Base.h"
+#include "P2K_Synergy.h"
 #include "P2K_SUAPI.h"
 
 #ifdef __cplusplus
@@ -15,8 +16,6 @@ typedef UINT32                         AFW_DATA_LOG_APP_ID_T;
 typedef SU_PORT_HANDLE                 AFW_APP_PORT_HDL_T;
 typedef UINT8                          AFW_STACK_ID_T;
 typedef UINT8                          AFW_APP_CALL_API_T;
-typedef UINT8                          AFW_APP_RSTACK_TYPE_T;
-typedef UINT8                          AFW_APP_RSTACK_POS_T;
 typedef UINT8                          AFW_SESSION_ID_T;
 typedef UINT32                         AFW_APP_DATA_HDL_T;
 typedef UINT32                         AFW_APP_PRIORITY_T;
@@ -24,6 +23,26 @@ typedef UINT32                         AFW_APP_COUNT_T;
 
 /* Replaced to `VOID *` due to overcomplication. */
 typedef VOID *                         AFW_APP_PID_FPTR_T;
+
+enum tagAFW_APP_RSTACK_TYPE_T {
+	AFW_PREPROCESSING = 0,
+	AFW_FOCUS,
+	AFW_POSTPROCESSING,
+	AFW_RSTACK_NUM
+};
+typedef UINT8                          AFW_APP_RSTACK_TYPE_T;
+
+enum tagAFW_APP_RSTACK_POS_T {
+	AFW_POSITION_TOP = 0,
+	AFW_POSITION_P0,
+	AFW_POSITION_P1,
+	AFW_POSITION_P2,
+	AFW_POSITION_P3,
+	AFW_POSITION_P4,
+	AFW_POSITION_P5,
+	AFW_POSITION_BOTTOM
+};
+typedef UINT8                          AFW_APP_RSTACK_POS_T;
 
 enum tagAFW_CONSUMED_FLAG_T {
 	AFW_BUF_FLAG_CONSUME = 100,        /* this says you want the AFW to free it */
@@ -94,6 +113,8 @@ struct tagAFW_APP_STACK_T {
 	AFW_APP_STACK_T *                  prev;
 	AFW_APP_STACK_T *                  next;
 };
+
+extern SYN_RETURN_STATUS_T AFW_InquireRoutingStackByRegId(AFW_APP_REGISTRY_ID_T reg_id);
 
 #ifdef __cplusplus
 }

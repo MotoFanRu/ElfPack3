@@ -6,6 +6,7 @@
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_File_System.h>
+#include <P2K_EP3_APP_Viewer.h>
 #include <P2K_EP3_BIN_Loader.h>
 
 __attribute__((used, section(".text.bin.entry_point")))
@@ -15,6 +16,11 @@ void EP3_BIN_Loader_MainRegister(void) {
 	 * calculator application can also register itself in the system.
 	 */
 	APP_CALC_MainRegister();
+
+	/*
+	 * Register viewer application for informing user.
+	 */
+	EP3_APP_Viewer_Register();
 
 	/*
 	 * We need to check keyboard state, and if it is pressed any key during power-on phone, disable loading and running.

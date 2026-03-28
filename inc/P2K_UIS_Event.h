@@ -7,12 +7,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* padding is sizeof(AFW_EVENT_T) - 0x44 */
-typedef union __attribute__((aligned(4))) tagUIS_EV_DATA_TYPES_UNION_T {
+/* padding is sizeof(AFW_EVENT_T) - 0x2C (44 bytes) */
+typedef union tagUIS_EV_DATA_TYPES_UNION_T {
 #if defined(FTR_C330)
 	BYTE                               padding[0xAC];
 #elif defined(FTR_E1)
-	BYTE                               padding[0xAC];
+	BYTE                               padding[0xFC];
 #else
 	#error                            "Please determine padding for UIS_EV_DATA_TYPES_UNION_T union type."
 #endif
