@@ -512,3 +512,21 @@ def get_address_from_map(p_map: Path, name: str) -> int | None:
 
 	E(f'Map definition named "{name}" not found in the "{p_map.name}" file.')
 	return None
+
+def delete_definition(p_in_out: Path, by_name: str) -> bool:
+	definitions = read_definitions(p_in_out)
+	if not definitions:
+		return False
+
+	found = False
+	for d in definitions.defs:
+		if d.name == by_name:
+			found = True
+			definitions.defs.remove(d)
+
+	if found:
+		I(f'Deleted "{by_name}" in "{p_in_out}"!')
+		return write_definitions(p_in_out, definitions)
+
+	W(f'Cannot delete "{by_name}" in "{p_in_out}", entity not found!')
+	return False

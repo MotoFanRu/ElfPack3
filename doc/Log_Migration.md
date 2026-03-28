@@ -1,6 +1,6 @@
 # SDK and EP3 Migration/Development Log
 
-## 22-Feb-2026...28-Mar-2026
+## 22-Feb-2026...31-Mar-2026
 
 * Working on Aleph library
 * Working on Task API
@@ -47,6 +47,19 @@
   uisAllocateMemory
   uisReAllocMemory
   uisFreeMemory
+
+  AFW_InquireRoutingStackByRegId
+  AFW_GetEv
+  AFW_GetEvCode
+  AFW_GetEvSeqn
+  APP_Register
+  APP_HandleUITokenGranted
+  APP_HandleUITokenRevoked
+  APP_InitAppData
+  APP_HandleEvent
+  APP_HandleEventPrepost
+  APP_Start
+  APP_HandleFailedAppStart
   ```
 
 * Migrated structs:
@@ -54,6 +67,23 @@
   * APP_INSTANCE_DATA_T (APPLICATION_T) + dependencies.
   * DL_DB_SHORTCUT_RECORD_T (SEEM_0002_T) + dependencies.
   * AFW_EVENT_GROUP_T (EVENT_STACK_T) + dependencies.
+
+* Deleted from SDK & Libraries:
+
+  ```
+  APP_InitData
+  APP_LockInitAppData
+  APP_LockViewOnlyInitData
+  AFW_GetEvRtid
+
+  EV_GAIN_FOCUS
+  EV_GRANT_TOKEN
+  EV_LOSE_FOCUS
+  EV_POWER_DOWN
+  EV_REVOKE_TOKEN
+  EV_RENDER
+  EV_APP_DONE
+  ```
 
 ## 20-Feb-2026
 

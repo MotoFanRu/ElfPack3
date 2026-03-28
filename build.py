@@ -59,6 +59,7 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 		(P2K_SDK_SRC / 'P2K_EP3_Logger.c',      P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_Memory.c',      P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_File_System.c', P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
+		(P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',  P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),
 		(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',  P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
 	]
 	recipe.tasks and src_obj.append((P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c', P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'))

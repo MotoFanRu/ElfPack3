@@ -44,7 +44,6 @@
 0x1011126C T APP_HandleUITokenGranted
 0x101112BA T APP_HandleUITokenRevoked
 0x10111464 T APP_InitAppData
-0x1011149C T APP_InitData
 0x1011159C T APP_Register
 0x10111622 T APP_Start
 0x101116B2 T APP_StateExit

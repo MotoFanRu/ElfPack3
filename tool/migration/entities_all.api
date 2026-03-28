@@ -133,3 +133,21 @@ PORTABLE_u_strlen
 PORTABLE_u_strncat
 PORTABLE_u_atou
 PORTABLE_u_utoa
+
+# P2K_AFW.h
+AFW_InquireRoutingStackByRegId
+
+# P2K_AFW_Event.h
+AFW_GetEv
+AFW_GetEvCode
+AFW_GetEvSeqn
+
+# P2K_Application.h
+APP_Register
+APP_HandleUITokenGranted
+APP_HandleUITokenRevoked
+APP_InitAppData
+APP_HandleEvent
+APP_HandleEventPrepost
+APP_Start
+APP_HandleFailedAppStart

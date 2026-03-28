@@ -54,6 +54,7 @@ from .definitions import format_definitions
 from .definitions import get_api_from_definitions
 from .definitions import update_definition
 from .definitions import get_address_from_map
+from .definitions import delete_definition
 
 from .assembler import write_assembler_listing
 

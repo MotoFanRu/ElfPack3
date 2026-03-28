@@ -42,12 +42,13 @@ def comparator_helper(args: Namespace) -> bool:
 def regenerator(args: Namespace) -> bool:
 	for suffix in ['.def']:
 		for file_path in P2K_SDK_RES.rglob(f'*{suffix}'):
-			I(f'Formatting "{file_path}" file.')
-			if not format_definitions(file_path, file_path, args.warn_duplicates, args.sort_address):
-				return False
+			if args.format_only:
+				I(f'Formatting "{file_path}" file.')
+				if not format_definitions(file_path, file_path, args.warn_duplicates, args.sort_address):
+					return False
+			if args.delete_name:
+				delete_definition(file_path, args.delete_name)
 			# TODO: Compile here?
-			if not args.format_only:
-				pass
 	return True
 
 def recursive_conversion(args: Namespace) -> bool:
@@ -86,7 +87,8 @@ def args_and_help() -> Namespace:
 	epl = 'examples:\n\n'
 	epl += f'  # Regenerate libraries (or only format def files)\n'
 	epl += f'  python {Path(__file__).name} -r\n'
-	epl += f'  python {Path(__file__).name} -r -f -w\n\n'
+	epl += f'  python {Path(__file__).name} -r -f -w\n'
+	epl += f'  python {Path(__file__).name} -r -d some_function_name\n\n'
 	epl += f'  # Format, validate, and sort definitions file\n'
 	epl += f'  python {Path(__file__).name} -i ep3.sym\n'
 	epl += f'  python {Path(__file__).name} -i ep3.sym -a -w\n\n'
@@ -115,6 +117,7 @@ def args_and_help() -> Namespace:
 		'A': 'skip addresses during comparison',
 		'T': 'skip types during comparison',
 		'S': 'swap input and compared files',
+		'd': 'delete entity by name (use with -r)',
 		'v': 'enable verbose output'
 	}
 
@@ -136,6 +139,7 @@ def args_and_help() -> Namespace:
 	parser.add_argument('-A', '--skip_addr', action='store_true', help=hlp['A'])
 	parser.add_argument('-T', '--skip_type', action='store_true', help=hlp['T'])
 	parser.add_argument('-S', '--swap', action='store_true', help=hlp['S'])
+	parser.add_argument('-d', '--delete-name', type=str, default=None, help=hlp['d'])
 	parser.add_argument('-v', '--verbose', action='store_true', help=hlp['v'])
 	return parser.parse_and_check_args()
 
