@@ -3,7 +3,7 @@ from argparse import Namespace
 from argparse import ArgumentParser
 
 class Arguments(ArgumentParser):
-	def error(self, message: str) -> None:
+	def error(self, message: str):
 		self.print_help(sys.stderr)
 		self.exit(2, f'\n{self.prog}: error: {message}\n')
 

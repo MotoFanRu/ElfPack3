@@ -8,12 +8,16 @@ from .logger import W
 from .logger import E
 from .stringer import is_blank
 
-def check_paths_aux(paths: Path | list[Path], check_method: Callable[[Path], bool], warn: bool = False) -> bool:
+def check_paths_aux(paths: list[Path], check_method: Callable[[Path], bool], warn: bool = False) -> bool:
 	if isinstance(paths, Path):
 		paths = [paths]
 
 	for path in paths:
-		if path is None or not check_method(path):
+		if path is None:
+			if warn:
+				W(f'Path "{path}" is None.')
+			return False
+		if not check_method(path):
 			if warn:
 				entity = 'Directory' if path.is_dir() else 'File'
 				W(f'{entity} "{path}" does not exist or is the wrong type.')
@@ -21,14 +25,14 @@ def check_paths_aux(paths: Path | list[Path], check_method: Callable[[Path], boo
 
 	return True
 
-def check_dirs(paths: Path | list[Path], warn: bool = False) -> bool:
+def check_dirs(paths: list[Path], warn: bool = False) -> bool:
 	return check_paths_aux(paths, lambda p: p.is_dir(), warn)
 
-def check_files(paths: Path | list[Path], warn: bool = False) -> bool:
+def check_files(paths: list[Path], warn: bool = False) -> bool:
 	return check_paths_aux(paths, lambda p: p.is_file(), warn)
 
 def create_clean_dir(dir_path: Path, delete_files: bool = True) -> bool:
-	if check_dirs(dir_path):
+	if check_dirs([dir_path]):
 		for item in dir_path.iterdir():
 			if item.is_file() or item.is_symlink():
 				if delete_files:
@@ -44,7 +48,7 @@ def create_clean_dir(dir_path: Path, delete_files: bool = True) -> bool:
 	return True
 
 def read_text_file(file_path_in: Path) -> str | None:
-	if not check_files(file_path_in, True):
+	if not check_files([file_path_in], True):
 		return None
 	try:
 		text = file_path_in.read_text(encoding="utf-8").strip()
@@ -56,7 +60,9 @@ def read_text_file(file_path_in: Path) -> str | None:
 		E(f'Failed to read input file "{file_path_in}": "{e}"')
 		return None
 
-def write_text_file(file_path_out: Path, text: str) -> bool:
+def write_text_file(file_path_out: Path, text: str | None) -> bool:
+	if not text:
+		return False
 	try:
 		if is_blank(text):
 			E(f'Cannot write empty content to file: "{file_path_out}"')

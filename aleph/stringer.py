@@ -1,6 +1,6 @@
 from collections import Counter
 
-def is_blank(text: str) -> bool:
+def is_blank(text: str | None) -> bool:
 	return not (text and text.strip())
 
 def is_blank_list[T](lines: list[T]) -> bool:

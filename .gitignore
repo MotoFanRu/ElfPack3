@@ -10,3 +10,7 @@ arm-gcc-win*
 arm-gcc-lin*
 mcore-gcc-win*
 mcore-gcc-lin*
+
+CMakeLists.txt
+cmake-build-debug
+cmake-build-release

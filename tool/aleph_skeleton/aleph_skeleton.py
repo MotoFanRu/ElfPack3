@@ -17,6 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from aleph import *
 
 def do_work(args: Namespace) -> bool:
+	if args.verbose:
+		I('Verbose mode enabled {check}.')
 	return True
 
 def args_and_help() -> Namespace:

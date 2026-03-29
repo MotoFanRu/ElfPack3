@@ -10,6 +10,8 @@ from config import *
 
 def assembler_helper(p_in: Path, p_out: Path) -> bool:
 	d = read_definitions(p_in)
+	if not d:
+		return False
 	if not d.head.pfw in RECIPES.keys():
 		E(f'Cannot find recipe for "{d.head.pfw}" in config!')
 		return False

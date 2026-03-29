@@ -8,7 +8,7 @@ from .hexer import is_valid_32bit_addr
 from .filesystem import read_text_file
 from .filesystem import write_text_file
 
-def generate_assembler_definition(max_len: int, def_type: str, def_name: str, def_val: str) -> str | None:
+def generate_assembler_definition(max_len: int, def_type: str, def_name: str, def_val: str | None) -> str | None:
 	if is_blank(def_type) or is_blank(def_name) or is_blank(def_val):
 		return None
 
@@ -17,7 +17,7 @@ def generate_assembler_definition(max_len: int, def_type: str, def_name: str, de
 
 	return f'def_{def_type} {def_name + ",":<{max_len}} {def_val}'
 
-def generate_assembler_listing(p_assembler_template: Path, definitions: Definitions) -> str | None:
+def generate_assembler_listing(p_assembler_template: Path, definitions: Definitions | None) -> str | None:
 	if not definitions:
 		return None
 
@@ -41,10 +41,16 @@ def generate_assembler_listing(p_assembler_template: Path, definitions: Definiti
 
 	markers = ['%ENTITY_LISTING%']
 	patches = [''.join(map(lambda s: f'\t{s}\n', listing))]
-	return patch_text(markers, patches, asm_template) + '\n'
+	patch = patch_text(markers, patches, asm_template)
+	if not patch:
+		return None
 
-def write_assembler_listing(p_assembler_template: Path, p_assembler_listing: Path, definitions: Definitions) -> bool:
-	return write_text_file(p_assembler_listing, generate_assembler_listing(p_assembler_template, definitions))
+	return patch + '\n'
+
+def write_assembler_listing(p_asm_template: Path, p_asm_listing: Path, definitions: Definitions | None) -> bool:
+	if not definitions:
+		return False
+	return write_text_file(p_asm_listing, generate_assembler_listing(p_asm_template, definitions))
 
 def parse_equ_assembler_line(line: str, mcore_asm: bool = False) -> tuple[str, str, str] | None:
 	line = line.strip()

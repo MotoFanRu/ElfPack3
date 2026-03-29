@@ -43,7 +43,7 @@ def get_definitions_by_addr(defs: list[Definitions.Definition], addr: int) -> li
 def get_definitions_by_types(defs: list[Definitions.Definition], types: list[str]) -> list[Definitions.Definition]:
 	return [d for d in defs if d.type in types]
 
-def get_definitions_by_name(defs: list[Definitions.Definition], name: str) -> list[Definitions.Definition]:
+def get_definitions_by_name(defs: list[Definitions.Definition], name: str | None) -> list[Definitions.Definition]:
 	return [d for d in defs if d.name == name]
 
 def format_definition_string(definition: Definitions.Definition) -> str:
@@ -97,6 +97,8 @@ def parse_validate_symbols_header(content: str) -> tuple[str, str, str] | None:
 		('# Firmware: ', 'Cannot find firmware line in the header.'),
 	]
 	lines = find_header_lines(lines_c, required)
+	if not lines:
+		return None
 	if len(lines) != 2:
 		E(f'Cannot find phone firmware in header: "{lines}"')
 		return None
@@ -120,6 +122,8 @@ def parse_validate_definitions_header(content: str) -> tuple[str, str, str] | No
 		('# CPU ', 'Cannot find CPU line (architecture) in the header.')
 	]
 	lines = find_header_lines(lines_c, required)
+	if not lines:
+		return None
 	if not validate_header_info(lines):
 		return None
 
@@ -204,7 +208,7 @@ def validate_addresses_and_names(defs: list[Definitions.Definition], warn_duplic
 
 	l = W if warn_duplicates else D
 	addrs_d = find_duplicates(addrs)
-	if len(addrs_d) > 0:
+	if addrs_d and len(addrs_d) > 0:
 		l('Duplicate addresses found:')
 		for addr in addrs_d:
 			l('')
@@ -212,7 +216,7 @@ def validate_addresses_and_names(defs: list[Definitions.Definition], warn_duplic
 				l(f'{format_definition_string(d)}')
 
 	names_d = find_duplicates(names)
-	if len(names_d) > 0:
+	if names_d and len(names_d) > 0:
 		E('Duplicate names found:')
 		for name in names_d:
 			E('')
@@ -236,7 +240,7 @@ def sort_definitions(defs: list[Definitions.Definition], by_addresses: bool) -> 
 
 	return consts + addrs + funcs
 
-def parse_definitions_api(content: str) -> Definitions | None:
+def parse_definitions_api(content: str | None) -> Definitions | None:
 	if not content:
 		return None
 
@@ -245,6 +249,8 @@ def parse_definitions_api(content: str) -> Definitions | None:
 		return None
 
 	definitions = sort_definitions(definitions, False)
+	if not definitions:
+		return None
 
 	return Definitions(
 		head=Definitions.Header(
@@ -275,6 +281,8 @@ def read_definitions(p_in: Path, warn_duplicates: bool = False, sort_by_addrs: b
 		return None
 
 	definitions = sort_definitions(definitions, sort_by_addrs)
+	if not definitions:
+		return None
 
 	return Definitions(
 		head=Definitions.Header(
@@ -312,7 +320,7 @@ def convert_def_to_sym(defs: list[Definitions.Definition]) -> list[Definitions.D
 				d.type = 'A'
 	return defs
 
-def write_definitions(p_out: Path, definitions: Definitions, update_version: bool = True) -> bool:
+def write_definitions(p_out: Path, definitions: Definitions | None, update_version: bool = True) -> bool:
 	if not definitions:
 		return False
 	sym_format = p_out.suffix == '.sym'
@@ -334,7 +342,9 @@ def pack_def_string(d: Definitions.Definition, skip_addr: bool = False, skip_typ
 		return f'{d.type} {d.name}'
 	return None
 
-def unpack_name_from_def_string(def_string: str, skip_addr: bool = False, skip_type: bool = False) -> str | None:
+def unpack_name_from_def_string(def_string: str | None, skip_addr: bool = False, skip_type: bool = False) -> str | None:
+	if not def_string:
+		return None
 	if not skip_addr and not skip_type:
 		def_addr, def_type, def_name = def_string.split()
 		return def_name
@@ -389,7 +399,7 @@ def comparator_report(
 	return None
 
 def compare_definitions_aux(
-	defs_a: Definitions, defs_b: Definitions,
+	defs_a: Definitions | None, defs_b: Definitions | None,
 	skip_addr: bool = False, skip_type: bool = False,
 	api_listing: bool = False
 ) -> bool:
@@ -463,7 +473,9 @@ def get_api_from_definitions(p_def: Path, p_api: Path) ->  Definitions | None:
 
 	return definitions
 
-def update_definition(p_def: Path, def_addr: int, def_type: str, def_name: str) -> bool:
+def update_definition(p_def: Path, def_addr: int | None, def_type: str, def_name: str) -> bool:
+	if not def_addr:
+		return False
 	definitions = read_definitions(p_def)
 	if not definitions:
 		E(f'Cannot read and parse definitions from "{p_def.name}" file.')
@@ -489,13 +501,18 @@ def update_definition(p_def: Path, def_addr: int, def_type: str, def_name: str) 
 			name=def_name,
 		))
 
-	definitions.defs = sort_definitions(definitions.defs, False)
+	defs = sort_definitions(definitions.defs, False)
+	if not defs:
+		return False
+	definitions.defs = defs
 
 	return write_definitions(p_def, definitions, bump_ver)
 
-def get_address_from_map(p_map: Path, name: str) -> int | None:
+def get_address_from_map(p_map: Path, name: str | None) -> int | None:
 	content = read_text_file(p_map)
 	if not content:
+		return None
+	if not name:
 		return None
 
 	# Partial parsing of MAP format files generated by `nm` utility from GCC (binutils).
