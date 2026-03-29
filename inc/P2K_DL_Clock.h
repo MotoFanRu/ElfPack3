@@ -15,6 +15,18 @@ typedef struct tagDL_CLK_TIMER_IFACE_DATA_T {
 	UINT32                             timer_data;
 } DL_CLK_TIMER_IFACE_DATA_T;
 
+typedef struct tagDL_CLK_DATE_T {
+	UINT8                              day;
+	UINT8                              month;
+	UINT8                              year;
+} DL_CLK_DATE_T;
+
+typedef struct tagDL_CLK_TIME_T {
+	UINT8                              hour;
+	UINT8                              minute;
+	UINT8                              seconds;
+} DL_CLK_TIME_T;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

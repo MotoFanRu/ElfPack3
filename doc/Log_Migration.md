@@ -14,6 +14,7 @@
   snprintf
   vsprintf
   vsnprintf
+  memset
 
   DL_KeyQueryKeypadActivity
 
@@ -60,6 +61,14 @@
   APP_HandleEventPrepost
   APP_Start
   APP_HandleFailedAppStart
+  APP_ConsumeEv
+  APP_UtilChangeState
+  APP_UtilConsumeEvChangeState
+  APP_Exit
+
+  UIS_MakeContentFromString
+  UIS_CreateViewer
+  UIS_Delete
   ```
 
 * Migrated structs:
@@ -67,6 +76,8 @@
   * APP_INSTANCE_DATA_T (APPLICATION_T) + dependencies.
   * DL_DB_SHORTCUT_RECORD_T (SEEM_0002_T) + dependencies.
   * AFW_EVENT_GROUP_T (EVENT_STACK_T) + dependencies.
+  * UIS_ACTION_LIST_T + dependencies.
+  * UIS_CONTENT_T + dependencies.
 
 * Deleted from SDK & Libraries:
 

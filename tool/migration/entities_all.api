@@ -12,6 +12,7 @@ sprintf
 snprintf
 vsprintf
 vsnprintf
+memset
 
 # P2K_C_Lib_Portable.h
 PORTABLE_strlen
@@ -151,3 +152,12 @@ APP_HandleEvent
 APP_HandleEventPrepost
 APP_Start
 APP_HandleFailedAppStart
+APP_ConsumeEv
+APP_UtilChangeState
+APP_UtilConsumeEvChangeState
+APP_Exit
+
+# P2K_UIS.h
+UIS_MakeContentFromString
+UIS_CreateViewer
+UIS_Delete

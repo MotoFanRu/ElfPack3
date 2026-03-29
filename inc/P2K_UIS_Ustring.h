@@ -10,6 +10,7 @@ extern "C" {
 #define UNICODE_NULL                   L'\0'
 
 typedef UINT16                         UIS_STRING_T;
+typedef char                           UIS_FORMAT_STRING_T;
 
 /*
  * Convert a Unicode string to a long.

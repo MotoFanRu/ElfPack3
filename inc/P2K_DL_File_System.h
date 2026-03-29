@@ -14,6 +14,7 @@ typedef UINT16                         DL_FS_HANDLE_T;
 typedef UINT32                         DL_FS_SIZE_T;
 typedef UINT32                         DL_FS_COUNT_T;
 typedef INT32                          DL_FS_SEEK_OFFSET_T;
+typedef UINT64                         DL_FS_MID_T;
 
 enum tagDL_FS_OPEN_MODE_T {
 	DL_FS_READ_MODE = 0,               /* Read-only at current position. */

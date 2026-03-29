@@ -1,5 +1,7 @@
 #include <P2K_Application.h>
+#include <P2K_UIS.h>
 #include <P2K_Logger.h>
+#include <P2K_C_Lib.h>
 
 #include <P2K_EP3_APP_Viewer.h>
 
@@ -101,23 +103,45 @@ static SYN_RETURN_STATUS_T AppMainStart(AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGIST
 }
 
 static SYN_RETURN_STATUS_T AppMainExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd) {
-	UNUSED(p_evg);
-	UNUSED(p_apd);
+
+	APP_ConsumeEv(p_evg, p_apd);
+
+	APP_INSTANCE_T *appi = (APP_INSTANCE_T *) p_apd;
+	if (appi->app.dialog_hdl != UIS_NULL_HANDLE) {
+		UIS_Delete(appi->app.dialog_hdl);
+		appi->app.dialog_hdl = UIS_NULL_HANDLE;
+	}
+
+	APP_Exit(p_evg, p_apd, SYN_NULL);
+
 	return SYN_SUCCESS;
 }
 
 static SYN_RETURN_STATUS_T AppViewEnter(AFW_EVENT_GROUP_T *p_evg, void *p_apd, APP_STATE_ENTRY_ACTION_T action) {
 	UNUSED(p_evg);
-	UNUSED(p_apd);
+	// UNUSED(p_apd);
 	UNUSED(action);
 
-	if (action == APP_VIEW_ENTER) {
+	APP_INSTANCE_T *appi = (APP_INSTANCE_T *) p_apd;
+	if (appi->app.dialog_hdl != UIS_NULL_HANDLE) {
+		UIS_Delete(appi->app.dialog_hdl);
+		appi->app.dialog_hdl = UIS_NULL_HANDLE;
+	}
 
-		// UIS_Delete
-		// memset
-		// memclr
-		
+	UIS_DIALOG_HANDLE_T dialog_handle = UIS_NULL_HANDLE;
 
+	AFW_APP_PORT_HDL_T port = appi->app.port_id;
+	APP_STATES_T state = (APP_STATES_T) appi->app.state;
+
+	UIS_CONTENT_T content;
+
+	memset(&content, 0, sizeof(UIS_CONTENT_T));
+
+	UIS_MakeContentFromString("q0Nq1", &content, L"MotoFan.Ru", L"Hello Moto");
+
+	dialog_handle = UIS_CreateViewer(port, &content, SYN_NULL);
+	if (dialog_handle != UIS_NULL_HANDLE) {
+		appi->app.dialog_hdl = dialog_handle;
 	}
 
 	return SYN_SUCCESS;
@@ -125,7 +149,14 @@ static SYN_RETURN_STATUS_T AppViewEnter(AFW_EVENT_GROUP_T *p_evg, void *p_apd, A
 
 static SYN_RETURN_STATUS_T AppViewExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd, APP_STATE_ENTRY_ACTION_T action) {
 	UNUSED(p_evg);
-	UNUSED(p_apd);
+	// UNUSED(p_apd);
 	UNUSED(action);
+
+	APP_INSTANCE_T *appi = (APP_INSTANCE_T *) p_apd;
+
+	if (appi->app.dialog_hdl != UIS_NULL_HANDLE) {
+		UIS_Delete(appi->app.dialog_hdl);
+		appi->app.dialog_hdl = UIS_NULL_HANDLE;
+	}
 	return SYN_SUCCESS;
 }

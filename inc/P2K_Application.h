@@ -185,6 +185,8 @@ extern SYN_RETURN_STATUS_T APP_UtilConsumeEvChangeState(
 	APP_INSTANCE_DATA_T *              p_apd
 );
 
+extern SYN_RETURN_STATUS_T APP_Exit(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd, void *p_data);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

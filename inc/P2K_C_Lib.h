@@ -16,6 +16,8 @@ extern int snprintf(char *buffer, size_t maxlen, const char *format, ...);
 extern int vsprintf(char *buffer, const char *format, va_list arglist);
 extern int vsnprintf(char *buffer, size_t maxlen, const char *format, va_list arglist);
 
+extern void *memset(void *dstpp, int c, size_t len);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

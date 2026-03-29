@@ -186,9 +186,7 @@
 0193 A APP_AIRPLANEMODE_MainRegister
 0195 A APP_ChangeRoutingStack
 0196 T APP_COLOR_MainRegister
-0197 A APP_ConsumeEv
 0198 A APP_Done
-0199 A APP_Exit
 0200 A APP_ExitStateAndApp
 0201 T APP_FSS_GetFileTypeIcon
 0202 T APP_GetInstData
@@ -219,9 +217,7 @@
 0238 A APP_UtilAddEvUISListChange
 0239 A APP_UtilAddEvUISListData
 0240 T APP_UtilAddEvUISSetData
-0241 A APP_UtilChangeState
 0242 A APP_UtilConsumeEvAndExit
-0243 A APP_UtilConsumeEvChangeState
 0244 A APP_UtilGetAppName
 0245 T APP_UtilGetDataVolume
 0246 A APP_UtilHistGoToPrevState
@@ -699,7 +695,6 @@
 0731 A memcmp
 0732 A memcpy
 0733 A memmove
-0734 A memset
 0735 D mma_default_file_name
 0736 D mma_dyn_index_file_name
 0737 D mma_dyn_temp_ucp_file_name
@@ -958,9 +953,7 @@
 1041 A UIS_CreateStaticList
 1042 A UIS_CreateStaticSelectionEditor
 1043 A UIS_CreateTransientNotice
-1044 A UIS_CreateViewer
 1045 A UIS_CreateViewerWithTitle
-1046 A UIS_Delete
 1047 C UIS_FONT_INFO
 1048 A UIS_ForceRefresh
 1049 A UIS_FormatDate
@@ -979,7 +972,6 @@
 1062 A UIS_ITAPMasterClear
 1063 A UIS_ITAPOpen
 1064 A UIS_MakeContentFromResource
-1065 A UIS_MakeContentFromString
 1066 C UIS_NULL_DIALOG_TYPE
 1067 A UIS_Refresh
 1068 A UIS_SetActionList
