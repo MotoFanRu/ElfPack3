@@ -4,7 +4,6 @@
 #include "P2K_SDK_Base.h"
 #include "P2K_Synergy.h"
 #include "P2K_DRM.h"
-#include "P2K_AFW_Event.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,12 +41,12 @@ typedef struct tagDL_DB_SHORTCUT_RECORD_T {
 	UINT8                              shortcut_number;  /* - associated shortcut number used to select, begin from 1 */
 	DL_MEDIA_VR_MODEL_T                voice_tag;        /* - associated voice shortcut model id */
 	UINT32                             startup_event;    /* - event to queue to invoke shortcut */
-	DL_DB_LIST_ITEM_T                  list_item;        /* - if list, highlighted list item value */
+	DL_DB_LIST_ITEM_T                  list_item;        /* - if listed, highlighted list item value */
 	DL_DB_LIST_ITEM_T                  value_list_item;  /* - if sub_dialog list, highlighted list item value */
 	INT32                              data;             /* - 32-bit field, can be used as pointer to reference */
 	                                                     /*   external data, pointer to URL, database record, etc. */
 	                                                     /*   Referenced data is not stored, only the ptr value. */
-	DRM_RESOURCE_ID_T                  label_resource;   /* - unicode string name to display in shortcut list */
+	DRM_RESOURCE_ID_T                  label_resource;   /* - Unicode string name to display in shortcut list */
 	WCHAR                              label[DL_DB_SHORTCUT_MAX_LABEL_LENGTH + 1];
 	UINT8                              state_tag;        /* - app state to jump to when invoking shortcut */
 	SYN_BOOL                           modifiable;

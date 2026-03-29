@@ -65,7 +65,7 @@ typedef INT32                          SU_RET_STATUS;
  * Allocate memory for general use.
  *
  * This service allocates contiguous bytes of memory. Memory is allocated from a set of fixed buffer size
- * memory pools using a best fit algorithm. The product designer is responsible for configuring the
+ * memory pools using the best fit algorithm. The product designer is responsible for configuring the
  * buffer pools used by this service.
  *
  * The minimum memory allocated is determined by the fixed memory configuration.
@@ -75,7 +75,7 @@ typedef INT32                          SU_RET_STATUS;
  * fit fixed memory pool is exhausted.
  *
  * For SUAPI on VRTXmc, allocations of 4 bytes or larger are guaranteed to be aligned on a 4 byte boundary.
- * For everything else, allocations are guaranteed to be aligned on a 8 byte boundary.
+ * For everything else, allocations are guaranteed to be aligned on an 8 byte boundary.
  *
  * `buffer_size` -- The number of contiguous bytes of memory requested.
  * `error_ptr`   -- Pointer to the location to store the error status. If err is `NULL` and a fatal error

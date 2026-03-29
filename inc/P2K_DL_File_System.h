@@ -54,8 +54,8 @@ typedef UINT8                          DL_FS_SEEK_FROM_T;
  */
 extern DL_FS_HANDLE_T DL_FsOpenFile(
 	const WCHAR *                      file_uri,
-	const DL_FS_OPEN_MODE_T            open_mode,
-	const DL_FS_OWNER_T                owner_id
+	DL_FS_OPEN_MODE_T                  open_mode,
+	DL_FS_OWNER_T                      owner_id
 );
 
 /*
@@ -68,8 +68,8 @@ extern DL_FS_RESULT_T DL_FsCloseFile(DL_FS_HANDLE_T file_handle);
  */
 extern DL_FS_RESULT_T DL_FsReadFile(
 	void *                             buffer,
-	const DL_FS_SIZE_T                 element_size,
-	const DL_FS_COUNT_T                count,
+	DL_FS_SIZE_T                       element_size,
+	DL_FS_COUNT_T                      count,
 	DL_FS_HANDLE_T                     file_handle,
 	DL_FS_COUNT_T *                    elements_read
 );
@@ -79,8 +79,8 @@ extern DL_FS_RESULT_T DL_FsReadFile(
  */
 extern DL_FS_RESULT_T DL_FsWriteFile(
 	void *                             buffer,
-	const DL_FS_SIZE_T                 element_size,
-	const DL_FS_COUNT_T                count,
+	DL_FS_SIZE_T                       element_size,
+	DL_FS_COUNT_T                      count,
 	DL_FS_HANDLE_T                     file_handle,
 	DL_FS_COUNT_T *                    elements_written
 );
@@ -90,8 +90,8 @@ extern DL_FS_RESULT_T DL_FsWriteFile(
  */
 extern DL_FS_RESULT_T DL_FsFSeekFile(
 	DL_FS_HANDLE_T                     file_handle,
-	const DL_FS_SEEK_OFFSET_T          offset,
-	const DL_FS_SEEK_FROM_T            seek_from
+	DL_FS_SEEK_OFFSET_T                offset,
+	DL_FS_SEEK_FROM_T                  seek_from
 );
 
 /*
@@ -102,7 +102,7 @@ extern DL_FS_SIZE_T DL_FsGetFileSize(DL_FS_HANDLE_T file_handle);
 /*
  * This function is called by application to find out size of the file by file path.
  */
-extern DL_FS_SIZE_T DL_FsSGetFileSize(const WCHAR *file_uri, const DL_FS_OWNER_T owner_id);
+extern DL_FS_SIZE_T DL_FsSGetFileSize(const WCHAR *file_uri, DL_FS_OWNER_T owner_id);
 
 #ifdef __cplusplus
 }

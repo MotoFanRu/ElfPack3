@@ -46,7 +46,7 @@ typedef UINT8                          AFW_APP_RSTACK_POS_T;
 
 enum tagAFW_CONSUMED_FLAG_T {
 	AFW_BUF_FLAG_CONSUME = 100,        /* this says you want the AFW to free it */
-	AFW_BUF_FLAG_READ_ONLY,            /* this says it's your's and the AFW or apps are not to modify it */
+	AFW_BUF_FLAG_READ_ONLY,            /* this says it's yours and the AFW or apps are not to modify it */
 	AFW_BUF_FLAG_INVALID
 };
 typedef UINT8                          AFW_CONSUMED_FLAG_T;

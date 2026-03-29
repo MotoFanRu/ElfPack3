@@ -30,6 +30,7 @@ void EP3_Reactor_Task_A(void) {
 	UINTPTR *global_port_addr = (UINTPTR *) GET_DATA_ADDR(reactor_core_port_a);
 	if (global_port_addr == NULL) {
 		L("[EP3 TAR A]: %s.\n", "Reactor core port address is NULL");
+		return;
 	}
 
 	L("[EP3 TAR A]: Save reactor port handle '0x%08X' to '0x%08X' address.\n", (UINTPTR) port_handle, global_port_addr);
@@ -78,6 +79,7 @@ void EP3_Reactor_Task_B(void) {
 	UINTPTR *global_port_addr = (UINTPTR *) GET_DATA_ADDR(reactor_core_port_b);
 	if (global_port_addr == NULL) {
 		L("[EP3 TAR B]: %s.\n", "Reactor core port address is NULL");
+		return;
 	}
 
 	L("[EP3 TAR B]: Save reactor port handle '0x%08X' to '0x%08X' address.\n", (UINTPTR) port_handle, global_port_addr);

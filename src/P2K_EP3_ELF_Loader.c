@@ -2,7 +2,6 @@
 #include <P2K_Logger.h>
 #include <P2K_SUAPI.h>
 #include <P2K_J2ME_System.h>
-#include <P2K_DL_Keypad.h>
 
 #include <P2K_EP3_Task_Reactor.h>
 

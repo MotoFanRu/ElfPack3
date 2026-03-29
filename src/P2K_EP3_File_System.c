@@ -17,7 +17,7 @@ BOOL EP3_Find_Internal_System_Component(const char *file_name, WCHAR *out_path) 
 	out_path_str[0] = ASCII_NULL;
 	out_path[0] = UNICODE_NULL;
 
-	for (UINT8 i = 0; i < ARRAY_SIZE(disks); ++i) {
+	for (int i = 0; i < ARRAY_SIZE(disks); ++i) {
 		/* Check 1: `/disk/` + `file_name` in loop. */
 		if (snprintf(out_path_str, PATH_MAX_SHORT, "/%s/%s", disks[i], file_name) < PATH_MAX_SHORT) {
 			D("Will check: %s\n", out_path_str);

@@ -1,8 +1,6 @@
 #ifndef P2K_EP3_APP_VIEWER_H
 #define P2K_EP3_APP_VIEWER_H
 
-#include "P2K_AFW_Event.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

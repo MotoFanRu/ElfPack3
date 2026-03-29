@@ -169,12 +169,12 @@ extern INT32 u_strcmp(const UIS_STRING_T *s1, const UIS_STRING_T *s2);
 /**
  * Compare two ustrings for bitwise equality.
  * Compares at most <TT>n</TT> characters.
- * @param s1 A string to compare.
- * @param s2 A string to compare.
+ * @param ucs1 A string to compare.
+ * @param ucs2 A string to compare.
  * @param n The maximum number of characters to compare.
- * @return 0 if <TT>s1</TT> and <TT>s2</TT> are bitwise equal; a negative
- * value if <TT>s1</TT> is bitwise less than <TT>s2,/TT>; a positive
- * value if <TT>s1</TT> is bitwise greater than <TT>s2,/TT>.
+ * @return 0 if <TT>ucs1</TT> and <TT>ucs2</TT> are bitwise equal; a negative
+ * value if <TT>ucs1</TT> is bitwise less than <TT>ucs2</TT>; a positive
+ * value if <TT>ucs1</TT> is bitwise greater than <TT>ucs2</TT>.
  */
 extern INT32 u_strncmp(const UIS_STRING_T *ucs1, const UIS_STRING_T *ucs2, INT32 n);
 
@@ -244,7 +244,7 @@ extern UIS_STRING_T *u_strmakeupper(UIS_STRING_T *str);
  *  c   The character to search for.
  * return A pointer to c or null if not found.
  */
-extern UIS_STRING_T *u_strrchr(UIS_STRING_T *src, const UIS_STRING_T c);
+extern UIS_STRING_T *u_strrchr(UIS_STRING_T *src, UIS_STRING_T c);
 
 /* This function will search a string for a specified substring in a case sensitive manner */
 extern UIS_STRING_T *u_strstr(UIS_STRING_T *p_source, UIS_STRING_T *p_search);

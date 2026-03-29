@@ -110,6 +110,16 @@ static SYN_RETURN_STATUS_T AppViewEnter(AFW_EVENT_GROUP_T *p_evg, void *p_apd, A
 	UNUSED(p_evg);
 	UNUSED(p_apd);
 	UNUSED(action);
+
+	if (action == APP_VIEW_ENTER) {
+
+		// UIS_Delete
+		// memset
+		// memclr
+		
+
+	}
+
 	return SYN_SUCCESS;
 }
 

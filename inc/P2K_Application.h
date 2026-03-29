@@ -171,6 +171,20 @@ extern SYN_RETURN_STATUS_T APP_HandleFailedAppStart(
 	void *                             p_data
 );
 
+extern SYN_RETURN_STATUS_T APP_ConsumeEv(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+
+extern SYN_RETURN_STATUS_T APP_UtilChangeState(
+	APP_STATE_T                        new_state,
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd
+);
+
+extern SYN_RETURN_STATUS_T APP_UtilConsumeEvChangeState(
+	APP_STATE_T                        new_state,
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd
+);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -2,7 +2,6 @@
 #define P2K_DRM_H
 
 #include "P2K_SDK_Base.h"
-#include "P2K_SUAPI.h"
 
 #ifdef __cplusplus
 extern "C" {
