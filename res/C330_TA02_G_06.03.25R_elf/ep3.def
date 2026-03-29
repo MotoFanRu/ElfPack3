@@ -2,44 +2,51 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW C330_TA02_G_06.03.25R_elf
-# VER EP3_10-Mar-2026
+# VER EP3_30-Mar-2026
 # CPU ARM7
-
-0x00156BA6 T APP_CALC_MainRegister
-0x000C7DC0 T DL_FsOpenFile
-0x000C8178 T DL_FsSGetFileSize
-0x000C7E42 T DL_FsReadFile
-0x000C7E08 T DL_FsCloseFile
-0x0040DF8C T snprintf
-0x000AFFC4 T suAllocMem
-0x000B0172 T suFreeMem
-0x0014DF60 T DL_KeyQueryKeypadActivity
-
-#0x0057011C T PFprintf
-0x0007A334 T DL_DdWriteDisplayRegion
-
-0x00077E34 T suCreateTask
-0x00077FA8 T suDeleteTask
-
-0x00419A60 T suDisableSched
-0x00419E8C T suEnableSched
-0x00077A2A T suReceiveMessageFromQueue
-0x000778EC T suDeleteMessage
-0x00077FCC T suSleep
-
-0x0007783C T suCreateQueue
-0x000B034A T suCreatePortFromQueue
-0x000B125A T suRegisterName
-0x000778B0 T suCreateMessage
-0x000B042C T suSendMessage
-
-0x000781D4 T suCreateBSem
-0x0007838C T suCreateMSem
-0x000782A4 T suCreateCSem
-0x000786F4 T suAcquireSem
-0x0007857A T suReleaseSem
-0x00078466 T suDeleteSem
 
 0x1106B010 D reactor_core_port_a
 0x1106B014 D reactor_core_port_b
-0x00570288 T EP3_Send_To_Reactor
+0x0019BCFC T AFW_GetEvCode
+0x0019BF94 T AFW_InquireRoutingStackByRegId
+0x00156BA6 T APP_CALC_MainRegister
+0x00151B56 T APP_ConsumeEv
+0x00151C86 T APP_Exit
+0x00151E08 T APP_HandleEvent
+0x0015204C T APP_HandleFailedAppStart
+0x001520AC T APP_HandleUITokenGranted
+0x00152108 T APP_HandleUITokenRevoked
+0x00152160 T APP_InitAppData
+0x00152354 T APP_Register
+0x001523E4 T APP_Start
+0x000C7E08 T DL_FsCloseFile
+0x000C7DC0 T DL_FsOpenFile
+0x000C7E42 T DL_FsReadFile
+0x000C8178 T DL_FsSGetFileSize
+0x0014DF60 T DL_KeyQueryKeypadActivity
+0x0057028C T EP3_Send_To_Reactor
+0x0040DBE4 T memset
+0x0040DF8C T snprintf
+0x000786F4 T suAcquireSem
+0x000AFFC4 T suAllocMem
+0x000781D4 T suCreateBSem
+0x000782A4 T suCreateCSem
+0x000778B0 T suCreateMessage
+0x0007838C T suCreateMSem
+0x000B034A T suCreatePortFromQueue
+0x0007783C T suCreateQueue
+0x00077E34 T suCreateTask
+0x000778EC T suDeleteMessage
+0x00078466 T suDeleteSem
+0x00077FA8 T suDeleteTask
+0x00419A60 T suDisableSched
+0x00419E8C T suEnableSched
+0x000B0172 T suFreeMem
+0x00077A2A T suReceiveMessageFromQueue
+0x000B125A T suRegisterName
+0x0007857A T suReleaseSem
+0x000B042C T suSendMessage
+0x00077FCC T suSleep
+0x000CB7A2 T UIS_CreateViewer
+0x000CB944 T UIS_Delete
+0x000CBEDA T UIS_MakeContentFromString

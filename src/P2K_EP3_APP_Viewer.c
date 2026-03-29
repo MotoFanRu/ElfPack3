@@ -88,7 +88,7 @@ static SYN_RETURN_STATUS_T AppMainStart(AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGIST
 	SYN_RETURN_STATUS_T status = APP_Start(
 		p_evg,
 		&(appi->app),
-		APP_STATE_INIT,
+		APP_STATE_VIEW,
 		app_state_trans_table,
 		AppMainExit,
 		app_name_string, SYN_NULL

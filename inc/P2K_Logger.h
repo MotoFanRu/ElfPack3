@@ -18,7 +18,7 @@ extern "C" {
 #if defined(FTR_DEBUG)
 	#define D(format, ...)             P2K_LOG(format, ##__VA_ARGS__)
 	#define DU(message)                EP3_Logger_Unicode(message)
-	#define P()                        D("Debug!\n")
+	#define P()                        D("%s\n", "Debug!")
 #else
 	#define D(format, ...)             do { } while (0)
 	#define DU(message)                do { } while (0)
