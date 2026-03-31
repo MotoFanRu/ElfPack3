@@ -11,6 +11,7 @@ extern "C" {
 	#define FTR_DONT_DEFINE_SDK_CLIKE_TYPES                (0)
 	#define FTR_DONT_DEFINE_SDK_RUST_TYPES                 (0)
 	#define FTR_DONT_DEFINE_SDK_NULL                       (0)
+	#define FTR_DONT_DEFINE_SDK_NULL_ADDR                  (0)
 	#define FTR_DONT_DEFINE_SDK_BOOL                       (0)
 	#define FTR_DONT_DEFINE_SDK_RESULT_STATUS              (0)
 	#define FTR_DONT_DEFINE_SDK_BYTEWORDS                  (0)

@@ -5,8 +5,6 @@
 # VER EP3_30-Mar-2026
 # CPU ARM7
 
-0x1106B010 D reactor_core_port_a
-0x1106B014 D reactor_core_port_b
 0x0019BCFC T AFW_GetEvCode
 0x0019BF94 T AFW_InquireRoutingStackByRegId
 0x00156BA6 T APP_CALC_MainRegister
@@ -24,7 +22,6 @@
 0x000C7E42 T DL_FsReadFile
 0x000C8178 T DL_FsSGetFileSize
 0x0014DF60 T DL_KeyQueryKeypadActivity
-0x0057028C T EP3_Send_To_Reactor
 0x0040DBE4 T memset
 0x0040DF8C T snprintf
 0x000786F4 T suAcquireSem
@@ -50,3 +47,4 @@
 0x000CB7A2 T UIS_CreateViewer
 0x000CB944 T UIS_Delete
 0x000CBEDA T UIS_MakeContentFromString
+0x000B139E T suFindName

@@ -13,24 +13,15 @@ from argparse import RawDescriptionHelpFormatter
 
 from config import *
 
-def build_lib(recipe_name: str, recipe: Recipe, lib_name: str) -> bool:
-	I(f' Building "{recipe_name}" {lib_name} library.')
+def build_ep3_lib(recipe_name: str, recipe: Recipe) -> bool:
+	I(f' Building "{recipe_name}" library.')
 
-	lib_name = lib_name.replace(' ', '_')
 	asm_tpl = recipe.soc.asm
-	asm_src = P2K_SDK_BUILD / asm_tpl.name.replace('.tpl', f'_{lib_name}')
+	asm_src = P2K_SDK_BUILD / asm_tpl.name.replace('.tpl', '')
 	asm_obj = P2K_SDK_BUILD / asm_src.name.replace('.S', '.o')
 	def_res = P2K_SDK_RES / recipe_name / 'ep3.def'
 
-	if lib_name == 'STUB_BIN_LDR':
-		defines = get_api_from_definitions(def_res, P2K_SDK_API / 'EP3_BIN_Loader.api')
-		defines_reactor = get_api_from_definitions(def_res, P2K_SDK_API / 'EP3_Task_Reactor.api')
-		if recipe.tasks and defines and defines_reactor:
-			defines.defs = defines.defs + defines_reactor.defs
-	elif lib_name == 'STUB_ELF_LDR':
-		defines = get_api_from_definitions(def_res, P2K_SDK_API / 'EP3_ELF_Loader.api')
-	else:
-		defines = read_definitions(def_res)
+	defines = read_definitions(def_res)
 
 	if not write_assembler_listing(asm_tpl, asm_src, defines):
 		E(f'Cannot create assembly listing: "{def_res.name}" => "{asm_src}"')
@@ -76,7 +67,7 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	]
 	elf_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
 	objs = [obj for _, obj in src_obj]
-	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '_STUB_BIN_LDR.o'))
+	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
 	if not gcc_link(recipe, objs, elf_res, lflags):
 		E(f'Cannot link ELF executable file: "{elf_res}"')
 		return False
@@ -85,14 +76,6 @@ def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	if not gcc_nm(recipe, elf_res, map_res):
 		E(f'Cannot extract symbols: "{map_res}"')
 		return False
-
-	if recipe.tasks:
-		update_definition(
-			P2K_SDK_RES / recipe_name / 'ep3.def',
-			get_address_from_map(map_res, 'EP3_Send_To_Reactor'),
-			'T' if recipe.soc.cpu.startswith('ARM') else 'M',
-			'EP3_Send_To_Reactor'
-		)
 
 	bin_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.bin'
 	if not gcc_bin(recipe, elf_res, bin_res):
@@ -127,7 +110,7 @@ def build_elf_ldr(recipe_name: str, recipe: Recipe) -> bool:
 	]
 	elf_res = P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.elf'
 	objs = [obj for _, obj in src_obj]
-	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '_STUB_ELF_LDR.o'))
+	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
 	objs.append(P2K_SDK_BUILD / 'P2K_EP3_Logger.o')
 	objs.append(P2K_SDK_BUILD / 'P2K_EP3_Memory.o')
 	objs.append(P2K_SDK_BUILD / 'P2K_EP3_File_System.o')
@@ -159,9 +142,8 @@ def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
 		return False
 
 	build_steps = [
-		(build_lib, [recipe_name, recipe, 'STUB_BIN_LDR'], 'Cannot build STUB BIN LDR Library'),
+		(build_ep3_lib, [recipe_name, recipe], 'Cannot build EP3 Library'),
 		(build_bin_ldr, [recipe_name, recipe], 'Cannot build BIN Loader'),
-		(build_lib, [recipe_name, recipe, 'STUB_ELF_LDR'], 'Cannot build STUB ELF LDR Library'),
 		(build_elf_ldr, [recipe_name, recipe], 'Cannot build ELF Loader'),
 	]
 

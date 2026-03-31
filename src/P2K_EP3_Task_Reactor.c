@@ -2,51 +2,40 @@
 #include <P2K_SUAPI.h>
 #include <P2K_Logger.h>
 
-#include <P2K_EP3_BIN_Loader.h>
 #include <P2K_EP3_Task_Reactor.h>
+
+static SU_QUEUE_HANDLE EP3_Reactor_Create_Task_Port_Queue(UINT16 port_id, const char *port_name);
 
 __attribute__((used, section(".text.task.a.entry_point")))
 void EP3_Reactor_Task_A(void) {
 	SU_RET_STATUS status;
-	SU_QUEUE_HANDLE queue_handle = suCreateQueue(&status);
+
+	SU_QUEUE_HANDLE queue_handle = EP3_Reactor_Create_Task_Port_Queue(REACTOR_PORT_A, REACTOR_PORT_NAME_A);
+	if (queue_handle == NULL) {
+		D("[EP3 TAR A]: %s\n", "Failed to create task port queue.");
+		return;
+	}
+
+	/* Register EP3_API_Reactor_Send_To_Core() as API function. */
+	UINTPTR reactor_function = (UINTPTR) &EP3_API_Reactor_Send_To_Core;
+	suRegisterName(REACTOR_FUNC_NAME, (UINT32) reactor_function, &status);
 	if (status != SU_OK) {
-		L("[EP3 TAR A]: Failed to create queue handle, status: '%d'.\n", status);
+		D("[EP3 TAR A]: Register '%s', '0x%08X' failed, status: '%d'.\n", REACTOR_FUNC_NAME, reactor_function, status);
 		return;
 	}
-
-	SU_PORT_HANDLE port_handle = suCreatePortFromQueue(queue_handle, REACTOR_PORT_A, &status);
-	if (status != SU_OK) {
-		L("[EP3 TAR A]: Failed to create port handle, status: '%d'.\n", status);
-		return;
-	}
-
-	suRegisterName(REACTOR_PORT_NAME_A, (UINT32) port_handle, &status);
-	if (status != SU_OK) {
-		L("[EP3 TAR A]: Failed to register port, status: '%d'.\n", status);
-		return;
-	}
-
-	/* The "0x???????? D reactor_core_port_a" global value should be declarated. */
-	UINTPTR *global_port_addr = (UINTPTR *) GET_DATA_ADDR(reactor_core_port_a);
-	if (global_port_addr == NULL) {
-		L("[EP3 TAR A]: %s.\n", "Reactor core port address is NULL");
-		return;
-	}
-
-	L("[EP3 TAR A]: Save reactor port handle '0x%08X' to '0x%08X' address.\n", (UINTPTR) port_handle, global_port_addr);
-	*global_port_addr = (UINTPTR) port_handle;
-
-#if defined(FTR_USE_TASK_REACTOR)
-	EP3_BIN_Loader_MainRegister(void);
-#endif
+	D("[EP3 TAR A]: Registered API function '0x%08X' as '%s' name.\n", reactor_function, REACTOR_FUNC_NAME);
 
 	while (TRUE) {
 		/* Endless task loop for EP3_Reactor_Task_A. */
 		UINTPTR *msg = (UINTPTR *) suReceiveMessageFromQueue(queue_handle, SU_WAIT_FOREVER, &status);
-		if (msg != NULL) {
-			UINTPTR msg_addr = (UINTPTR) *msg;
-			D("[EP3 TAR A]: Get message '0x%08X' with addr '0x%08X'.\n", (UINTPTR) msg, msg_addr);
+		if ((status == SU_OK) && (msg != NULL)) {
+			UINTPTR msg_addr = *msg;
+			D("[EP3 TAR A]: Got message '0x%08X' with addr '0x%08X'.\n", (UINTPTR) msg, msg_addr);
+
 			suDeleteMessage(msg, &status);
+			if (status != SU_OK) {
+				D("[EP3 TAR A]: Cannot delete message '0x%08X', status: %d.\n", (UINTPTR) msg, status);
+			}
 
 			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) msg_addr);
 			task_routine();
@@ -57,41 +46,24 @@ void EP3_Reactor_Task_A(void) {
 __attribute__((used, section(".text.task.b.entry_point")))
 void EP3_Reactor_Task_B(void) {
 	SU_RET_STATUS status;
-	SU_QUEUE_HANDLE queue_handle = suCreateQueue(&status);
-	if (status != SU_OK) {
-		L("[EP3 TAR B]: Failed to create queue handle, status: '%d'.\n", status);
+
+	SU_QUEUE_HANDLE queue_handle = EP3_Reactor_Create_Task_Port_Queue(REACTOR_PORT_B, REACTOR_PORT_NAME_B);
+	if (queue_handle == NULL) {
+		D("[EP3 TAR B]: %s.\n", "Failed to create task port queue");
 		return;
 	}
-
-	SU_PORT_HANDLE port_handle = suCreatePortFromQueue(queue_handle, REACTOR_PORT_B, &status);
-	if (status != SU_OK) {
-		L("[EP3 TAR B]: Failed to create port handle, status: '%d'.\n", status);
-		return;
-	}
-
-	suRegisterName(REACTOR_PORT_NAME_B, (UINT32) port_handle, &status);
-	if (status != SU_OK) {
-		L("[EP3 TAR B]: Failed to register port, status: '%d'.\n", status);
-		return;
-	}
-
-	/* The "0x???????? D reactor_core_port_b" global value should be declarated. */
-	UINTPTR *global_port_addr = (UINTPTR *) GET_DATA_ADDR(reactor_core_port_b);
-	if (global_port_addr == NULL) {
-		L("[EP3 TAR B]: %s.\n", "Reactor core port address is NULL");
-		return;
-	}
-
-	L("[EP3 TAR B]: Save reactor port handle '0x%08X' to '0x%08X' address.\n", (UINTPTR) port_handle, global_port_addr);
-	*global_port_addr = (UINTPTR) port_handle;
 
 	while (TRUE) {
 		/* Endless task loop for EP3_Reactor_Task_B. */
 		UINTPTR *msg = (UINTPTR *) suReceiveMessageFromQueue(queue_handle, SU_WAIT_FOREVER, &status);
-		if (msg != NULL) {
-			UINTPTR msg_addr = (UINTPTR) *msg;
-			D("[EP3 TAR B]: Get message '0x%08X' with addr '0x%08X'.\n", (UINTPTR) msg, msg_addr);
+		if ((status == SU_OK) && (msg != NULL)) {
+			UINTPTR msg_addr = *msg;
+			D("[EP3 TAR B]: Got message '0x%08X' with addr '0x%08X'.\n", (UINTPTR) msg, msg_addr);
+
 			suDeleteMessage(msg, &status);
+			if (status != SU_OK) {
+				D("[EP3 TAR B]: Cannot delete message '0x%08X', status: %d.\n", (UINTPTR) msg, status);
+			}
 
 			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) msg_addr);
 			task_routine();
@@ -99,45 +71,81 @@ void EP3_Reactor_Task_B(void) {
 	}
 }
 
-__attribute__((used, section(".text.tasks.reactor")))
-BOOL EP3_Send_To_Reactor(UINTPTR function_routine_address, TASK_REACTOR_T reactor) {
-	SU_RET_STATUS status;
-
-	SU_PORT_HANDLE port_handle = NULL;
-	switch (reactor) {
-		case TASK_REACTOR_A:
-			port_handle = (SU_PORT_HANDLE) GET_DATA(reactor_core_port_a);
-			break;
-		case TASK_REACTOR_B:
-			port_handle = (SU_PORT_HANDLE) GET_DATA(reactor_core_port_b);
-			break;
-		default:
-			L("[EP3 TAR]: Unknown reactor task: '0x%02X'\n", reactor);
-			break;
+BOOL EP3_API_Reactor_Send_To_Core(const char *port_name, UINTPTR function_routine_address) {
+	if (port_name == NULL) {
+		D("[EP3 TAR]: %s\n", "Argument port_name is NULL.");
+		return FALSE;
 	}
-	if (port_handle == NULL) {
-		L("[EP3 TAR]: Port handle of '0x%02X' reactor task is NULL!\n", reactor);
+	if (function_routine_address == NULL_ADDR) {
+		D("[EP3 TAR]: %s\n", "Argument function_routine_address is NULL_ADDR (0x00000000).");
 		return FALSE;
 	}
 
-	D(
-		"[EP3 TAR]: Reactor ID, Port Handle, Routine Addr: '0x%02X', '0x%08X', '0x%08X'.\n",
-		reactor, port_handle, function_routine_address
-	);
+	SU_RET_STATUS status;
+
+	SU_PORT_HANDLE port_handle = (SU_PORT_HANDLE) suFindName(port_name, SU_NOWAIT, &status);
+	if (status != SU_OK) {
+		D("[EP3 TAR]: Failed to find port '%s', status: '%d'.\n", port_name, status);
+		return FALSE;
+	}
+	if (port_handle == NULL) {
+		D("[EP3 TAR]: %s\n", "Variable port_handle is NULL.");
+		return FALSE;
+	}
 
 	UINTPTR *msg = (UINTPTR *) suCreateMessage(sizeof(UINTPTR), REACTOR_MSG_TYPE_GENERAL, port_handle, &status);
 	if (status != SU_OK) {
-		D("[EP3 TAR]: Failed to create message, status: '%d'.\n", status);
+		D("[EP3 TAR]: Failed to create message for '%s' port, status: '%d'.\n", port_name, status);
 		return FALSE;
 	}
 
 	*msg = function_routine_address;
 
+	D(
+		"[EP3 TAR]: Send msg to '%s', port=0x%08X, msg=0x%08X, func_addr=0x%08X.\n",
+		port_name, port_handle, msg, function_routine_address
+	);
+
 	suSendMessage(msg, port_handle, &status);
 	if (status != SU_OK) {
-		D("[EP3 TAR]: Failed to send message, status: '%d'.\n", status);
+		D("[EP3 TAR]: Failed to send message to '%s' port, status: '%d'.\n", port_name, status);
+
+		suDeleteMessage(msg, &status);
+		if (status != SU_OK) {
+			D("[EP3 TAR]: Cannot delete message '0x%08X', status: %d.\n", (UINTPTR) msg, status);
+		}
+
 		return FALSE;
 	}
 
 	return TRUE;
+}
+
+static SU_QUEUE_HANDLE EP3_Reactor_Create_Task_Port_Queue(UINT16 port_id, const char *port_name) {
+	SU_RET_STATUS status;
+
+	SU_QUEUE_HANDLE queue_handle = suCreateQueue(&status);
+	if (status != SU_OK) {
+		D("[EP3 TAR]: Failed to create queue, status: '%d'.\n", status);
+		return NULL;
+	}
+
+	SU_PORT_HANDLE port_handle = suCreatePortFromQueue(queue_handle, port_id, &status);
+	if (status != SU_OK) {
+		D("[EP3 TAR]: Failed to create port '%d', status: '%d'.\n", port_id, status);
+		return NULL;
+	}
+
+	suRegisterName(port_name, (UINT32) port_handle, &status);
+	if (status != SU_OK) {
+		D("[EP3 TAR]: Failed to register port '%s', status: '%d'.\n", port_name, status);
+		return NULL;
+	}
+
+	D(
+		"[EP3 TAR]: Task '0x%04X' '%s' registered, port_handle='0x%08X', queue_handle='0x%08X'.\n",
+		port_id, port_name, (UINTPTR) port_handle, (UINTPTR) queue_handle
+	);
+
+	return queue_handle;
 }

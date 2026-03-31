@@ -1,15 +1,3 @@
-# EP3 Task Reactor needed functions and data addresses.
-
-suCreateQueue
-suCreatePortFromQueue
-suRegisterName
-suReceiveMessageFromQueue
-
-suCreateMessage
-suSendMessage
-suDeleteMessage
-suFindName
-
 AFW_GetEvCode
 AFW_InquireRoutingStackByRegId
 APP_InitAppData

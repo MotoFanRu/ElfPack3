@@ -9,24 +9,18 @@ extern "C" {
 
 #define REACTOR_PORT_A                 (0xFEED)
 #define REACTOR_PORT_B                 (0xFACE)
+#define REACTOR_FUNC_NAME              "ep3/tar"
+#define REACTOR_PORT_NAME_A            "ep3/tar_a"
+#define REACTOR_PORT_NAME_B            "ep3/tar_b"
 #define REACTOR_MSG_TYPE_GENERAL       (0)
-#define REACTOR_PORT_NAME_A            "p/tar_a"
-#define REACTOR_PORT_NAME_B            "p/tar_b"
-
-typedef enum tagTASK_REACTOR_T {
-	TASK_REACTOR_A = 0,
-	TASK_REACTOR_B,
-} TASK_REACTOR_T;
 
 typedef void (*EP3_REACTOR_ROUTINE_T)(void);
 
 extern void EP3_Reactor_Task_A(void);
 extern void EP3_Reactor_Task_B(void);
 
-extern BOOL EP3_Send_To_Reactor(UINTPTR function_routine_address, TASK_REACTOR_T reactor);
-
-extern RAW_DATA UINTPTR *reactor_core_port_a;
-extern RAW_DATA UINTPTR *reactor_core_port_b;
+typedef BOOL (*EP3_REACTOR_SEND_TO_CORE_T)(const char *port_name, UINTPTR function_routine_address);
+extern BOOL EP3_API_Reactor_Send_To_Core(const char *port_name, UINTPTR function_routine_address);
 
 #ifdef __cplusplus
 }

@@ -139,6 +139,7 @@ extern SU_INTERRUPT suSetInt(SU_INTERRUPT prevstate);
 extern SU_QUEUE_HANDLE suCreateQueue(SU_RET_STATUS *err);
 extern SU_PORT_HANDLE suCreatePortFromQueue(SU_QUEUE_HANDLE qhandle, UINT16 portid, SU_RET_STATUS *err);
 extern void suRegisterName(const char *name, UINT32 handle, SU_RET_STATUS *err);
+extern UINT32 suFindName(const char *name, SU_TIME timeout, SU_RET_STATUS *err);
 extern void *suReceiveMessageFromQueue(SU_QUEUE_HANDLE qhandle, SU_TIME timeout, SU_RET_STATUS *err);
 extern void *suCreateMessage(UINT32 size, UINT32 type, SU_PORT_HANDLE replyport, SU_RET_STATUS *err);
 extern void suSendMessage(void *message, SU_PORT_HANDLE phandle, SU_RET_STATUS *err);

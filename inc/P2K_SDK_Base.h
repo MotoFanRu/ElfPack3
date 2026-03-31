@@ -78,6 +78,11 @@ extern "C" {
 	#endif /* !__cplusplus */
 #endif /* !FTR_DONT_DEFINE_SDK_NULL */
 
+/* NULL_ADDR */
+#if !defined(FTR_DONT_DEFINE_SDK_NULL_ADDR)
+	#define NULL_ADDR                  (0x00000000)
+#endif /* !FTR_DONT_DEFINE_SDK_NULL_ADDR */
+
 /* BOOL */
 #if !defined(FTR_DONT_DEFINE_SDK_BOOL)
 	typedef unsigned char              BOOL;

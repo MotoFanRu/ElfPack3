@@ -5,7 +5,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define APP_VIEWER_STARTUP_EVENT       ((AFW_EVENT_CODE_T) 0xAAA0)
+#define APP_VIEWER_STARTUP_EVENT       ((AFW_EVENT_CODE_T) 0x0000039A)
 
 extern void EP3_APP_Viewer_Register(void);
 
