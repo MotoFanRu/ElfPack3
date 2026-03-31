@@ -10,6 +10,7 @@ from .skeleton import Toolchain
 from .skeleton import P2K_SDK_GCC
 from .skeleton import P2K_SDK_INC
 from .invoker import invoke_run_input
+from .filesystem import read_text_file
 
 IS_WINDOWS = os.name == 'nt'
 
@@ -136,4 +137,11 @@ def gcc_nm(recipe: Recipe, p_in: Path, p_out: Path, custom_flags: list[str] | No
 		p_in
 	]
 
-	return invoke_run_input([p_in], command, p_out)
+	status = invoke_run_input([p_in], command, p_out)
+	content = read_text_file(p_out)
+	if not content:
+		return False
+
+	D(f'{content}')
+
+	return status

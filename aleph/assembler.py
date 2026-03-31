@@ -50,6 +50,12 @@ def generate_assembler_listing(p_assembler_template: Path, definitions: Definiti
 def write_assembler_listing(p_asm_template: Path, p_asm_listing: Path, definitions: Definitions | None) -> bool:
 	if not definitions:
 		return False
+
+	from .definitions import validate_addresses_and_names
+
+	if not validate_addresses_and_names(definitions.defs, True):
+		return False
+
 	return write_text_file(p_asm_listing, generate_assembler_listing(p_asm_template, definitions))
 
 def parse_equ_assembler_line(line: str, mcore_asm: bool = False) -> tuple[str, str, str] | None:
