@@ -15,7 +15,6 @@ SECTIONS {
 		KEEP(*(.text.bin.entry_point))
 		KEEP(*(.text.task.a.entry_point))
 		KEEP(*(.text.task.b.entry_point))
-		KEEP(*(.text.tasks.reactor))
 		*(.text .text.*)
 		*(.rodata .rodata.*)
 		*(.data .data.*)

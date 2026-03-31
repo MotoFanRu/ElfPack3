@@ -77,7 +77,9 @@ static void task_c(void) {
 }
 
 __attribute__((used, section(".text.bin.entry_point")))
-void EP3_ELF_Loader_MainRegister(void) {
+STATUS EP3_ELF_Loader_MainRegister(const UINTPTR *args) {
+	UNUSED(args);
+
 	SU_RET_STATUS status;
 
 	L("%s\n", "Hello Moto!");
@@ -86,11 +88,11 @@ void EP3_ELF_Loader_MainRegister(void) {
 	EP3_Reactor_Send_To_Core = (EP3_REACTOR_SEND_TO_CORE_T) suFindName(REACTOR_FUNC_NAME, SU_NOWAIT, &status);
 	if (status != SU_OK) {
 		D("[EP3 TAR]: Failed to find func '%s', status: '%d'.\n", REACTOR_FUNC_NAME, status);
-		return;
+		return RESULT_FAIL;
 	}
 	if (EP3_Reactor_Send_To_Core == NULL) {
-		D("[EP3 TAR]: %s\n", "Variable port_handle is NULL!");
-		return;
+		D("[EP3 TAR]: %s\n", "Function pointer 'EP3_Reactor_Send_To_Core' is NULL!");
+		return RESULT_FAIL;
 	}
 
 	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_A, (UINTPTR) &task_a);
@@ -98,4 +100,6 @@ void EP3_ELF_Loader_MainRegister(void) {
 	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_A, (UINTPTR) &task_c);
 
 	L("%s\n", "End!");
+
+	return RESULT_OK;
 }
