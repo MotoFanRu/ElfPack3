@@ -29,6 +29,11 @@ extern "C" {
 
 #define AFW_GENERIC_BYTE_ARRAY_SIZE    (20)
 
+#define AFW_SEQN_GENERIC               (-1)
+#define AFW_ROUTE_ID_GENERIC           (36)
+#define AFW_FRAMEWORK_EV_CATG          (0)
+#define AFW_LOG_ID_GENERIC             (0)
+
 typedef UINT32                         AFW_EVENT_CODE_T;
 typedef UINT8                          AFW_EVENT_CATG_T;
 typedef UINT8                          AFW_EVENT_TIME_T;
@@ -57,6 +62,16 @@ enum tagAFW_TONE_CMD_T {
 	AFW_STOP_TONE
 };
 typedef UINT8                          AFW_TONE_CMD_T;
+
+enum tagAFW_SVC_EV_TYPE_T {
+	AFW_NON_SVC_REQ = 0,
+	AFW_REPORT_UNHANDLED_SVC_REQ,
+	AFW_UNHANDLED_SVC_REQ_OCCURRED,
+	AFW_SVC_REQ_NULL_EVG,
+	AFW_SVC_REQ_NULL_EV,
+	AFW_SERVICE_RESPONSE
+};
+typedef UINT8                          AFW_SVC_EV_TYPE_T;
 
 typedef struct tagAFW_EV_DATA_APP_REG_T {
 	AFW_EVENT_CODE_T                   ev_code_subscribing_to;
@@ -140,6 +155,88 @@ typedef struct tagAFW_EVENT_GROUP_T {
 extern AFW_EVENT_T *AFW_GetEv(AFW_EVENT_GROUP_T *evg);
 extern AFW_EVENT_CODE_T AFW_GetEvCode(AFW_EVENT_GROUP_T *evg);
 extern AFW_AUF_SEQ_NUM_T AFW_GetEvSeqn(AFW_EVENT_GROUP_T *evg);
+
+#define AFW_HAS_EVDATA(data) \
+	(data != (AFW_EVENT_DATA_T *) SYN_NULL)
+
+#define AFW_CreateInternalQueuedEv(code, catg, log_id, data, bflag, bsize, auxd) \
+	((AFW_HAS_EVDATA(data)) ? \
+		AFW_CreateInternalQueuedEvAuxD(code, data, bflag, bsize, auxd) : \
+		AFW_CreateInternalQueuedEvAux(code, bflag, bsize, auxd))
+
+#define AFW_CreateInternalQueuedSvcEv(code, seqn, rtid, catg, log_id, data, bflag, bsize, auxd, svc) \
+	((AFW_HAS_EVDATA(data)) ? \
+		AFW_CreateInternalQueuedSvcEvAuxD(code, seqn, rtid, data, bflag, bsize, auxd, svc) : \
+		AFW_CreateInternalQueuedSvcEvAux(code, seqn, rtid, bflag, bsize, auxd, svc))
+
+#define AFW_CreateInternalQueuedEvAux(code, bflag, bsize, auxd) \
+	AFW_CreateInternalQueuedEvPriv( \
+		code, \
+		(AFW_AUF_SEQ_NUM_T) AFW_SEQN_GENERIC, \
+		AFW_ROUTE_ID_GENERIC, \
+		AFW_FRAMEWORK_EV_CATG, \
+		AFW_LOG_ID_GENERIC, \
+		SYN_NULL, \
+		bflag, \
+		bsize, \
+		auxd, \
+		AFW_NON_SVC_REQ \
+	)
+
+#define AFW_CreateInternalQueuedEvAuxD(code, data, bflag, bsize, auxd) \
+	AFW_CreateInternalQueuedEvPriv( \
+		code, \
+		(AFW_AUF_SEQ_NUM_T) AFW_SEQN_GENERIC, \
+		AFW_ROUTE_ID_GENERIC, \
+		AFW_FRAMEWORK_EV_CATG, \
+		AFW_LOG_ID_GENERIC, \
+		data, \
+		bflag, \
+		bsize, \
+		auxd, \
+		AFW_NON_SVC_REQ \
+	)
+
+#define AFW_CreateInternalQueuedSvcEvAux(code, seqn, rtid, bflag, bsize, auxd, svc) \
+	AFW_CreateInternalQueuedSvcEvPriv( \
+		code, \
+		seqn, \
+		rtid, \
+		AFW_FRAMEWORK_EV_CATG, \
+		AFW_LOG_ID_GENERIC, \
+		SYN_NULL, \
+		bflag, \
+		bsize, \
+		auxd, \
+		svc \
+	)
+
+#define AFW_CreateInternalQueuedSvcEvAuxD(code, seqn, rtid, data, bflag, bsize, auxd, svc) \
+	AFW_CreateInternalQueuedSvcEvPriv( \
+		code, \
+		seqn, \
+		rtid, \
+		AFW_FRAMEWORK_EV_CATG, \
+		AFW_LOG_ID_GENERIC, \
+		data, \
+		bflag, \
+		bsize, \
+		auxd, \
+		svc \
+	)
+
+extern SYN_RETURN_STATUS_T AFW_CreateInternalQueuedEvPriv(
+	AFW_EVENT_CODE_T                   ev_code,
+	AFW_AUF_SEQ_NUM_T                  ev_seqn,
+	AFW_EV_ROUTE_ID_T                  ev_rtid,
+	AFW_EVENT_CATG_T                   ev_catg,
+	AFW_DATA_LOG_APP_ID_T              log_id,
+	AFW_EVENT_DATA_T *                 ev_data,
+	AFW_EV_BUF_FLAG_T                  ev_bflag,
+	AFW_EV_BUF_SIZE_T                  ev_bsize,
+	AFW_EV_BUF_T *                     ev_auxd,
+	AFW_SVC_EV_TYPE_T                  svc_type
+);
 
 #ifdef __cplusplus
 }

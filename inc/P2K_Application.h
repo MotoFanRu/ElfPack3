@@ -25,10 +25,22 @@ extern "C" {
 #define APP_NO_HISTORY                 (0) /* No data saved in history. */
 #define APP_ONE_LEVEL_HISTORY          (1) /* No state history. */
 /* App priority levels are 0...10, 0 being the lowest. */
-#define APP_PRIORITY_LOW               (0) /* No priority. */
-#define APP_PRIORITY_USER              (1)
-#define APP_PRIORITY_MID               (5)
-#define APP_PRIORITY_HIGH              (10)
+#define PRIORITY_00                    (0)
+#define PRIORITY_01                    (1)
+#define PRIORITY_02                    (2)
+#define PRIORITY_03                    (3)
+#define PRIORITY_04                    (4)
+#define PRIORITY_05                    (5)
+#define PRIORITY_06                    (6)
+#define PRIORITY_07                    (7)
+#define PRIORITY_08                    (8)
+#define PRIORITY_09                    (9)
+#define PRIORITY_10                    (10)
+#define LOW_TOKEN_PRIORITY             (PRIORITY_00)
+#define USERINTER_TOKEN_PRIORITY       (PRIORITY_01)
+#define MID_TOKEN_PRIORITY             (PRIORITY_05)
+#define HIGH_TOKEN_PRIORITY            (PRIORITY_07)
+#define MAX_TOKEN_PRIORITY             (PRIORITY_10)
 
 typedef const char *                   APP_NAME_T;
 typedef const char *                   APP_STATE_NAME_T;
@@ -186,6 +198,10 @@ extern SYN_RETURN_STATUS_T APP_UtilConsumeEvChangeState(
 );
 
 extern SYN_RETURN_STATUS_T APP_Exit(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd, void *p_data);
+
+extern SYN_RETURN_STATUS_T APP_UtilUISDialogDelete(UIS_DIALOG_HANDLE_T *p_dialog_hdl);
+
+extern SYN_RETURN_STATUS_T APP_HandleConsumeEvAndExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
 
 #ifdef __cplusplus
 }

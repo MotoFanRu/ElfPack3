@@ -40,13 +40,13 @@ void EP3_BIN_Loader_MainRegister(void) {
 
 	/* Register EP3_API_BIN_Loader_Load_Program() as API function. */
 	SU_RET_STATUS status;
-	UINTPTR binloader_function = (UINTPTR) &EP3_API_BIN_Load;
-	suRegisterName(BINLOADER_FUNC_NAME, (UINT32) binloader_function, &status);
+	UINTPTR binloader_func = (UINTPTR) &EP3_API_BIN_Load;
+	suRegisterName(BINLOADER_FUNC_NAME, (UINT32) binloader_func, &status);
 	if (status != SU_OK) {
-		D("[EP3 BIN]: Register '%s', '0x%08X' failed, status: '%d'.\n", BINLOADER_FUNC_NAME, binloader_function, status);
+		D("[EP3 BIN]: Register '%s', '0x%08X' failed, status: '%d'.\n", BINLOADER_FUNC_NAME, binloader_func, status);
 		return;
 	}
-	D("[EP3 BIN]: Registered API function '0x%08X' as '%s' name.\n", binloader_function, BINLOADER_FUNC_NAME);
+	D("[EP3 BIN]: Registered API function '0x%08X' as '%s' name.\n", binloader_func, BINLOADER_FUNC_NAME);
 
 	EP3_BIN_LOAD_T EP3_BIN_Load;
 	EP3_BIN_Load = (EP3_BIN_LOAD_T) suFindName(BINLOADER_FUNC_NAME, SU_NOWAIT, &status);

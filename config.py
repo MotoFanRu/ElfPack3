@@ -20,7 +20,7 @@ RECIPES: dict[str, Recipe] = {
 		tasks=True,
 		flags=Recipe.RecipeFlags(
 			build=['-DFTR_C330', '-DFTR_DEBUG'],
-			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
+			bin_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI', '-DFTR_NO_VSNPRINTF'],
 			elf_ldr=['-DFTR_LOGGER', '-DFTR_LOGGER_NULL', '-DFTR_ALLOC_SUAPI'],
 		),
 		addresses=Recipe.RecipeAddresses(

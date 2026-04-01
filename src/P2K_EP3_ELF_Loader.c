@@ -2,7 +2,24 @@
 #include <P2K_Logger.h>
 #include <P2K_SUAPI.h>
 
+#include <P2K_EP3_APP_Viewer.h>
 #include <P2K_EP3_Task_Reactor.h>
+
+static BOOL Send_Message(const char *msg, int arg) {
+	SU_RET_STATUS status;
+
+	EP3_APP_VIEW_T EP3_APP_View = (EP3_APP_VIEW_T) suFindName(VIEWER_FUNC_NAME, SU_NOWAIT, &status);
+	if (status != SU_OK) {
+		D("[EP3 ELF]: Failed to find func '%s', status: '%d'.\n", VIEWER_FUNC_NAME, status);
+		return RESULT_FAIL;
+	}
+	if (EP3_APP_View == NULL) {
+		D("[EP3 ELF]: %s\n", "Function pointer 'EP3_APP_View' is NULL!");
+		return RESULT_FAIL;
+	}
+
+	return EP3_APP_View("MotoFan.Ru \nHello Moto! \nArgs: %d %d 0x%08H \n -- %s", arg, arg + 1, arg + 2, msg);
+}
 
 static void task_a(void) {
 	SU_RET_STATUS status;
@@ -50,6 +67,8 @@ static void task_b(void) {
 	if (status != SU_OK) {
 		L("%s\n", "Error deleting binary semaphore!\n");
 	}
+
+	Send_Message("TASK B send it!", 4000);
 }
 
 static void task_c(void) {
@@ -74,6 +93,8 @@ static void task_c(void) {
 	if (status != SU_OK) {
 		L("%s\n", "Error deleting binary semaphore!\n");
 	}
+
+	Send_Message("TASK C Now here!", 3);
 }
 
 __attribute__((used, section(".text.bin.entry_point")))
@@ -87,11 +108,11 @@ STATUS EP3_ELF_Loader_MainRegister(const UINTPTR *args) {
 	EP3_REACTOR_SEND_TO_CORE_T EP3_Reactor_Send_To_Core;
 	EP3_Reactor_Send_To_Core = (EP3_REACTOR_SEND_TO_CORE_T) suFindName(REACTOR_FUNC_NAME, SU_NOWAIT, &status);
 	if (status != SU_OK) {
-		D("[EP3 TAR]: Failed to find func '%s', status: '%d'.\n", REACTOR_FUNC_NAME, status);
+		D("[EP3 ELF]: Failed to find func '%s', status: '%d'.\n", REACTOR_FUNC_NAME, status);
 		return RESULT_FAIL;
 	}
 	if (EP3_Reactor_Send_To_Core == NULL) {
-		D("[EP3 TAR]: %s\n", "Function pointer 'EP3_Reactor_Send_To_Core' is NULL!");
+		D("[EP3 ELF]: %s\n", "Function pointer 'EP3_Reactor_Send_To_Core' is NULL!");
 		return RESULT_FAIL;
 	}
 

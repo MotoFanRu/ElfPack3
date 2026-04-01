@@ -22,12 +22,16 @@ void EP3_Logger(const char *format, ...) {
 #if !defined(FTR_LOGGER_NULL)
 	char buffer[LOG_BUFFER_SIZE];
 
-	/* Early M-CORE phones on Patriot and Rainbow SoC have no "vsnprintf" function, so use "vsnprintf" instead. */
+	/*
+	 * Early M-CORE phones on Patriot and Rainbow SoC have no "vsnprintf" function, so use "vsprintf" instead.
+	 * Some early phones like C330 have "visprintf" instead of "vsprintf", but we can alias it.
+	 */
 #if defined(FTR_NO_VSNPRINTF)
 	vsprintf(buffer, format, args);
 #else
 	vsnprintf(buffer, LOG_BUFFER_SIZE, format, args);
 #endif /* FTR_NO_VSNPRINTF */
+	buffer[LOG_BUFFER_SIZE - 1] = ASCII_NULL;
 
 #endif /* !FTR_LOGGER_NULL */
 

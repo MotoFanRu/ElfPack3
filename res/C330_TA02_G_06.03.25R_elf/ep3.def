@@ -48,3 +48,8 @@
 0x000CB944 T UIS_Delete
 0x000CBEDA T UIS_MakeContentFromString
 0x000B139E T suFindName
+0x0025FA6A T APP_UtilUISDialogDelete
+0x00151DAC T APP_HandleConsumeEvAndExit
+0x00338060 T vsprintf
+0x0019BCF0 T AFW_GetEv
+0x000C8BEC T AFW_CreateInternalQueuedEvPriv
