@@ -139,9 +139,6 @@ static SYN_RETURN_STATUS_T AppMainExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd) {
 
 	SYN_RETURN_STATUS_T status = SYN_SUCCESS;
 
-	// TODO: Should I consume it?
-	// status |= APP_ConsumeEv(p_evg, p_apd);
-
 	APP_DATA_T *appd = (APP_DATA_T *) p_apd;
 	status |= APP_UtilUISDialogDelete(&(appd->apd.dialog_hdl));
 
@@ -205,7 +202,7 @@ extern BOOL EP3_API_APP_View(const char *format, ...) {
 	status |= AFW_CreateInternalQueuedEvAux(
 		APP_VIEWER_STARTUP_EVENT,
 		AFW_BUF_FLAG_READ_ONLY,
-		buffer_size,
+		buffer_size + 1,
 		(AFW_EV_BUF_T *) buffer
 	);
 

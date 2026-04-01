@@ -18,7 +18,7 @@ static BOOL Send_Message(const char *msg, int arg) {
 		return RESULT_FAIL;
 	}
 
-	return EP3_APP_View("MotoFan.Ru \nHello Moto! \nArgs: %d %d 0x%08H \n -- %s", arg, arg + 1, arg + 2, msg);
+	return EP3_APP_View("MotoFan.Ru \nHello Moto! \nArgs: %d %d\n0x%08X \n   %s", arg, arg + 1, arg + 2, msg);
 }
 
 static void task_a(void) {
@@ -28,7 +28,7 @@ static void task_a(void) {
 		L("%s\n", "Error creating binary semaphore!\n");
 	}
 
-	for (int i = 0; i < 10000; ++i) {
+	for (int i = 0; i < 1000; ++i) {
 		L("%s %06d\n", "[TASK A]: Hello Moto!", i + 1);
 
 		suSleep(SU_WAIT_1MS, &status);
@@ -78,7 +78,7 @@ static void task_c(void) {
 		L("%s\n", "Error creating binary semaphore!\n");
 	}
 
-	for (int i = 0; i < 10000; ++i) {
+	for (int i = 0; i < 1000; ++i) {
 		L("%s %06d\n", "[TASK C]: Hello Moto!", i + 1);
 
 		suSleep(SU_WAIT_1MS, &status);
@@ -118,7 +118,7 @@ STATUS EP3_ELF_Loader_MainRegister(const UINTPTR *args) {
 
 	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_A, (UINTPTR) &task_a);
 	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_b);
-	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_A, (UINTPTR) &task_c);
+	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_c);
 
 	L("%s\n", "End!");
 
