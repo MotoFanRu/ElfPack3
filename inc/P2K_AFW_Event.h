@@ -115,7 +115,7 @@ typedef struct tagAFW_EVENT_DATA_T {
 } AFW_EVENT_DATA_T;
 
 typedef struct tagAFW_EVENT_T          AFW_EVENT_T;
-struct __attribute__((aligned(4))) tagAFW_EVENT_T {
+struct tagAFW_EVENT_T {
 	AFW_EVENT_CODE_T                   ev_code;
 	AFW_AUF_SEQ_NUM_T                  ev_seqn;
 	AFW_EV_ROUTE_ID_T                  ev_rtid;
@@ -144,12 +144,10 @@ typedef struct tagAFW_EVENT_GROUP_T {
 	AFW_EVENT_CODE_T                   ev_code;
 	AFW_EVENT_CATG_T                   ev_catg;
 	AFW_EVENT_TIME_T                   ev_last_upd_time;
-	BYTE                               padding_a[2];
 	AFW_EVENT_T *                      active_list;
 	AFW_EVENT_T *                      history_list;
 	AFW_KEYPAD_FEEDBACK_TONES_T        key_tone;
 	AFW_REQUEUE_FLAG_T                 requeue;
-	BYTE                               padding_b;
 } AFW_EVENT_GROUP_T;
 
 extern AFW_EVENT_T *AFW_GetEv(AFW_EVENT_GROUP_T *evg);

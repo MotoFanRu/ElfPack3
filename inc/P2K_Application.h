@@ -127,7 +127,6 @@ typedef struct tagAPP_INSTANCE_DATA_T {
 	APP_STATE_T                        state;
 	APP_STATE_T                        substate;
 	UINT8                              security_level;
-	BYTE                               padding[2];
 } APP_INSTANCE_DATA_T;
 
 extern SYN_RETURN_STATUS_T APP_Register(

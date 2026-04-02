@@ -137,7 +137,6 @@ typedef struct tagUIS_LIST_IMAGE_ELEMENT_T {
 	UIS_LIST_IMAGE_T                   image;
 	UINT16                             image_index;
 	UIS_LIST_IMAGE_TYPE_T              image_type;
-	BYTE                               padding;
 } UIS_LIST_IMAGE_ELEMENT_T;
 
 typedef struct tagUIS_EXTENDED_PICKER_T {
