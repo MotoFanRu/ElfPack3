@@ -13,7 +13,6 @@ extern "C" {
 #define UIS_EV_NO                      (0x2046)
 #define UIS_EV_YES                     (0x2079)
 
-/* padding is sizeof(AFW_EVENT_T) - 0x2C (44 bytes) */
 typedef union tagUIS_EV_DATA_TYPES_UNION_T {
 	BYTE                               padding[P2K_UIS_EV_DATA_UNION_SIZE];
 } UIS_EV_DATA_TYPES_UNION_T;
