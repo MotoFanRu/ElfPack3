@@ -21,19 +21,21 @@ typedef struct {
 	WCHAR msg[VIEWER_MESSAGE_MAX_LENGTH];
 } APP_DATA_T;
 
-static SYN_RETURN_STATUS_T AppMainStart(AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGISTRY_ID_T reg_id, void *reg_hdl);
-static SYN_RETURN_STATUS_T AppMainExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+static SYN_RETURN_STATUS_T AppStart(
+	AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGISTRY_ID_T reg_id, const AFW_EV_DATA_APP_REG_T *reg_hdl
+);
+static SYN_RETURN_STATUS_T AppExit(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd);
 
-static SYN_RETURN_STATUS_T AppShowView(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+static SYN_RETURN_STATUS_T AppView(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd);
 
 static const APP_EV_HANDLER_ENTRY_T app_state_any_ev_table[] = {
-	{ AFW_EV_SHUT_DOWN_ALL, AppMainExit },
+	{ AFW_EV_SHUT_DOWN_ALL, AppExit },
 	{ APP_END_EV_TABLE, APP_INVALID_FUNCTION_PTR }
 };
 
 static const APP_EV_HANDLER_ENTRY_T app_state_view_ev_table[] = {
 	{ AFW_EV_GRANT_TOKEN, APP_HandleUITokenGranted },
-	{ AFW_EV_GAIN_FOCUS, AppShowView },
+	{ AFW_EV_GAIN_FOCUS, AppView },
 	{ UIS_EV_DIALOG_DONE, APP_HandleConsumeEvAndExit },
 	{ UIS_EV_DONE, APP_HandleConsumeEvAndExit },
 	{ APP_END_EV_TABLE, APP_INVALID_FUNCTION_PTR }
@@ -58,7 +60,7 @@ void EP3_APP_Viewer_Register(void) {
 		ARRAY_SIZE(app_event_reg_table),
 		app_state_trans_table,
 		APP_STATE_MAX,
-		(void *) (UINTPTR) AppMainStart
+		AppStart
 	);
 	if (status != SYN_SUCCESS) {
 		D("[EP3 APV]: %s\n", "Cannot register EP3_APP_Viewer application.");
@@ -77,7 +79,9 @@ void EP3_APP_Viewer_Register(void) {
 	D("[EP3 APV]: %s\n", "Exit!");
 }
 
-static SYN_RETURN_STATUS_T AppMainStart(AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGISTRY_ID_T reg_id, void *reg_hdl) {
+static SYN_RETURN_STATUS_T AppStart(
+	AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGISTRY_ID_T reg_id, const AFW_EV_DATA_APP_REG_T *reg_hdl
+) {
 	D("[EP3 APV]: %s, p_evg=0x%08X, reg_id=0x%04X, reg_hdl=0x%08X\n", "Enter!", p_evg, reg_id, reg_hdl);
 
 	AFW_EVENT_T *event = AFW_GetEv(p_evg);
@@ -98,7 +102,7 @@ static SYN_RETURN_STATUS_T AppMainStart(AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGIST
 	}
 
 	APP_DATA_T *appd = (APP_DATA_T *) APP_InitAppData(
-		(void *) (UINTPTR) APP_HandleEvent,
+		APP_HandleEvent,
 		sizeof(APP_DATA_T),
 		reg_id,
 		APP_NO_HISTORY, APP_ONE_LEVEL_HISTORY, USERINTER_TOKEN_PRIORITY, AFW_APP_CENTRICITY_SECONDARY,
@@ -119,7 +123,7 @@ static SYN_RETURN_STATUS_T AppMainStart(AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGIST
 		&(appd->apd),
 		APP_STATE_VIEW,
 		app_state_trans_table,
-		AppMainExit,
+		AppExit,
 		app_name_string,
 		SYN_NULL
 	);
@@ -134,7 +138,7 @@ static SYN_RETURN_STATUS_T AppMainStart(AFW_EVENT_GROUP_T *p_evg, AFW_APP_REGIST
 	return status;
 }
 
-static SYN_RETURN_STATUS_T AppMainExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd) {
+static SYN_RETURN_STATUS_T AppExit(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd) {
 	D("[EP3 APV]: %s, p_evg=0x%08X, p_apd=0x%08X\n", "Enter!", p_evg, p_apd);
 
 	SYN_RETURN_STATUS_T status = SYN_SUCCESS;
@@ -149,7 +153,7 @@ static SYN_RETURN_STATUS_T AppMainExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd) {
 	return status;
 }
 
-static SYN_RETURN_STATUS_T AppShowView(AFW_EVENT_GROUP_T *p_evg, void *p_apd) {
+static SYN_RETURN_STATUS_T AppView(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd) {
 	D("[EP3 APV]: %s, p_evg=0x%08X, p_apd=0x%08X\n", "Enter!", p_evg, p_apd);
 
 	SYN_RETURN_STATUS_T status = SYN_SUCCESS;

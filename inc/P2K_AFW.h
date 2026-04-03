@@ -21,9 +21,6 @@ typedef UINT32                         AFW_APP_DATA_HDL_T;
 typedef UINT32                         AFW_APP_PRIORITY_T;
 typedef UINT32                         AFW_APP_COUNT_T;
 
-/* Replaced to `VOID *` due to overcomplication. */
-typedef VOID *                         AFW_APP_PID_FPTR_T;
-
 enum tagAFW_APP_RSTACK_TYPE_T {
 	AFW_PREPROCESSING = 0,
 	AFW_FOCUS,
@@ -65,6 +62,10 @@ enum tagAFW_APP_CENTRICNESS_T {
 };
 typedef UINT8                          AFW_APP_CENTRICNESS_T;
 
+typedef struct tagAFW_APP_STACK_T      AFW_APP_STACK_T;
+typedef struct tagAFW_EVENT_GROUP_T    AFW_EVENT_GROUP_T;
+typedef struct tagAPP_INSTANCE_DATA_T  APP_INSTANCE_DATA_T;
+
 typedef struct tagAFW_TKN_DATA_DEFAULT_T {
 	AFW_APP_INSTANCE_ID_T              app_id;
 	AFW_APP_PRIORITY_T                 app_priority;
@@ -98,11 +99,17 @@ typedef struct tagAFW_TOKEN_T {
 	AFW_TOKEN_DATA_T                   tpars;
 } AFW_TOKEN_T;
 
-typedef struct tagAFW_APP_STACK_T AFW_APP_STACK_T;
+typedef void (* AFW_HANDLE_EVENT_FUNCTION_T)(
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd,
+	AFW_APP_INSTANCE_ID_T              app_id,
+	AFW_APP_REGISTRY_ID_T              reg_id
+);
+
 struct tagAFW_APP_STACK_T {
 	AFW_STACK_ID_T                     stackId;
 	UINT8                              create_order;
-	AFW_APP_PID_FPTR_T                 hefn;               /* replaced by `VOID *` (complex) */
+	AFW_HANDLE_EVENT_FUNCTION_T        hefn;
 	AFW_APP_CALL_API_T                 fntype;
 	AFW_APP_RSTACK_TYPE_T              process_class;
 	AFW_APP_RSTACK_POS_T               pos;

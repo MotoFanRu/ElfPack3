@@ -12,9 +12,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-// TODO: Can I use it for handlers instead of void*?
-//typedef struct tagAPP_INSTANCE_DATA_T  APP_INSTANCE_DATA_T;
-
 #define APP_NAME_SIZE                  (12)
 #define APP_STATE_NAME_SIZE            (12)
 
@@ -71,18 +68,18 @@ typedef UINT8                          APP_STATE_EXIT_ACTION_T;
 
 typedef SYN_RETURN_STATUS_T APP_HANDLER_FUNC_T(
 	AFW_EVENT_GROUP_T *                p_evg,
-	void *                             p_apd
+	APP_INSTANCE_DATA_T *              p_apd
 );
 
 typedef SYN_RETURN_STATUS_T APP_STATE_ENTRY_FUNC_T(
 	AFW_EVENT_GROUP_T *                p_evg,
-	void *                             p_apd,
+	APP_INSTANCE_DATA_T *              p_apd,
 	APP_STATE_ENTRY_ACTION_T           action
 );
 
 typedef SYN_RETURN_STATUS_T APP_STATE_EXIT_FUNC_T(
 	AFW_EVENT_GROUP_T *                p_evg,
-	void *                             p_apd,
+	APP_INSTANCE_DATA_T *              p_apd,
 	APP_STATE_EXIT_ACTION_T            action
 );
 
@@ -105,7 +102,7 @@ typedef struct tagAPP_STATE_NAME_TABLE_T {
 
 /* should be first in APP_INSTANCE_T */
 /* size = 0x50, 80 bytes was used on all platforms */
-typedef struct tagAPP_INSTANCE_DATA_T {
+struct tagAPP_INSTANCE_DATA_T {
 	AFW_TOKEN_T                        userinter_token;
 	AFW_DATA_LOG_APP_ID_T              log_id;
 	AFW_EV_ROUTE_ID_T                  route_id;
@@ -127,21 +124,22 @@ typedef struct tagAPP_INSTANCE_DATA_T {
 	APP_STATE_T                        state;
 	APP_STATE_T                        substate;
 	UINT8                              security_level;
-} APP_INSTANCE_DATA_T;
+};
 
 extern SYN_RETURN_STATUS_T APP_Register(
 	const APP_EVENT_REG_T              event_reg_table[],
 	UINT8                              number_of_events,
 	const APP_STATE_TRANSIT_T *        p_state_trans_table,
 	APP_STATE_T                        max_states,
-	void *                             p_startup_function
+	AFW_START_APP_FUNCTION_T           p_startup_function
 );
 
-extern SYN_RETURN_STATUS_T APP_HandleUITokenGranted(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
-extern SYN_RETURN_STATUS_T APP_HandleUITokenRevoked(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+extern SYN_RETURN_STATUS_T APP_HandleUITokenGranted(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd);
+
+extern SYN_RETURN_STATUS_T APP_HandleUITokenRevoked(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd);
 
 extern APP_INSTANCE_DATA_T *APP_InitAppData(
-	void *                             handle_event_function,
+	AFW_HANDLE_EVENT_FUNCTION_T        handle_event_function,
 	UINT32                             app_data_size,
 	AFW_APP_REGISTRY_ID_T              reg_id,
 	UINT32                             history_size,
@@ -179,10 +177,10 @@ extern SYN_RETURN_STATUS_T APP_Start(
 extern SYN_RETURN_STATUS_T APP_HandleFailedAppStart(
 	AFW_EVENT_GROUP_T *                p_evg,
 	APP_INSTANCE_DATA_T *              p_apd,
-	void *                             p_data
+	AFW_APP_DATA_HDL_T *               p_data
 );
 
-extern SYN_RETURN_STATUS_T APP_ConsumeEv(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+extern SYN_RETURN_STATUS_T APP_ConsumeEv(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd);
 
 extern SYN_RETURN_STATUS_T APP_UtilChangeState(
 	APP_STATE_T                        new_state,
@@ -196,11 +194,15 @@ extern SYN_RETURN_STATUS_T APP_UtilConsumeEvChangeState(
 	APP_INSTANCE_DATA_T *              p_apd
 );
 
-extern SYN_RETURN_STATUS_T APP_Exit(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd, void *p_data);
+extern SYN_RETURN_STATUS_T APP_Exit(
+	AFW_EVENT_GROUP_T *                p_evg,
+	APP_INSTANCE_DATA_T *              p_apd,
+	AFW_APP_DATA_HDL_T *               p_data
+);
 
 extern SYN_RETURN_STATUS_T APP_UtilUISDialogDelete(UIS_DIALOG_HANDLE_T *p_dialog_hdl);
 
-extern SYN_RETURN_STATUS_T APP_HandleConsumeEvAndExit(AFW_EVENT_GROUP_T *p_evg, void *p_apd);
+extern SYN_RETURN_STATUS_T APP_HandleConsumeEvAndExit(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T *p_apd);
 
 #ifdef __cplusplus
 }

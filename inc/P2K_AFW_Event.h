@@ -53,9 +53,6 @@ typedef UINT32                         AFW_RESET_CAUSES_T;
 typedef UINT8                          AUF_EV_DATA_KEY_T;
 typedef UINT8                          AUF_EV_DATA_GENERIC_T;
 
-/* Replaced to `VOID *` due to overcomplication. */
-typedef VOID *                         AFW_START_APP_FUNCTION_T;
-
 enum tagAFW_TONE_CMD_T {
 	AFW_NO_TONE_ACTION = 0,
 	AFW_START_TONE,
@@ -73,14 +70,23 @@ enum tagAFW_SVC_EV_TYPE_T {
 };
 typedef UINT8                          AFW_SVC_EV_TYPE_T;
 
-typedef struct tagAFW_EV_DATA_APP_REG_T {
+typedef struct tagAFW_EVENT_T          AFW_EVENT_T;
+typedef struct tagAFW_EV_DATA_APP_REG_T AFW_EV_DATA_APP_REG_T;
+
+typedef SYN_RETURN_STATUS_T (* AFW_START_APP_FUNCTION_T)(
+	AFW_EVENT_GROUP_T *                p_evg,
+	AFW_APP_REGISTRY_ID_T              reg_id,
+	const AFW_EV_DATA_APP_REG_T *      reg_hdl
+);
+
+struct tagAFW_EV_DATA_APP_REG_T {
 	AFW_EVENT_CODE_T                   ev_code_subscribing_to;
-	AFW_START_APP_FUNCTION_T           app_start_func;     /* replaced by `VOID *` (complex) */
+	AFW_START_APP_FUNCTION_T           app_start_func;
 	AFW_REG_DATA_T                     app_reg_handle;     /* new opaque handle */
 	UINT32                             options;
 	AFW_APP_REGISTRY_ID_T              app_reg_id;
 	AFW_APP_CALL_API_T                 fntype;
-} AFW_EV_DATA_APP_REG_T;
+};
 
 typedef struct tagAFW_EV_DATA_RESET_T {
 	AFW_RESET_CAUSES_T                 cause;
@@ -114,7 +120,6 @@ typedef struct tagAFW_EVENT_DATA_T {
 	} AFW_UNION_DATA_T;
 } AFW_EVENT_DATA_T;
 
-typedef struct tagAFW_EVENT_T          AFW_EVENT_T;
 struct tagAFW_EVENT_T {
 	AFW_EVENT_CODE_T                   ev_code;
 	AFW_AUF_SEQ_NUM_T                  ev_seqn;
@@ -140,7 +145,7 @@ typedef struct tagAFW_KEYPAD_FEEDBACK_TONES_T {
 	DL_AUDIO_TONE_TYPE_T               aud_tone;
 } AFW_KEYPAD_FEEDBACK_TONES_T;
 
-typedef struct tagAFW_EVENT_GROUP_T {
+struct tagAFW_EVENT_GROUP_T {
 	AFW_EVENT_CODE_T                   ev_code;
 	AFW_EVENT_CATG_T                   ev_catg;
 	AFW_EVENT_TIME_T                   ev_last_upd_time;
@@ -148,22 +153,21 @@ typedef struct tagAFW_EVENT_GROUP_T {
 	AFW_EVENT_T *                      history_list;
 	AFW_KEYPAD_FEEDBACK_TONES_T        key_tone;
 	AFW_REQUEUE_FLAG_T                 requeue;
-} AFW_EVENT_GROUP_T;
+};
 
 extern AFW_EVENT_T *AFW_GetEv(AFW_EVENT_GROUP_T *evg);
+
 extern AFW_EVENT_CODE_T AFW_GetEvCode(AFW_EVENT_GROUP_T *evg);
+
 extern AFW_AUF_SEQ_NUM_T AFW_GetEvSeqn(AFW_EVENT_GROUP_T *evg);
 
-#define AFW_HAS_EVDATA(data) \
-	(data != (AFW_EVENT_DATA_T *) SYN_NULL)
-
 #define AFW_CreateInternalQueuedEv(code, catg, log_id, data, bflag, bsize, auxd) \
-	((AFW_HAS_EVDATA(data)) ? \
+	((data != (AFW_EVENT_DATA_T *) SYN_NULL)) ? \
 		AFW_CreateInternalQueuedEvAuxD(code, data, bflag, bsize, auxd) : \
 		AFW_CreateInternalQueuedEvAux(code, bflag, bsize, auxd))
 
 #define AFW_CreateInternalQueuedSvcEv(code, seqn, rtid, catg, log_id, data, bflag, bsize, auxd, svc) \
-	((AFW_HAS_EVDATA(data)) ? \
+	((data != (AFW_EVENT_DATA_T *) SYN_NULL)) ? \
 		AFW_CreateInternalQueuedSvcEvAuxD(code, seqn, rtid, data, bflag, bsize, auxd, svc) : \
 		AFW_CreateInternalQueuedSvcEvAux(code, seqn, rtid, bflag, bsize, auxd, svc))
 
