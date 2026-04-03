@@ -27,18 +27,21 @@ void EP3_Reactor_Task_A(void) {
 
 	while (TRUE) {
 		/* Endless task loop for EP3_Reactor_Task_A. */
-		UINTPTR *msg = (UINTPTR *) suReceiveMessageFromQueue(queue_handle, SU_WAIT_FOREVER, &status);
+		REACTOR_MSG_T *msg = (REACTOR_MSG_T *) suReceiveMessageFromQueue(queue_handle, SU_WAIT_FOREVER, &status);
 		if ((status == SU_OK) && (msg != NULL)) {
-			UINTPTR msg_addr = *msg;
-			D("[EP3 TAR A]: Got message '0x%08X' with addr '0x%08X'.\n", (UINTPTR) msg, msg_addr);
+			UINTPTR func_addr = msg->func_addr;
+			UINTPTR args_addr = msg->args_addr;
+
+			D("[EP3 TAR A]: msg=0x%08X, func_addr=0x%08X, args_addr=0x%08X.\n", (UINTPTR) msg, func_addr, args_addr);
 
 			suDeleteMessage(msg, &status);
 			if (status != SU_OK) {
 				D("[EP3 TAR A]: Cannot delete message '0x%08X', status: %d.\n", (UINTPTR) msg, status);
 			}
 
-			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) msg_addr);
-			task_routine();
+			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) func_addr);
+			STATUS status = task_routine((UINTPTR *) args_addr);
+			D("[EP3 TAR A]: Returned func_addr=0x%08X, status: %d.\n", func_addr, status);
 		}
 	}
 }
@@ -54,30 +57,33 @@ void EP3_Reactor_Task_B(void) {
 	}
 
 	while (TRUE) {
-		/* Endless task loop for EP3_Reactor_Task_B. */
-		UINTPTR *msg = (UINTPTR *) suReceiveMessageFromQueue(queue_handle, SU_WAIT_FOREVER, &status);
+		/* Endless task loop for EP3_Reactor_Task_A. */
+		REACTOR_MSG_T *msg = (REACTOR_MSG_T *) suReceiveMessageFromQueue(queue_handle, SU_WAIT_FOREVER, &status);
 		if ((status == SU_OK) && (msg != NULL)) {
-			UINTPTR msg_addr = *msg;
-			D("[EP3 TAR B]: Got message '0x%08X' with addr '0x%08X'.\n", (UINTPTR) msg, msg_addr);
+			UINTPTR func_addr = msg->func_addr;
+			UINTPTR args_addr = msg->args_addr;
+
+			D("[EP3 TAR B]: msg=0x%08X, func_addr=0x%08X, args_addr=0x%08X.\n", (UINTPTR) msg, func_addr, args_addr);
 
 			suDeleteMessage(msg, &status);
 			if (status != SU_OK) {
 				D("[EP3 TAR B]: Cannot delete message '0x%08X', status: %d.\n", (UINTPTR) msg, status);
 			}
 
-			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) msg_addr);
-			task_routine();
+			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) func_addr);
+			STATUS status = task_routine((UINTPTR *) args_addr);
+			D("[EP3 TAR B]: Returned func_addr=0x%08X, status: %d.\n", func_addr, status);
 		}
 	}
 }
 
-BOOL EP3_API_Reactor_Send_To_Core(const char *port_name, UINTPTR function_routine_address) {
+BOOL EP3_API_Reactor_Send_To_Core(const char *port_name, UINTPTR func_addr, UINTPTR args_addr) {
 	if (port_name == NULL) {
 		D("[EP3 TAR]: %s\n", "Argument port_name is NULL.");
 		return FALSE;
 	}
-	if (function_routine_address == NULL_ADDR) {
-		D("[EP3 TAR]: %s\n", "Argument function_routine_address is NULL_ADDR (0x00000000).");
+	if (func_addr == NULL_ADDR) {
+		D("[EP3 TAR]: %s\n", "Argument func_addr is NULL_ADDR (0x00000000).");
 		return FALSE;
 	}
 
@@ -93,17 +99,20 @@ BOOL EP3_API_Reactor_Send_To_Core(const char *port_name, UINTPTR function_routin
 		return FALSE;
 	}
 
-	UINTPTR *msg = (UINTPTR *) suCreateMessage(sizeof(UINTPTR), REACTOR_MSG_TYPE_GENERAL, port_handle, &status);
+	REACTOR_MSG_T *msg = (REACTOR_MSG_T *) suCreateMessage(
+		sizeof(REACTOR_MSG_T), REACTOR_MSG_TYPE_GENERAL, port_handle, &status
+	);
 	if (status != SU_OK) {
 		D("[EP3 TAR]: Failed to create message for '%s' port, status: '%d'.\n", port_name, status);
 		return FALSE;
 	}
 
-	*msg = function_routine_address;
+	msg->func_addr = func_addr;
+	msg->args_addr = args_addr;
 
 	D(
-		"[EP3 TAR]: Send msg to '%s', port=0x%08X, msg=0x%08X, func_addr=0x%08X.\n",
-		port_name, port_handle, msg, function_routine_address
+		"[EP3 TAR]: Send msg to '%s', port=0x%08X, msg=0x%08X, func_addr=0x%08X, args_addr=0x%08X.\n",
+		port_name, port_handle, msg, msg->func_addr, msg->args_addr
 	);
 
 	suSendMessage(msg, port_handle, &status);

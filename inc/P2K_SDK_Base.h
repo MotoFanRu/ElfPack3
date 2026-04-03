@@ -93,7 +93,7 @@ extern "C" {
 
 /* RESULT STATUS*/
 #if !defined(FTR_DONT_DEFINE_SDK_RESULT_STATUS)
-	typedef unsigned int               STATUS;
+	typedef signed int                 STATUS;
 
 	#define RESULT_OK                  (0)
 	#define RESULT_FAIL                (1)

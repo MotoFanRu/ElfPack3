@@ -21,14 +21,18 @@ static BOOL Send_Message(const char *msg, int arg) {
 	return EP3_APP_View("MotoFan.Ru \nHello Moto! \nArgs: %d %d\n0x%08X \n   %s", arg, arg + 1, arg + 2, msg);
 }
 
-static void task_a(void) {
+static STATUS task_a(UINTPTR *args) {
 	SU_RET_STATUS status;
+
+	D("%s 0x%08X\n", "Enter A!", (UINTPTR) args);
+
 	SU_SEMA_HANDLE binary_semaphore = suCreateBSem(SU_SEM_LOCKED, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error creating binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
-	for (int i = 0; i < 1000; ++i) {
+	for (int i = 0; i < 5000; ++i) {
 		L("%s %06d\n", "[TASK A]: Hello Moto!", i + 1);
 
 		suSleep(SU_WAIT_1MS, &status);
@@ -37,22 +41,30 @@ static void task_a(void) {
 	suReleaseSem(binary_semaphore, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error releasing binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
 	suDeleteSem(binary_semaphore, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error deleting binary semaphore!\n");
+		return RESULT_FAIL;
 	}
+
+	return RESULT_OK;
 }
 
-static void task_b(void) {
+static STATUS task_b(UINTPTR *args) {
 	SU_RET_STATUS status;
+
+	D("%s 0x%08X\n", "Enter B!", (UINTPTR) args);
+
 	SU_SEMA_HANDLE binary_semaphore = suCreateBSem(SU_SEM_LOCKED, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error creating binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
-	for (int i = 0; i < 10000; ++i) {
+	for (int i = 0; i < 5000; ++i) {
 		L("%s %06d\n", "[TASK B]: Hello Moto!", i + 1);
 
 		suSleep(SU_WAIT_1MS, &status);
@@ -61,24 +73,30 @@ static void task_b(void) {
 	suReleaseSem(binary_semaphore, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error releasing binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
 	suDeleteSem(binary_semaphore, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error deleting binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
-	Send_Message("TASK B send it!", 4000);
+	return Send_Message("TASK B send it!", 4000);
 }
 
-static void task_c(void) {
+static STATUS task_c(UINTPTR *args) {
 	SU_RET_STATUS status;
+
+	D("%s 0x%08X\n", "Enter C!", (UINTPTR) args);
+
 	SU_SEMA_HANDLE binary_semaphore = suCreateBSem(SU_SEM_LOCKED, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error creating binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
-	for (int i = 0; i < 1000; ++i) {
+	for (int i = 0; i < 5000; ++i) {
 		L("%s %06d\n", "[TASK C]: Hello Moto!", i + 1);
 
 		suSleep(SU_WAIT_1MS, &status);
@@ -87,14 +105,16 @@ static void task_c(void) {
 	suReleaseSem(binary_semaphore, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error releasing binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
 	suDeleteSem(binary_semaphore, &status);
 	if (status != SU_OK) {
 		L("%s\n", "Error deleting binary semaphore!\n");
+		return RESULT_FAIL;
 	}
 
-	Send_Message("TASK C Now here!", 3);
+	return Send_Message("TASK C Now here!", 3);
 }
 
 __attribute__((used, section(".text.bin.entry_point")))
@@ -116,9 +136,9 @@ STATUS EP3_ELF_Loader_MainRegister(const UINTPTR *args) {
 		return RESULT_FAIL;
 	}
 
-	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_A, (UINTPTR) &task_a);
-	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_b);
-	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_c);
+	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_A, (UINTPTR) &task_a, NULL_ADDR);
+	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_b, 0xFACE000);
+	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_c, 0x000BEEF);
 
 	L("%s\n", "End!");
 
