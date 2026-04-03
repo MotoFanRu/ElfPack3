@@ -18,7 +18,8 @@ typedef enum {
 
 typedef struct {
 	APP_INSTANCE_DATA_T apd;
-	WCHAR msg[VIEWER_MESSAGE_MAX_LENGTH];
+	WCHAR viewer_title[VIEWER_TITLE_MAX_LENGTH];
+	WCHAR viewer_msg[VIEWER_MESSAGE_MAX_LENGTH];
 } APP_DATA_T;
 
 static SYN_RETURN_STATUS_T AppStart(
@@ -114,7 +115,8 @@ static SYN_RETURN_STATUS_T AppStart(
 	}
 
 	/* Init other fields of Application Data Instance struct (APP_INSTANCE_T) here. */
-	PORTABLE_u_atou((const char *) (event->ev_auxd), appd->msg);
+	PORTABLE_u_atou((const char *) (event->ev_auxd), appd->viewer_title);
+	PORTABLE_u_atou((const char *) (event->ev_auxd) + VIEWER_TITLE_MAX_LENGTH, appd->viewer_msg);
 
 	SYN_RETURN_STATUS_T status = SYN_SUCCESS;
 
@@ -131,7 +133,8 @@ static SYN_RETURN_STATUS_T AppStart(
 		D("[EP3 APV]: %s\n", "Cannot start app, cleaning all data structs!");
 		status = APP_HandleFailedAppStart(p_evg, &(appd->apd), SYN_NULL);
 		/* Clean other fields of Application Data Instance struct (APP_INSTANCE_T) here. */
-		memset(appd->msg, 0, sizeof(WCHAR) * VIEWER_MESSAGE_MAX_LENGTH);
+		memset(appd->viewer_title, 0, sizeof(WCHAR) * VIEWER_TITLE_MAX_LENGTH);
+		memset(appd->viewer_msg, 0, sizeof(WCHAR) * VIEWER_MESSAGE_MAX_LENGTH);
 	}
 
 	D("[EP3 APV]: %s, p_evg=0x%08X, reg_id=0x%04X, reg_hdl=0x%08X, ret=%d\n", "Exit!", p_evg, reg_id, reg_hdl, status);
@@ -167,7 +170,7 @@ static SYN_RETURN_STATUS_T AppView(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T
 		app_env.routeId = appd->apd.port_id;
 
 		memset(&content, 0, sizeof(UIS_CONTENT_T));
-		status |= UIS_MakeContentFromString("q0Nq1", &content, L"EP3 Log Viewer", appd->msg);
+		status |= UIS_MakeContentFromString("q0Nq1", &content, appd->viewer_title, appd->viewer_msg);
 
 		appd->apd.dialog_hdl = UIS_CreateViewer(&app_env, &content, SYN_NULL);
 		status |= (appd->apd.dialog_hdl == UIS_NULL_HANDLE);
@@ -178,35 +181,39 @@ static SYN_RETURN_STATUS_T AppView(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T
 	return status;
 }
 
-extern BOOL EP3_API_APP_View(const char *format, ...) {
+extern BOOL EP3_API_APP_View(const char *title, const char *format, ...) {
 	/* Skip NULL and empty strings. */
-	if (!format || !format[0]) {
+	if (!format || !format[0] || !title || !title[0]) {
 		return FALSE;
 	}
+
+	char buffer[VIEWER_TITLE_MAX_LENGTH + VIEWER_MESSAGE_MAX_LENGTH];
+	PORTABLE_strncpy(buffer, title, VIEWER_TITLE_MAX_LENGTH);
+	buffer[VIEWER_TITLE_MAX_LENGTH - 1] = ASCII_NULL;
 
 	va_list args;
 	va_start(args, format);
 
-	char buffer[VIEWER_MESSAGE_MAX_LENGTH];
 	/*
 	 * Early M-CORE phones on Patriot and Rainbow SoC have no "vsnprintf" function, so use "vsprintf" instead.
 	 * Some early phones like C330 have "visprintf" instead of "vsprintf", but we can alias it.
 	 */
 #if defined(FTR_NO_VSNPRINTF)
-	vsprintf(buffer, format, args);
+	vsprintf(buffer + VIEWER_TITLE_MAX_LENGTH, format, args);
 #else
-	vsnprintf(buffer, VIEWER_MESSAGE_MAX_LENGTH, format, args);
+	vsnprintf(buffer + VIEWER_TITLE_MAX_LENGTH, VIEWER_MESSAGE_MAX_LENGTH, format, args);
 #endif /* FTR_NO_VSNPRINTF */
-	buffer[VIEWER_MESSAGE_MAX_LENGTH - 1] = ASCII_NULL;
+	buffer[VIEWER_TITLE_MAX_LENGTH + VIEWER_MESSAGE_MAX_LENGTH - 1] = ASCII_NULL;
+
+	va_end(args);
+
+	INT32 msg_size = PORTABLE_strlen(buffer + VIEWER_TITLE_MAX_LENGTH);
 
 	SYN_RETURN_STATUS_T status = SYN_SUCCESS;
-
-	INT32 buffer_size = PORTABLE_strlen(buffer);
-
 	status |= AFW_CreateInternalQueuedEvAux(
 		APP_VIEWER_STARTUP_EVENT,
 		AFW_BUF_FLAG_READ_ONLY,
-		buffer_size + 1,
+		VIEWER_TITLE_MAX_LENGTH + msg_size + 1,
 		(AFW_EV_BUF_T *) buffer
 	);
 

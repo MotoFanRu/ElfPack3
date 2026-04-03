@@ -5,7 +5,7 @@
 #include <P2K_EP3_APP_Viewer.h>
 #include <P2K_EP3_Task_Reactor.h>
 
-static BOOL Send_Message(const char *msg, int arg) {
+static BOOL Send_Message(const char *title, const char *msg, UINT32 arg) {
 	SU_RET_STATUS status;
 
 	EP3_APP_VIEW_T EP3_APP_View = (EP3_APP_VIEW_T) suFindName(VIEWER_FUNC_NAME, SU_NOWAIT, &status);
@@ -18,7 +18,7 @@ static BOOL Send_Message(const char *msg, int arg) {
 		return RESULT_FAIL;
 	}
 
-	return EP3_APP_View("MotoFan.Ru \nHello Moto! \nArgs: %d %d\n0x%08X \n   %s", arg, arg + 1, arg + 2, msg);
+	return V(title, "MotoFan.Ru \nHello Moto! \nArgs: %d %d\n0x%08X \n   %s", arg, arg + 1, arg + 2, msg);
 }
 
 static STATUS task_a(UINTPTR *args) {
@@ -82,7 +82,7 @@ static STATUS task_b(UINTPTR *args) {
 		return RESULT_FAIL;
 	}
 
-	return Send_Message("TASK B send it!", 4000);
+	return Send_Message("BTask Moto", "TASK B send it!", (UINTPTR) args);
 }
 
 static STATUS task_c(UINTPTR *args) {
@@ -114,7 +114,7 @@ static STATUS task_c(UINTPTR *args) {
 		return RESULT_FAIL;
 	}
 
-	return Send_Message("TASK C Now here!", 3);
+	return Send_Message("CTasker MotoFan.Ru", "TASK C Now here!", (UINTPTR) args);
 }
 
 __attribute__((used, section(".text.bin.entry_point")))
@@ -137,8 +137,8 @@ STATUS EP3_ELF_Loader_MainRegister(const UINTPTR *args) {
 	}
 
 	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_A, (UINTPTR) &task_a, NULL_ADDR);
-	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_b, 0xFACE000);
-	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_c, 0x000BEEF);
+	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_b, 0xFACE0000);
+	EP3_Reactor_Send_To_Core(REACTOR_PORT_NAME_B, (UINTPTR) &task_c, 0x0000BEEF);
 
 	L("%s\n", "End!");
 
