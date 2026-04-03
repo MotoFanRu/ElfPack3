@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW Z9_R263312_U_9E.00.A8R
-# VER EP3_26-Mar-2026
+# VER EP3_03-Apr-2026
 # CPU ARM11
 
 0xA1236DEC T __c89vsprintf
@@ -17,13 +17,7 @@
 0xA12CE180 A __rt_udiv
 0xA151DAC0 A __rt_udiv10
 0xA11CDDFC T AFW_AddAppToRoutingStack
-0xA11CE464 T AFW_AddEvAux
-0xA11CE3EE T AFW_AddEvEvD
-0xA11CD83A T AFW_AddEvNoD
-0xA11CE49C T AFW_AddSvcEvNoD
 0xA11CE602 T AFW_ConsumeEv
-0xA11CDB40 T AFW_CreateInternalQueuedEvAux
-0xA11CDB6C T AFW_CreateInternalQueuedEvAuxD
 0xA11CD874 T AFW_FreeAppPortHandle
 0xA11CDEDE T AFW_GenAppInstanceId
 0xA11CDB9A T AFW_GenAppRegistryId

@@ -67,13 +67,6 @@
 0067 T AFW_ClearUIFeedbackTone
 0068 T AFW_ConsumeEv
 0069 T AFW_CopyEvToInternalQueue
-0070 T AFW_CreateInternalQueuedEv
-0071 A AFW_CreateInternalQueuedEvAux
-0072 A AFW_CreateInternalQueuedEvAuxD
-0073 A AFW_CreateInternalQueuedEvPriv
-0074 T AFW_CreateInternalQueuedSvcEv
-0075 T AFW_CreateInternalQueuedSvcEvAux
-0076 T AFW_CreateInternalQueuedSvcEvAuxD
 0077 A AFW_FindAppInStack
 0078 T AFW_FreeAppPortHandle
 0079 T AFW_FreeEventListData
@@ -233,7 +226,6 @@
 0256 A APP_UtilStartCyclicalTimer
 0257 A APP_UtilStartTimer
 0258 A APP_UtilStopTimer
-0259 A APP_UtilUISDialogDelete
 0260 T APRSmsB64EncodeGroup
 0261 C AUDIO_STATUS
 0262 C BEGIN_4A__IN_DB
@@ -538,12 +530,10 @@
 0568 C EV_DBK_WEEK_VIEW
 0569 C EV_DEVICE_ATTACH
 0570 C EV_DEVICE_DETACH
-0571 C EV_DIALOG_DONE
 0572 C EV_DISPLAY_ACTIVE
 0573 C EV_DISPLAY_NO_ACTIVE
 0574 D EV_DisplayActivity
 0575 D EV_DisplayTimeout
-0576 C EV_DONE
 0577 C EV_DSMA_BUFF_STATE
 0578 C EV_DSMA_PROXY_ATTR
 0579 C EV_DSMA_PROXY_CREATE

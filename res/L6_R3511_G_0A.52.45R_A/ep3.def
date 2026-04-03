@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW L6_R3511_G_0A.52.45R_A
-# VER EP3_26-Mar-2026
+# VER EP3_03-Apr-2026
 # CPU ARM7
 
 0x1009C424 D _region_table
@@ -64,14 +64,6 @@
 0x10C949DC A _rt_memset
 0x1009C4D8 T abs_0
 0x102CBD0C T AFW_AddAppToRoutingStack
-0x102C1B78 T AFW_AddEvAux
-0x102C1BB4 T AFW_AddEvAuxD
-0x102C1B3A T AFW_AddEvEvD
-0x102C1AFE T AFW_AddEvNoD
-0x102C1E36 T AFW_CreateInternalQueuedEvAux
-0x102C1E64 T AFW_CreateInternalQueuedEvAuxD
-0x102C1E94 T AFW_CreateInternalQueuedSvcEvAux
-0x102C1EC4 T AFW_CreateInternalQueuedSvcEvAuxD
 0x102C2032 T AFW_GenAppInstanceId
 0x102C20BC T AFW_GetEv
 0x101EB426 T AFW_GetEvCode

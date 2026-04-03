@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW C650_R365_G_0B.D3.08R
-# VER EP3_26-Mar-2026
+# VER EP3_03-Apr-2026
 # CPU ARM7
 
 0x12190FF8 D display_source_buffer
@@ -20,8 +20,6 @@
 0x10867300 A __rt_udiv10
 0x10902490 A _ll_cmpu
 0x101874B4 T AFW_AddAppToRoutingStack
-0x100B046E T AFW_AddEvEvD
-0x100B042A T AFW_AddEvNoD
 0x100B042A T AFW_AddEvPriv
 0x102E1D26 T AFW_ClearKeyFeedbackTone
 0x102E1D36 T AFW_ClearUIFeedbackTone

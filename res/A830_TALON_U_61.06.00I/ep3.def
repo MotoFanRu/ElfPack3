@@ -57,7 +57,6 @@
 0x1039E212 M APP_UtilUISDialogDelete
 0x1039C27C M APP_Exit
 0x1039CC8E M APP_Register
-0x1027A52E M AFW_CreateInternalQueuedEv
 0x1027A4AC M AFW_CreateInternalQueuedEvPriv
 0x10407AFC M UIS_MakeContentFromString
 0x1040739C M UIS_CreateViewer

@@ -1,6 +1,6 @@
 # SDK and EP3 Migration/Development Log
 
-## 22-Feb-2026...31-Mar-2026
+## 22-Feb-2026...03-Apr-2026
 
 * Working on Aleph library
 * Working on Task API
@@ -69,6 +69,36 @@
   UIS_MakeContentFromString
   UIS_CreateViewer
   UIS_Delete
+
+  AFW_CreateInternalQueuedEv
+  AFW_CreateInternalQueuedSvcEv
+  AFW_CreateInternalQueuedEvAux
+  AFW_CreateInternalQueuedEvAuxD
+  AFW_CreateInternalQueuedSvcEvAux
+  AFW_CreateInternalQueuedSvcEvAuxD
+  AFW_CreateInternalQueuedEvPriv
+
+  APP_UtilUISDialogDelete
+  APP_HandleConsumeEvAndExit
+
+  suFindName
+
+  AFW_AddEv
+  AFW_AddEvNoD
+  AFW_AddEvEvD
+  AFW_AddEvAux
+  AFW_AddEvAuxD
+  AFW_AddSvcEv
+  AFW_AddSvcEvNoD
+  AFW_AddSvcEvEvD
+  AFW_AddSvcEvAux
+  AFW_AddSvcEvAuxD
+  AFW_AddEvPriv
+  AFW_TranslateEv
+  AFW_TranslateEvNoD
+  AFW_TranslateEvEvD
+  AFW_TranslateEvAux
+  AFW_TranslateEvAuxD
   ```
 
 * Migrated structs:
@@ -78,6 +108,8 @@
   * AFW_EVENT_GROUP_T (EVENT_STACK_T) + dependencies.
   * UIS_ACTION_LIST_T + dependencies.
   * UIS_CONTENT_T + dependencies.
+
+* Some general events like `EV_DIALOG_DONE` and `EV_DONE` were migrated.
 
 * Deleted from SDK & Libraries:
 
@@ -94,6 +126,25 @@
   EV_REVOKE_TOKEN
   EV_RENDER
   EV_APP_DONE
+  EV_DIALOG_DONE
+  EV_DONE
+
+  AFW_CreateInternalQueuedEv
+  AFW_CreateInternalQueuedSvcEv
+  AFW_CreateInternalQueuedEvAux
+  AFW_CreateInternalQueuedEvAuxD
+  AFW_CreateInternalQueuedSvcEvAux
+  AFW_CreateInternalQueuedSvcEvAuxD
+  AFW_AddEv
+  AFW_AddEvNoD
+  AFW_AddEvEvD
+  AFW_AddEvAux
+  AFW_AddEvAuxD
+  AFW_AddSvcEv
+  AFW_AddSvcEvNoD
+  AFW_AddSvcEvEvD
+  AFW_AddSvcEvAux
+  AFW_AddSvcEvAuxD
   ```
 
 ## 20-Feb-2026
@@ -102,46 +153,46 @@
 * Migrated functions:
 
   ```
-  0472 A DL_FsOpenFile
-  0473 A DL_FsReadFile
-  0437 A DL_FsCloseFile
-  0447 A DL_FsFSeekFile
-  0455 A DL_FsGetFileSize
-  0485 A DL_FsSGetFileSize
+  DL_FsOpenFile
+  DL_FsReadFile
+  DL_FsCloseFile
+  DL_FsFSeekFile
+  DL_FsGetFileSize
+  DL_FsSGetFileSize
 
-  0194 T APP_CALC_MainRegister
+  APP_CALC_MainRegister
   
-  0879 A suAllocMem
-  0895 A suFreeMem
+  suAllocMem
+  suFreeMem
 
-  0915 A u_atol
-  0916 A u_atou
-  0917 A u_isAlpha
-  0918 A u_isDigit
-  0919 A u_isLower
-  0920 A u_isSpace
-  0921 A u_isUpper
-  0922 A u_itoa
-  0923 A u_itoh
-  0924 A u_ltou
-  0926 A u_strcat
-  0927 A u_strchr
-  0928 A u_strcmp
-  0929 A u_strcpy
-  0930 A u_strcut
-  0932 A u_stristr
-  0933 A u_strlen
-  0934 A u_strmakelower
-  0935 A u_strmakeupper
-  0936 A u_strncat
-  0937 A u_strncmp
-  0938 T u_strncmpi
-  0939 A u_strncpy
-  0940 A u_strrchr
-  0942 A u_strstr
-  0943 A u_uint64tou
-  0944 T u_uitoa
-  0945 A u_ultou
+  u_atol
+  u_atou
+  u_isAlpha
+  u_isDigit
+  u_isLower
+  u_isSpace
+  u_isUpper
+  u_itoa
+  u_itoh
+  u_ltou
+  u_strcat
+  u_strchr
+  u_strcmp
+  u_strcpy
+  u_strcut
+  u_stristr
+  u_strlen
+  u_strmakelower
+  u_strmakeupper
+  u_strncat
+  u_strncmp
+  u_strncmpi
+  u_strncpy
+  u_strrchr
+  u_strstr
+  u_uint64tou
+  u_uitoa
+  u_ultou
   ```
 
 ## 19-Feb-2026

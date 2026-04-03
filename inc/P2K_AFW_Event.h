@@ -33,6 +33,7 @@ extern "C" {
 #define AFW_ROUTE_ID_GENERIC           (36)
 #define AFW_FRAMEWORK_EV_CATG          (0)
 #define AFW_LOG_ID_GENERIC             (0)
+#define AFW_CONSUMER_GENERIC           AFW_LOG_ID_GENERIC
 
 typedef UINT32                         AFW_EVENT_CODE_T;
 typedef UINT8                          AFW_EVENT_CATG_T;
@@ -161,15 +162,244 @@ extern AFW_EVENT_CODE_T AFW_GetEvCode(AFW_EVENT_GROUP_T *evg);
 
 extern AFW_AUF_SEQ_NUM_T AFW_GetEvSeqn(AFW_EVENT_GROUP_T *evg);
 
+#define AFW_HAS_EVDATA(data)           (data != (AFW_EVENT_DATA_T *) SYN_NULL)
+#define AFW_HAS_AXDATA(bsize, auxd)    ((bsize != 0) && (auxd != (AFW_EV_BUF_T *) SYN_NULL))
+
+#define AFW_AddEv(evg, code, catg, log_id, data, bflag, bsize, auxd) \
+	( \
+		((!AFW_HAS_EVDATA(data)) && (!AFW_HAS_AXDATA(bsize, auxd))) ? \
+			AFW_AddEvNoD(evg, code) : \
+			(AFW_HAS_EVDATA(data) && (!AFW_HAS_AXDATA(bsize, auxd))) ? \
+				AFW_AddEvEvD(evg, code, data) : \
+				((!AFW_HAS_EVDATA(data)) &&  AFW_HAS_AXDATA(bsize, auxd)) ? \
+					AFW_AddEvAux(evg, code, bflag, bsize, auxd) : \
+					AFW_AddEvAuxD(evg, code, data, bflag, bsize, auxd) \
+	)
+
+#define AFW_AddEvNoD(evg, code) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		(AFW_AUF_SEQ_NUM_T) AFW_SEQN_GENERIC, \
+		AFW_ROUTE_ID_GENERIC, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		SYN_NULL, \
+		AFW_BUF_FLAG_READ_ONLY, \
+		0, \
+		SYN_NULL, \
+		AFW_NON_SVC_REQ \
+	)
+
+#define AFW_AddEvEvD(evg, code, data) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		(AFW_AUF_SEQ_NUM_T) AFW_SEQN_GENERIC, \
+		AFW_ROUTE_ID_GENERIC, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		data, \
+		AFW_BUF_FLAG_READ_ONLY, \
+		0, \
+		SYN_NULL, \
+		AFW_NON_SVC_REQ \
+	)
+
+#define AFW_AddEvAux(evg, code, bflag, bsize, auxd) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		(AFW_AUF_SEQ_NUM_T) AFW_SEQN_GENERIC, \
+		AFW_ROUTE_ID_GENERIC, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		SYN_NULL, \
+		bflag, \
+		bsize, \
+		auxd, \
+		AFW_NON_SVC_REQ \
+	)
+
+#define AFW_AddEvAuxD(evg, code, data, bflag, bsize, auxd) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		(AFW_AUF_SEQ_NUM_T) AFW_SEQN_GENERIC, \
+		AFW_ROUTE_ID_GENERIC, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		data, \
+		bflag, \
+		bsize, \
+		auxd, \
+		AFW_NON_SVC_REQ \
+	)
+
+#define AFW_AddSvcEv(evg, code, seqn, rtid, catg, log_id, data, bflag, bsize, auxd, svc_type) \
+	( \
+		((!AFW_HAS_EVDATA(data)) && (!AFW_HAS_AXDATA(bsize, auxd))) ? \
+			AFW_AddSvcEvNoD(evg, code, svc_type, seqn, rtid) : \
+			(AFW_HAS_EVDATA(data) && (!AFW_HAS_AXDATA(bsize, auxd))) ? \
+				AFW_AddSvcEvEvD(evg, code, data, svc_type, seqn, rtid) : \
+				((!AFW_HAS_EVDATA(data)) &&  AFW_HAS_AXDATA(bsize, auxd)) ? \
+					AFW_AddSvcEvAux(evg, code, bflag, bsize, auxd, svc_type, seqn, rtid) : \
+					AFW_AddSvcEvAuxD(evg, code, data, bflag, bsize, auxd, svc_type, seqn, rtid) \
+	)
+
+#define AFW_AddSvcEvNoD(evg, code, svc_type, seqn, rtid) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		seqn, \
+		rtid, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		SYN_NULL, \
+		AFW_BUF_FLAG_READ_ONLY, \
+		0, \
+		SYN_NULL, \
+		svc_type, \
+	)
+
+#define AFW_AddSvcEvEvD(evg, code, data, svc_type, seqn, rtid) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		seqn, \
+		rtid, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		data, \
+		AFW_BUF_FLAG_READ_ONLY, \
+		0, \
+		SYN_NULL, \
+		svc_type, \
+	)
+
+#define AFW_AddSvcEvAux(evg, code, bflag, bsize, auxd, svc_type, seqn, rtid) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		seqn, \
+		rtid, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		SYN_NULL, \
+		bflag, \
+		bsize, \
+		auxd, \
+		svc_type, \
+	)
+
+#define AFW_AddSvcEvAuxD(evg, code, data, bflag, bsize, auxd, svc_type, seqn, rtid) \
+	AFW_AddEvPriv( \
+		evg, \
+		code, \
+		seqn, \
+		rtid, \
+		AFW_FRAMEWORK_EV_CATG, \
+		SYN_FALSE, \
+		SYN_TRUE, \
+		AFW_LOG_ID_GENERIC, \
+		AFW_CONSUMER_GENERIC, \
+		data, \
+		bflag, \
+		bsize, \
+		auxd, \
+		svc_type, \
+	)
+
+extern SYN_RETURN_STATUS_T AFW_AddEvPriv(
+	AFW_EVENT_GROUP_T *                evg,
+	AFW_EVENT_CODE_T                   ev_code,
+	AFW_AUF_SEQ_NUM_T                  ev_seqn,
+	AFW_EV_ROUTE_ID_T                  ev_rtid,
+	AFW_EVENT_CATG_T                   ev_catg,
+	AFW_CONSUMED_FLAG_T                consumed,
+	AFW_FIRST_PASS_FLAG_T              first_pass,
+	AFW_DATA_LOG_APP_ID_T              log_id,
+	AFW_DATA_LOG_APP_ID_T              ev_consumer,
+	AFW_EVENT_DATA_T*                  ev_data,
+	AFW_EV_BUF_FLAG_T                  ev_bflag,
+	AFW_EV_BUF_SIZE_T                  ev_bsize,
+	AFW_EV_BUF_T *                     ev_auxd,
+	AFW_SVC_EV_TYPE_T                  svc_type
+);
+
+#define AFW_TranslateEv(evg, code, catg, log_id, data, bflag, bsize, auxd) \
+	( \
+		((!AFW_HAS_EVDATA(data)) && (!AFW_HAS_AXDATA(bsize, auxd))) ? \
+			AFW_TranslateEvNoD(evg, code) : \
+			(AFW_HAS_EVDATA(data) && (!AFW_HAS_AXDATA(bsize, auxd))) ? \
+				AFW_TranslateEvEvD(evg, code, data) : \
+				((!AFW_HAS_EVDATA(data)) &&  AFW_HAS_AXDATA(bsize, auxd)) ? \
+					AFW_TranslateEvAux(evg, code, bflag, bsize, auxd) : \
+					AFW_TranslateEvAuxD (evg, code, data, bflag, bsize, auxd) \
+	)
+
+extern SYN_RETURN_STATUS_T AFW_TranslateEvNoD(
+	AFW_EVENT_GROUP_T *                evg,
+	AFW_EVENT_CODE_T                   ev_code
+);
+
+extern SYN_RETURN_STATUS_T AFW_TranslateEvEvD(
+	AFW_EVENT_GROUP_T *                evg,
+	AFW_EVENT_CODE_T                   ev_code,
+	AFW_EVENT_DATA_T *                 ev_data
+);
+
+extern SYN_RETURN_STATUS_T AFW_TranslateEvAux(
+	AFW_EVENT_GROUP_T *                evg,
+	AFW_EVENT_CODE_T                   ev_code,
+	AFW_EV_BUF_FLAG_T                  ev_bflag,
+	AFW_EV_BUF_SIZE_T                  ev_bsize,
+	AFW_EV_BUF_T *                     ev_auxd
+);
+
+extern SYN_RETURN_STATUS_T AFW_TranslateEvAuxD(
+	AFW_EVENT_GROUP_T *                evg,
+	AFW_EVENT_CODE_T                   ev_code,
+	AFW_EVENT_DATA_T *                 ev_data,
+	AFW_EV_BUF_FLAG_T                  ev_bflag,
+	AFW_EV_BUF_SIZE_T                  ev_bsize,
+	AFW_EV_BUF_T *                     ev_auxd
+);
+
 #define AFW_CreateInternalQueuedEv(code, catg, log_id, data, bflag, bsize, auxd) \
-	((data != (AFW_EVENT_DATA_T *) SYN_NULL)) ? \
-		AFW_CreateInternalQueuedEvAuxD(code, data, bflag, bsize, auxd) : \
-		AFW_CreateInternalQueuedEvAux(code, bflag, bsize, auxd))
+	( \
+		(AFW_HAS_EVDATA(data)) ? \
+			AFW_CreateInternalQueuedEvAuxD (code, data, bflag, bsize, auxd) : \
+			AFW_CreateInternalQueuedEvAux(code, bflag, bsize, auxd) \
+	)
 
 #define AFW_CreateInternalQueuedSvcEv(code, seqn, rtid, catg, log_id, data, bflag, bsize, auxd, svc) \
-	((data != (AFW_EVENT_DATA_T *) SYN_NULL)) ? \
-		AFW_CreateInternalQueuedSvcEvAuxD(code, seqn, rtid, data, bflag, bsize, auxd, svc) : \
-		AFW_CreateInternalQueuedSvcEvAux(code, seqn, rtid, bflag, bsize, auxd, svc))
+	( \
+		(AFW_HAS_EVDATA(data)) ? \
+			AFW_CreateInternalQueuedSvcEvAuxD(code, seqn, rtid, data, bflag, bsize, auxd, svc) : \
+			AFW_CreateInternalQueuedSvcEvAux(code, seqn, rtid, bflag, bsize, auxd, svc) \
+	)
 
 #define AFW_CreateInternalQueuedEvAux(code, bflag, bsize, auxd) \
 	AFW_CreateInternalQueuedEvPriv( \

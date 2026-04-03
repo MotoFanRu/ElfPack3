@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW K3_R261171LD_U_99.51.06R
-# VER EP3_26-Mar-2026
+# VER EP3_03-Apr-2026
 # CPU ARM11
 
 0xFFFFFFFF D SKIN_FOLDER
@@ -18,13 +18,7 @@
 0xA124553C A __rt_udiv
 0xA1242C80 A __rt_udiv10
 0xA0F6DB08 T AFW_AddAppToRoutingStack
-0xA0F6E170 T AFW_AddEvAux
-0xA0F6E0FA T AFW_AddEvEvD
-0xA0F6D546 T AFW_AddEvNoD
-0xA0F6E1A8 T AFW_AddSvcEvNoD
 0xA0F6E30E T AFW_ConsumeEv
-0xA0F6D84C T AFW_CreateInternalQueuedEvAux
-0xA0F6D878 T AFW_CreateInternalQueuedEvAuxD
 0xA0F6D580 T AFW_FreeAppPortHandle
 0xA0F6DBEA T AFW_GenAppInstanceId
 0xA0F6D8A6 T AFW_GenAppRegistryId

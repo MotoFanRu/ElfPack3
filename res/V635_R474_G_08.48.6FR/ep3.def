@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW V635_R474_G_08.48.6FR
-# VER EP3_26-Mar-2026
+# VER EP3_03-Apr-2026
 # CPU ARM7
 
 0x1235D690 D Class_dal
@@ -33,8 +33,6 @@
 0x000FB564 T abs_0
 0x103915A6 T AFW_AddAppToRoutingStack
 0x1038EA68 T AFW_AddEvPriv
-0x1038ECEA T AFW_CreateInternalQueuedEvAux
-0x1038ED1A T AFW_CreateInternalQueuedEvAuxD
 0x1038EC60 T AFW_CreateInternalQueuedEvPriv
 0x10391704 T AFW_GenAppInstanceId
 0x1038ED84 T AFW_GetEv

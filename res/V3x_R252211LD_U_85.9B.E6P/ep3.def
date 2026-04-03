@@ -12,8 +12,6 @@
 0x102F5624 M AFW_AddEvAuxD
 0x102F55C4 M AFW_AddEvEvD
 0x102F5592 M AFW_AddEvNoD
-0x102F5AC6 M AFW_CreateInternalQueuedEvAux
-0x102F5AE8 M AFW_CreateInternalQueuedEvAuxD
 0x102F5A44 M AFW_CreateInternalQueuedEvPriv
 0x102F7098 M AFW_FindAppInStack
 0x102F4F66 M AFW_GetActiveSession

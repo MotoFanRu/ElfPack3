@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW E770v_R252211_U_85.9B.E1P
-# VER EP3_26-Mar-2026
+# VER EP3_03-Apr-2026
 # CPU MCORE340
 
 0x00000D3C C EVENT_BT
@@ -16,12 +16,6 @@
 0x00100120 M __rt_memcpy
 0x00100190 M __rt_memset
 0x106C1FBA M _itoa
-0x102F4D2E M AFW_AddEvAux
-0x102F4D5C M AFW_AddEvAuxD
-0x102F4CFC M AFW_AddEvEvD
-0x102F4CCA M AFW_AddEvNoD
-0x102F51FE M AFW_CreateInternalQueuedEvAux
-0x102F5220 M AFW_CreateInternalQueuedEvAuxD
 0x102F517C M AFW_CreateInternalQueuedEvPriv
 0x102F67D0 M AFW_FindAppInStack
 0x102F469E M AFW_GetActiveSession

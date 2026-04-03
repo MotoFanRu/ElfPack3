@@ -2,7 +2,7 @@
 # https://github.com/MotoFanRu/P2K-ELF-SDK
 #
 # PFW M702iG_V2000_U_90.21.21I
-# VER EP3_26-Mar-2026
+# VER EP3_03-Apr-2026
 # CPU ARM11
 
 0xA17AC068 A __rt_memclr
@@ -12,10 +12,7 @@
 0xA17ABE68 A __rt_memmove
 0xA17ABD84 A __rt_memset
 0xA035337C T AFW_AddAppToRoutingStack
-0xA0351E84 T AFW_AddEvNoD
 0xA0351DD0 T AFW_AddEvPriv
-0xA03521D6 T AFW_CreateInternalQueuedEvAux
-0xA03521FE T AFW_CreateInternalQueuedEvAuxD
 0xA0353402 T AFW_FreeAppPortHandle
 0xA0352486 T AFW_GenAppInstanceId
 0xA0352558 T AFW_GetEv

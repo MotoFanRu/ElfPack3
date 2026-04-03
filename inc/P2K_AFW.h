@@ -11,7 +11,6 @@ extern "C" {
 
 typedef UINT16                         AFW_APP_INSTANCE_ID_T;
 typedef UINT16                         AFW_APP_REGISTRY_ID_T;
-typedef UINT32                         AFW_TOKEN_MGR_T;
 typedef UINT32                         AFW_DATA_LOG_APP_ID_T;
 typedef SU_PORT_HANDLE                 AFW_APP_PORT_HDL_T;
 typedef UINT8                          AFW_STACK_ID_T;
@@ -20,6 +19,22 @@ typedef UINT8                          AFW_SESSION_ID_T;
 typedef UINT32                         AFW_APP_DATA_HDL_T;
 typedef UINT32                         AFW_APP_PRIORITY_T;
 typedef UINT32                         AFW_APP_COUNT_T;
+
+enum tagAFW_TOKEN_MGR_T {
+	AFW_TM_ID_DATALINE = 0,
+	AFW_TM_ID_FAXLINE,
+	AFW_TM_ID_MIC,
+	AFW_TM_ID_RINGER,
+	AFW_TM_ID_NETWORK1,
+	AFW_TM_ID_NETWORK2,
+	AFW_TM_ID_SPEAKER,
+	AFW_TM_ID_USERINTER,
+	AFW_TM_ID_VIBE,
+	AFW_TM_ID_POWER_DOWN,
+	AFW_TM_ID_SIGNALING,
+	AFW_TM_ID_REMOTE_KEY_ROUTING
+};
+typedef UINT32                         AFW_TOKEN_MGR_T;
 
 enum tagAFW_APP_RSTACK_TYPE_T {
 	AFW_PREPROCESSING = 0,

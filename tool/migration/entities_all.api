@@ -93,6 +93,7 @@ suAcquireSem
 suReleaseSem
 suDeleteSem
 suSleep
+suFindName
 
 # P2K_UIS_Memory.h
 uisAllocateMemory
@@ -142,6 +143,29 @@ AFW_InquireRoutingStackByRegId
 AFW_GetEv
 AFW_GetEvCode
 AFW_GetEvSeqn
+AFW_CreateInternalQueuedEv
+AFW_CreateInternalQueuedSvcEv
+AFW_CreateInternalQueuedEvAux
+AFW_CreateInternalQueuedEvAuxD
+AFW_CreateInternalQueuedSvcEvAux
+AFW_CreateInternalQueuedSvcEvAuxD
+AFW_CreateInternalQueuedEvPriv
+AFW_AddEv
+AFW_AddEvNoD
+AFW_AddEvEvD
+AFW_AddEvAux
+AFW_AddEvAuxD
+AFW_AddSvcEv
+AFW_AddSvcEvNoD
+AFW_AddSvcEvEvD
+AFW_AddSvcEvAux
+AFW_AddSvcEvAuxD
+AFW_AddEvPriv
+AFW_TranslateEv
+AFW_TranslateEvNoD
+AFW_TranslateEvEvD
+AFW_TranslateEvAux
+AFW_TranslateEvAuxD
 
 # P2K_Application.h
 APP_Register
@@ -156,10 +180,10 @@ APP_ConsumeEv
 APP_UtilChangeState
 APP_UtilConsumeEvChangeState
 APP_Exit
+APP_UtilUISDialogDelete
+APP_HandleConsumeEvAndExit
 
 # P2K_UIS.h
 UIS_MakeContentFromString
 UIS_CreateViewer
 UIS_Delete
-
-suFindName

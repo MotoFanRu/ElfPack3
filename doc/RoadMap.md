@@ -8,7 +8,38 @@
 * 🟥 — Failed
 * 🟦 — Out of interest
 
-## Mar, 2026
+## Apr, 2026
+
+* 🟨 SDK Migration
+
+  * ✅ Use typedefs for functions instead of `void *` everywhere.
+  * 🟨 Check EXPORT_LIB, GET_CONST, GET_DATA macros.
+
+* 🟨 Aleph Library.
+
+  * 🟨 Use OOP, slight refactoring.
+  * 🟨 None Type Problem.
+
+* 🟨 Rework and research EP3 Logging system.
+
+  * 🟨 Check va_args and logging functions.
+  * ✅ Research vsprintf, visprintf, vsnprintf functions.
+  * ✅ NULL Logger.
+  * ✅ JAL Logger.
+  * ✅ SUAPI Logger.
+  * ✅ File Logger.
+  * 🟦 Some Old Loggers like E380_Logger, KOSI_Logger, etc?
+
+* 🟨 General "ElfLoaderStrap" patch + binary.
+
+  * ✅ Research EM1 and EM2 ElfLoaderStrap.
+  * ✅ Collect a general compiler flags.
+  * 🟨 Research '0' pushing determining.
+  * 🟨 Research allocator system.
+  * ✅ Create a Minimal SDK + compiler subset.
+  * ✅ Research `-fPIE` and `-pie` flags.
+  * ✅ BootStrap + ElfStrap to fixed addresses.
+  * ✅ Find at least 16 KB in RAM for ElfStrap.
 
 * 🟨 Strap Applications research.
 
@@ -18,13 +49,24 @@
   * ✅ EM1
   * ✅ EM2
   * 🟨 Other?
+  * 🟨 Should we use bare-metal ElfLoader impl. instead of Synergy Application?
 
-* ✅ Tasks SUAPI research.
+* 🟨 Work on compilers & toolchains.
 
-  * ✅ Inside firmwares.
-  * ✅ Inside TFPG patch by Andy51.
-  * ✅ Add second task.
-  * ✅ Tasks support implemented.
+  * 🟩 Modern GCC 15+ for ARM
+  * 🟩 Modern GCC 15+ for M-CORE
+  * 🟩 Support libraries like libgcc for all supported archs.
+
+    * 🟩 m210 big
+    * 🟩 m340 big
+    * 🟩 arm7 big
+    * 🟩 arm9 big
+    * 🟩 arm11 big
+    * 🟩 arm7 little
+    * 🟩 arm9 little
+    * 🟩 arm11 little
+
+  * 🟩 Add M-CORE and ARM? GCC cross-compiler building recipes itself for PC.
 
 * 🟨 ELF Loaders in-depth research.
 
@@ -38,48 +80,24 @@
   * 🟨 Sony J70 NiMar/Andrey Z.
   * 🟨 Other ElfLoaders from GitHub and AI.
 
-* 🟨 Work on compilers & toolchains.
+## Mar, 2026
 
-  * 🟩 Modern GCC 15+ for ARM
-  * 🟩 Modern GCC 15+ for M-CORE
-  * 🟩 Support libraries like libgcc for all archs.
+* ✅ Log Viewer App research.
 
-    * 🟩 m210 big
-    * 🟩 m340 big
-    * 🟩 arm7 big
-    * 🟩 arm9 big
-    * 🟩 arm11 big
-    * 🟩 arm7 little
-    * 🟩 arm9 little
-    * 🟩 arm11 little
+  * ✅ Prepare all headers for Synergy (AFW + APP + UIS) App Skeleton.
+  * ✅ Implement and check it.
 
-  * 🟩 M-CORE and ARM? GCC cross-compiler building recipes itself for PC.
+* ✅ Tasks SUAPI research.
+
+  * ✅ Inside firmwares.
+  * ✅ Inside TFPG patch by Andy51.
+  * ✅ Add second task.
+  * ✅ Tasks support implemented.
 
 * ✅ Python CLI tool skeleton.
 
   * ✅ Port migration tools to Aleph library.
 
-* 🟨 General "ElfLoaderStrap" patch + binary.
-
-  * 🟨 Research EM1 and EM2 ElfLoaderStrap.
-  * 🟨 Collect a general compiler flags.
-  * 🟨 Research '0' pushing determining.
-  * 🟨 Research allocator system.
-  * 🟨 Create a Minimal SDK + compiler subset.
-  * ✅ Research `-fPIE` and `-pie` flags.
-  * ✅ BootStrap + ElfStrap to fixed addresses.
-  * ✅ Find at least 16 KB in RAM for ElfStrap.
-
-* ✅ Rework and research EP3 Logging system.
-
-  * 🟨 Check va_args and logging functions.
-  * ✅ NULL Logger.
-  * ✅ JAL Logger.
-  * ✅ SUAPI Logger.
-  * ✅ File Logger.
-  * 🟦 Some Old Loggers like E380_Logger, KOSI_Logger, etc?
-
-* ✅ Aleph Library.
 * ✅ Create `build.py` and `config.py` scripts.
 
   * ✅ A minimal working skeleton of building and config scripts.
