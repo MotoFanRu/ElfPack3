@@ -7,31 +7,27 @@ A general tool for building ELF Loader, BIN Loader, and libraries for a selected
 """
 
 from pathlib import Path
-from datetime import datetime
-from argparse import Namespace
-from argparse import RawDescriptionHelpFormatter
 
-from config import *
+from aleph import Aleph
+from aleph import Recipe
 
-def build_ep3_lib(recipe_name: str, recipe: Recipe) -> bool:
-	I(f' Building "{recipe_name}" library.')
+def build_ep3_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
+	a.log.I(f' Build EP3 Library:')
 
 	asm_tpl = recipe.soc.asm
-	asm_src = P2K_SDK_BUILD / asm_tpl.name.replace('.tpl', '')
-	asm_obj = P2K_SDK_BUILD / asm_src.name.replace('.S', '.o')
-	def_res = P2K_SDK_RES / recipe_name / 'ep3.def'
+	asm_src = a.consts.P2K_SDK_BUILD / asm_tpl.name.replace('.tpl', '')
+	asm_obj = a.consts.P2K_SDK_BUILD / asm_src.name.replace('.S', '.o')
+	def_res = a.consts.P2K_SDK_RES / recipe_name / 'ep3.def'
 
-	defines = read_definitions(def_res)
+	defines = a.fdef.read_def(def_res)
 
-	if not write_assembler_listing(asm_tpl, asm_src, defines):
-		E(f'Cannot create assembly listing: "{def_res.name}" => "{asm_src}"')
+	if not a.fasm.write_asm(asm_tpl, asm_src, defines):
+		a.log.E(f'Cannot create: {def_res.name} => {asm_src}')
 		return False
 
-	cflags = [
-		*recipe.toolchain.cflags_lib_so
-	]
-	if not gcc_compile(recipe, asm_src, asm_obj, cflags):
-		E(f'Cannot compile assembly listing: "{asm_src.name} => {asm_obj.name}"')
+	cflags = [ *recipe.soc.opt, *recipe.flags.build, *recipe.toolchain.cflags_lib_so ]
+	if not a.toolchain.gcc_cc(recipe.toolchain, asm_src, asm_obj, cflags):
+		a.log.E(f'Cannot compile: {asm_src.name} => {asm_obj.name}')
 		return False
 
 	# TODO: Links library to .a and .so here?
@@ -39,162 +35,148 @@ def build_ep3_lib(recipe_name: str, recipe: Recipe) -> bool:
 
 	return True
 
-def build_bin_ldr(recipe_name: str, recipe: Recipe) -> bool:
-	I(f' Building "{recipe_name}" BIN loader.')
+def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
+	a.log.I(f' Build BIN Loader:')
 
 	cflags = [
-		*recipe.toolchain.cflags_bin_ldr, *recipe.flags.bin_ldr,
-		f'-DFTR_LOAD_TO_ADDR={format_32bit_addr(recipe.addresses.loader)}',
+		*recipe.soc.opt, *recipe.toolchain.cflags_bin_ldr, *recipe.flags.build, *recipe.flags.bin_ldr,
+		f'-DFTR_LOAD_TO_ADDR={a.hex.u32s(recipe.addresses.loader)}',
 	]
 	src_obj = [
-		(P2K_SDK_SRC / 'P2K_EP3_Logger.c',      P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_Memory.c',      P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_File_System.c', P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',  P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),
-		(P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',  P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',        a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',        a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_File_System.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c',  a.consts.P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
 	]
-	recipe.tasks and src_obj.append((P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c', P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'))
 	for src, obj in src_obj:
-		if not gcc_compile(recipe, src, obj, cflags):
-			E(f'Cannot compile source file: "{src.name}" => "{obj.name}"')
+		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):
+			a.log.E(f'Cannot compile: {src.name} => {obj.name}')
 			return False
 
 	lflags = [
-		*cflags, *recipe.toolchain.lflags_bin_ldr,
+		*recipe.toolchain.lflags_bin_ldr,
 		f'-Wl,-L,{recipe.soc.lds.parent}',
 		f'-Wl,-T,{recipe.soc.lds.name}',
-		f'-Wl,-Ttext={format_32bit_addr(recipe.addresses.inject)}',
+		f'-Wl,-Ttext={a.hex.u32s(recipe.addresses.inject)}',
 	]
-	elf_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
+	elf_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
 	objs = [obj for _, obj in src_obj]
-	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
-	if not gcc_link(recipe, objs, elf_res, lflags):
-		E(f'Cannot link ELF executable file: "{elf_res}"')
+	objs.append(a.consts.P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
+	if not a.toolchain.gcc_ld(recipe.toolchain, objs, elf_res, cflags, lflags):
+		a.log.E(f'Cannot link: {elf_res}')
 		return False
 
-	map_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.map'
-	if not gcc_nm(recipe, elf_res, map_res):
-		E(f'Cannot extract symbols: "{map_res}"')
+	map_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.map'
+	if not a.toolchain.gcc_nm(recipe.toolchain, elf_res, map_res):
+		a.log.E(f'Cannot create: {elf_res} => {map_res}')
 		return False
 
-	bin_res = P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.bin'
-	if not gcc_bin(recipe, elf_res, bin_res):
-		E(f'Cannot create BIN file: "{elf_res}" => "{bin_res}"')
+	bin_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.bin'
+	if not a.toolchain.gcc_bin(recipe.toolchain, elf_res, bin_res):
+		a.log.E(f'Cannot create: {elf_res} => {bin_res}')
 		return False
 
-	copy_file(bin_res, P2K_SDK_RELEASE / recipe_name / EP3_BIN_LDR, True, True)
+	a.fs.copy_file(bin_res, a.consts.P2K_SDK_RELEASE / recipe_name / a.consts.EP3_BIN_LDR, True, True)
 	# TODO: Create and combine patches instead of copying loader file?
 
 	return True
 
-def build_elf_ldr(recipe_name: str, recipe: Recipe) -> bool:
-	I(f' Building "{recipe_name}" ELF loader.')
+def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
+	a.log.I(f' Build ELF Loader:')
 
 	cflags = [
-		*recipe.toolchain.cflags_elf_ldr, *recipe.flags.elf_ldr,
-		f'-DFTR_LOAD_TO_ADDR={format_32bit_addr(recipe.addresses.loader)}',
+		*recipe.soc.opt, *recipe.toolchain.cflags_elf_ldr, *recipe.flags.build, *recipe.flags.elf_ldr,
+		f'-DFTR_LOAD_TO_ADDR={a.hex.u32s(recipe.addresses.loader)}',
 	]
 	src_obj = [
-		(P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',  P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.o'),
 	]
 	for src, obj in src_obj:
-		if not gcc_compile(recipe, src, obj, cflags):
-			E(f'Cannot compile source file: "{src.name}" => "{obj.name}"')
+		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):
+			a.log.E(f'Cannot compile: {src.name} => {obj.name}')
 			return False
 
 	lflags = [
-		*cflags, *recipe.toolchain.lflags_elf_ldr,
+		*recipe.toolchain.lflags_elf_ldr,
 		f'-Wl,-L,{recipe.soc.lds.parent}',
 		f'-Wl,-T,{recipe.soc.lds.name}',
-		f'-Wl,-Ttext={format_32bit_addr(recipe.addresses.loader)}',
+		f'-Wl,-Ttext={a.hex.u32s(recipe.addresses.loader)}',
 	]
-	elf_res = P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.elf'
+	elf_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.elf'
 	objs = [obj for _, obj in src_obj]
-	objs.append(P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
-	objs.append(P2K_SDK_BUILD / 'P2K_EP3_Logger.o')
-	objs.append(P2K_SDK_BUILD / 'P2K_EP3_Memory.o')
-	objs.append(P2K_SDK_BUILD / 'P2K_EP3_File_System.o')
-	if not gcc_link(recipe, objs, elf_res, lflags):
-		E(f'Cannot link ELF executable file: "{elf_res}"')
+	objs.append(a.consts.P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
+	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o')
+	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o')
+	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_File_System.o')
+	if not a.toolchain.gcc_ld(recipe.toolchain, objs, elf_res, cflags, lflags):
+		a.log.E(f'Cannot link: {elf_res}')
 		return False
 
-	map_res = P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.map'
-	if not gcc_nm(recipe, elf_res, map_res):
-		E(f'Cannot extract symbols: "{map_res}"')
+	map_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.map'
+	if not a.toolchain.gcc_nm(recipe.toolchain, elf_res, map_res):
+		a.log.E(f'Cannot create: {elf_res} => {map_res}')
 		return False
 
-	bin_res = P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.bin'
-	if not gcc_bin(recipe, elf_res, bin_res):
-		E(f'Cannot create BIN file: "{elf_res}" => "{bin_res}"')
+	bin_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.bin'
+	if not a.toolchain.gcc_bin(recipe.toolchain, elf_res, bin_res):
+		a.log.E(f'Cannot create: {elf_res} => {bin_res}')
 		return False
 
-	if not copy_file(bin_res, P2K_SDK_RELEASE / recipe_name / EP3_ELF_LDR, True, True):
-		return False
+	a.fs.copy_file(bin_res, a.consts.P2K_SDK_RELEASE / recipe_name / a.consts.EP3_ELF_LDR, True, True)
 
 	return True
 
-def cook_recipe(recipe_name: str, recipe: Recipe) -> bool:
-	I('')
-	I(f'Cooking "{recipe_name}" recipe.')
+def cook_recipe(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
+	a.log.I('')
+	a.log.I(f'Cook recipe: {recipe_name}')
 
-	if not create_clean_dir(P2K_SDK_BUILD):
-		E(f'Cannot create and clean build directory: "{P2K_SDK_BUILD}"')
-		return False
+	a.fs.create_dir(a.consts.P2K_SDK_BUILD, True)
 
 	build_steps = [
-		(build_ep3_lib, [recipe_name, recipe], 'Cannot build EP3 Library'),
-		(build_bin_ldr, [recipe_name, recipe], 'Cannot build BIN Loader'),
-		(build_elf_ldr, [recipe_name, recipe], 'Cannot build ELF Loader'),
+		(build_ep3_lib, [a, recipe_name, recipe], 'Cannot build EP3 Library'),
+		(build_bin_ldr, [a, recipe_name, recipe], 'Cannot build BIN Loader'),
+		(build_elf_ldr, [a, recipe_name, recipe], 'Cannot build ELF Loader'),
 	]
 
 	for func, args, error_msg in build_steps:
 		if not func(*args):
-			E(f'{error_msg} for "{recipe_name}".')
+			a.log.E(f'{error_msg}: {recipe_name}')
 			return False
 
 	return True
 
-def do_work(args: Namespace) -> bool:
-	if args.recipe == 'all':
-		I('Cooking all recipes.')
-		for recipe in RECIPES.keys():
-			if not cook_recipe(recipe, RECIPES[recipe]):
+def do_build_work(a: Aleph) -> bool:
+	if a.args.recipe == 'all':
+		a.log.I('Cook all recipes.')
+		for recipe in a.recipe.recipes.keys():
+			if not cook_recipe(a, recipe, a.recipe.recipes[recipe]):
 				return False
 		return True
-	return cook_recipe(args.recipe, RECIPES[args.recipe])
+	return cook_recipe(a, a.args.recipe, a.recipe.recipes[a.args.recipe])
 
-def args_and_help() -> Namespace:
-	class Args(Arguments):
-		def check_args(self, args: Namespace) -> None:
-			if (args.recipe not in RECIPES) and (args.recipe != 'all'):
-				self.error(f'Recipe "{args.recipe}" not supported!')
-
+def fill_build_args(a: Aleph) -> None:
 	epl = 'examples:\n'
 	epl += f'  python {Path(__file__).name} all\n'
-	for recipe in RECIPES.keys():
+	for recipe in a.recipe.recipes.keys():
 		epl += f'  python {Path(__file__).name} {recipe}\n'
+
 	hlp = {
 		'D': 'EP3 Build Tool for Motorola phones on P2K platform, 01-Mar-2026',
 		'R': 'phone and firmware recipe to build',
 		'v': 'enable verbose output'
 	}
 
-	parser = Args(description=hlp['D'], epilog=epl, formatter_class=RawDescriptionHelpFormatter)
-	parser.add_argument('recipe', type=str, help=hlp['R'])
-	parser.add_argument('-v', '--verbose', action='store_true', help=hlp['v'])
-	return parser.parse_and_check_args()
+	a.args_parser.add_epilog_description(epl, hlp['D'])
+	a.args_parser.add_argument('recipe', type=str, help=hlp['R'])
+	a.args_parser.add_argument('-v', '--verbose', action='store_true', help=hlp['v'])
 
-def main() -> None:
-	args = args_and_help()
-	set_logger(args.verbose)
-
-	start_time = datetime.now()
-	D(f'Start building on "{start_time}".')
-
-	do_work(args)
-
-	D(f'End building on "{datetime.now()}".')
-	I(f'Time elapsed: "{elapsed_format(datetime.now() - start_time)}".')
+def check_build_args(a: Aleph) -> None:
+	if (a.args.recipe not in a.recipe.recipes) and (a.args.recipe != 'all'):
+		a.args_parser.error(f'Recipe not supported: {a.args.recipe}')
 
 if __name__ == '__main__':
-	main()
+	aleph = Aleph()
+	aleph.set_args(fill_build_args, check_build_args)
+	aleph.main(do_build_work)
