@@ -22,6 +22,7 @@ from .aleph_format_sym import AlephFormatSym
 from .aleph_format_api import AlephFormatApi
 from .aleph_format_asm import AlephFormatAsm
 from .aleph_exception import AlephException
+from .aleph_format_map import AlephFormatMap
 
 class Aleph:
 	log: AlephLogger
@@ -43,6 +44,7 @@ class Aleph:
 	fsym: AlephFormatSym
 	fapi: AlephFormatApi
 	fasm: AlephFormatAsm
+	fmap: AlephFormatMap
 
 	def __init__(self) -> None:
 		self.log = AlephLogger()
@@ -64,6 +66,7 @@ class Aleph:
 		self.fsym = AlephFormatSym(self.log, self.chk, self.mdef, self.fs, self.strs, self.hex, self.patch)
 		self.fapi = AlephFormatApi(self.log, self.chk, self.mdef, self.fs)
 		self.fasm = AlephFormatAsm(self.log, self.chk, self.hex, self.mdef, self.patch, self.fs)
+		self.fmap = AlephFormatMap(self.log, self.chk, self.mdef, self.fs, self.strs, self.hex, self.patch)
 
 	def set_args(self, fill_args_fn: Callable[[Aleph], None], check_args_fn: Callable[[Aleph], None] = None) -> None:
 		fill_args_fn(self)

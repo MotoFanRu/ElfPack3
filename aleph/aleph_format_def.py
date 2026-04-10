@@ -172,3 +172,44 @@ class AlephFormatDef:
 
 		self.log.I(f'Not found, cannot delete: {by_name} in {p_io}')
 		return False
+
+	def update_def(self, p_io: Path, sym_name: str, sym_type: str, sym_addr: int) -> bool:
+		model = self.read_def(p_io)
+		if not self.mdef.is_def_model(model):
+			self.log.E(f'Model of file did not pass validation: {p_io.name}')
+			return False
+
+		sym_to_update = None
+		for s in model.syms:
+			if s.name == sym_name:
+				sym_to_update = s
+				break
+
+		# Update version if symbol is not found (will be added later) or type/addr is changed.
+		update_version = (not sym_to_update) or ((sym_to_update.addr != sym_addr) or (sym_to_update.type != sym_type))
+
+		# Add new definition if not found or update it.
+		if sym_to_update:
+			if update_version:
+				self.log.I(f'Update in: {p_io.name}, update_version: {update_version}')
+				self.log.I(f' Old: {self.mdef.gen_def_line(sym_to_update)}')
+				self.log.I(f' New: {self.mdef.gen_def_line_args(sym_addr, sym_type, sym_name)}')
+			sym_to_update.addr = sym_addr
+			sym_to_update.type = sym_type
+			sym_to_update.name = sym_name
+		else:
+			self.log.I(f'Add to: {p_io.name}, update_version: {update_version}')
+			self.log.I(f' New: {self.mdef.gen_def_line_args(sym_addr, sym_type, sym_name)}')
+			model.syms.append(SymbolDef(
+				type=sym_type,
+				addr=sym_addr,
+				name=sym_name
+			))
+
+		model.syms = self.mdef.sort_symbols(model.syms)
+
+		if not self.mdef.is_def_model(model):
+			self.log.E(f'Updated model of file did not pass validation: {p_io.name}')
+			return False
+
+		return self.write_def(p_io, model, update_version)

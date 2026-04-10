@@ -122,7 +122,7 @@ class AlephModelDef:
 
 		for sym in model.syms:
 			if not self.is_symbol(sym):
-				self.log.E(f'Symbol is wrong: {sym}')
+				self.log.E(f'Symbol is wrong: {self.gen_def_line(sym)}')
 				return False
 
 		return True
@@ -213,6 +213,9 @@ class AlephModelDef:
 	def gen_def_line(self, symbol: SymbolDef) -> str:
 		return f'{self.hex.u32s(symbol.addr)} {symbol.type} {symbol.name}'
 
+	def gen_def_line_args(self, sym_addr: int, sym_type: str, sym_name: str) -> str:
+		return f'{self.hex.u32s(sym_addr)} {sym_type} {sym_name}'
+
 	def pack_def_line(self, symbol: SymbolDef, skip_addr: bool, skip_type: bool) -> str:
 		if skip_addr and skip_type:
 			return symbol.name
@@ -287,3 +290,26 @@ class AlephModelDef:
 
 		self.log.I('No model mismatch detected.')
 		return False
+
+	def get_api_def(self, model_api: ModelDef, model_def: ModelDef, warn_on_not_found: bool = True) -> ModelDef:
+		if not self.is_def_model(model_api):
+			raise AlephParserException('Cannot parse Model API')
+		if not self.is_def_model(model_def):
+			raise AlephParserException('Cannot parse Model DEF')
+
+		api_syms = []
+		for api_sym in model_api.syms:
+			found = False
+			for def_sym in model_def.syms:
+				if api_sym.name == def_sym.name:
+					found = True
+					api_syms.append(def_sym)
+			if not found and warn_on_not_found:
+				self.log.W(f'Symbol not found in DEF model: {api_sym.name}')
+
+		if not self.chk.is_ok_list(api_syms):
+			self.log.W('Cannot find any symbols from API Model in DEF Model')
+
+		model_def.syms = api_syms
+
+		return model_def

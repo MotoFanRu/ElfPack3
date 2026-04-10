@@ -1,12 +1,12 @@
-from enum import auto, StrEnum
+from enum import Enum
 from dataclasses import dataclass
 from pathlib import Path
 
 from .aleph_consts import AlephConsts
 
-class Endian(StrEnum):
-	BIG = auto()
-	LITTLE = auto()
+class Endian(Enum):
+	LITTLE = 0
+	BIG    = 1
 
 @dataclass
 class SoC:

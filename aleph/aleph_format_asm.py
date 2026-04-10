@@ -1,4 +1,4 @@
-from enum import auto, StrEnum
+from enum import Enum
 from pathlib import Path
 
 from .aleph_logger import AlephLogger
@@ -9,9 +9,9 @@ from .aleph_patcher import AlephPatcher
 from .aleph_filesystem import AlephFileSystem
 from .aleph_exception import AlephParserException
 
-class AsmMode(StrEnum):
-	ARM_ASM = auto()
-	MCORE_ASM = auto()
+class AsmMode(Enum):
+	ARM_ASM = 0
+	MCORE_ASM = 1
 
 class AlephFormatAsm:
 	ASM_EXT = ['.asm', '.s', '.S']

@@ -1,13 +1,13 @@
-from enum import auto, StrEnum
+from enum import Enum
 from pathlib import Path
 
 from .aleph_logger import AlephLogger
 from .aleph_exception import AlephCheckerException
 
-class CheckerMode(StrEnum):
-	SILENT = auto()
-	WARN = auto()
-	EXCEPTION = auto()
+class CheckerMode(Enum):
+	SILENT    = 0
+	WARN      = 1
+	EXCEPTION = 2
 
 class AlephChecker:
 	log: AlephLogger
