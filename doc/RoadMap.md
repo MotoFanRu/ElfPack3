@@ -10,15 +10,17 @@
 
 ## Apr, 2026
 
-* 🟨 SDK Migration
+* 🟨 SDK Migration.
 
   * ✅ Use typedefs for functions instead of `void *` everywhere.
   * 🟨 Check EXPORT_LIB, GET_CONST, GET_DATA macros.
 
 * 🟨 Aleph Library.
 
-  * 🟨 Use OOP, slight refactoring.
-  * 🟨 None Type Problem.
+  * ✅ Use OOP, slight refactoring.
+  * ✅ None Type Problem.
+  * 🟨 Patcher functionality.
+  * 🟨 Patterns functionality.
 
 * 🟨 Rework and research EP3 Logging system.
 

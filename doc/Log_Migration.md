@@ -1,12 +1,16 @@
 # SDK and EP3 Migration/Development Log
 
+## 04-Apr-2026...10-Apr-2026
+
+Aleph code refactoring, move to OOP + exceptions.
+
 ## 22-Feb-2026...03-Apr-2026
 
-* Working on Aleph library
-* Working on Task API
-* Working on Skeleton
-* Working on Log View
-* Working on va_args
+* Working on Aleph library.
+* Working on Task API.
+* Working on Skeleton.
+* Working on Log View.
+* Working on va_args.
 * Migrated functions:
 
   ```
@@ -149,7 +153,7 @@
 
 ## 20-Feb-2026
 
-* E1, V3i, V3x kitchens
+* E1, V3i, V3x kitchens.
 * Migrated functions:
 
   ```
