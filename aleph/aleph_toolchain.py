@@ -37,12 +37,11 @@ class AlephToolchain:
 	GCC_CFLAGS_GENERAL = ['-std=c99', '-nostdinc']
 	GCC_CFLAGS_WARNINGS = ['-Wall', '-Wextra', '-pedantic']
 	GCC_CFLAGS_FEATURES = ['-ffreestanding', '-funsigned-char', '-fshort-enums', '-fshort-wchar', '-fpack-struct=4']
-	GCC_CFLAGS_SECTIONS = ['-ffunction-sections', '-fdata-sections']
+	GCC_CFLAGS_SECTIONS = ['-ffunction-sections', '-fdata-sections']  # It's better do not use it with M-CORE.
 	GCC_CFLAGS_OPTIMIZATIONS = ['-O2']
 	P2K_CFLAGS = ['-D__P2K__', '-DP2K']
 
-	GCC_CFLAGS = GCC_CFLAGS_GENERAL + GCC_CFLAGS_WARNINGS + GCC_CFLAGS_FEATURES + GCC_CFLAGS_SECTIONS
-	GCC_CFLAGS += GCC_CFLAGS_OPTIMIZATIONS + P2K_CFLAGS
+	GCC_CFLAGS = GCC_CFLAGS_GENERAL + GCC_CFLAGS_WARNINGS + GCC_CFLAGS_FEATURES + GCC_CFLAGS_OPTIMIZATIONS + P2K_CFLAGS
 	GCC_CFLAGS_BIN_LDR = ['-DFTR_BIN_LDR']
 	GCC_CFLAGS_ELF_LDR = ['-DFTR_ELF_LDR']
 	GCC_CFLAGS_SO_LIB  = ['-DFTR_SO_LIB', '-fPIC']

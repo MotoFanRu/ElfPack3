@@ -19,6 +19,7 @@
 
   * ✅ Use OOP, slight refactoring.
   * ✅ None Type Problem.
+  * 🟨 Drop SO lib rudiments?
   * 🟨 Patcher functionality.
   * 🟨 Patterns functionality.
 

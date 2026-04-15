@@ -19,6 +19,17 @@ static inline INT32 PORTABLE_strlen(const char *src) {
 	return cnt;
 }
 
+static inline INT32 PORTABLE_strlen_line(const char *src) {
+	INT32 cnt = 0;
+	if (src != NULL) {
+		while (*src != '\r' && *src != '\n') {
+			cnt++;
+			src++;
+		}
+	}
+	return cnt;
+}
+
 static inline char *PORTABLE_strncpy(char *dest, const char *src, UINT32 n) {
 	if (n == 0) {
 		return dest;
@@ -45,6 +56,64 @@ static inline char *PORTABLE_strncpy(char *dest, const char *src, UINT32 n) {
 	}
 
 	return dest;
+}
+
+static inline const char *PORTABLE_strchr(const char *src, int c) {
+	if (src == NULL) {
+		return NULL;
+	}
+
+	const unsigned char uc = (unsigned char) c;
+
+	while (*src != ASCII_NULL) {
+		if ((unsigned char) *src == uc) {
+			return src;
+		}
+		src++;
+	}
+
+	if (uc == ASCII_NULL) {
+		return src;
+	}
+
+	return NULL;
+}
+
+static inline UINT32 PORTABLE_strcspn(const char *src, const char *reject) {
+	if (src == NULL) {
+		return 0;
+	}
+
+	const char *p = src;
+
+	while (*p != ASCII_NULL) {
+		if (reject != NULL) {
+			const char *r = reject;
+			while (*r != ASCII_NULL) {
+				if (*p == *r) {
+					return (UINT32) (p - src);
+				}
+				r++;
+			}
+		}
+		p++;
+	}
+
+	return (UINT32) (p - src);
+}
+
+static inline INT32 PORTABLE_strncmp(const char *str_a, const char *str_b, UINT32 n) {
+	while (n--) {
+		if (*str_a != *str_b) {
+			return (INT32) (unsigned char) *str_a - (INT32) (unsigned char) *str_b;
+		}
+		if (*str_a == ASCII_NULL) {
+			return 0;
+		}
+		str_a++;
+		str_b++;
+	}
+	return 0;
 }
 
 #ifdef __cplusplus

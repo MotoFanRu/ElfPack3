@@ -1,9 +1,14 @@
 #include <P2K_SDK_Base.h>
 #include <P2K_Logger.h>
 #include <P2K_SUAPI.h>
+#include <P2K_C_Lib.h>
 
+#include <P2K_EP3_Memory.h>
 #include <P2K_EP3_APP_Viewer.h>
 #include <P2K_EP3_Task_Reactor.h>
+#include <P2K_EP3_DEF_Library.h>
+
+DEF_LIB_Symbol *def_library = NULL;
 
 static BOOL Send_Message(const char *title, const char *msg, UINT32 arg) {
 	SU_RET_STATUS status;
@@ -82,7 +87,30 @@ static STATUS task_b(UINTPTR *args) {
 		return RESULT_FAIL;
 	}
 
-	return Send_Message("BTask Moto", "TASK B send it!", (UINTPTR) args);
+	def_library = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
+	if (def_library == NULL) {
+		L("Cannot allocate bytes: %d\n", sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
+		return RESULT_FAIL;
+	}
+	memset(def_library, 0, sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
+
+	UINT32 def_library_symbols_count = EP3_DEF_Library_Load(def_library);
+	L("[EP3 ELF]: Symbols: %d\n", def_library_symbols_count);
+
+	EP3_APP_VIEW_T EP3_APP_View = (EP3_APP_VIEW_T) suFindName(VIEWER_FUNC_NAME, SU_NOWAIT, &status);
+	if (status != SU_OK) {
+		D("[EP3 ELF]: Failed to find func '%s', status: '%d'.\n", VIEWER_FUNC_NAME, status);
+		return RESULT_FAIL;
+	}
+	if (EP3_APP_View == NULL) {
+		D("[EP3 ELF]: %s\n", "Function pointer 'EP3_APP_View' is NULL!");
+		return RESULT_FAIL;
+	}
+
+	return V(
+		"BTask Moto", "MotoFan.Ru \nHello Moto! \n  Lib Count: %d \nLoaded: 0x%08X",
+		def_library_symbols_count, (UINTPTR) def_library
+	);
 }
 
 static STATUS task_c(UINTPTR *args) {

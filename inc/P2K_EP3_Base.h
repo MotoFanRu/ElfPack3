@@ -8,6 +8,7 @@ extern "C" {
 #define EP3_BIN_LDR_NAME               "ep3.bin"
 #define EP3_BIN_FPA_NAME               "ep3.fpa"
 #define EP3_ELF_LDR_NAME               "ep3.ldr"
+#define EP3_ELF_LDR_DEF_NAME           "ep3.def"
 #define EP3_ELF_LDR_LIB_NAME           "ep3.so"
 #define EP3_ELF_LDR_CFG_NAME           "ep3.ini"
 #define EP3_ELF_LDR_LOG_NAME           "ep3.log"

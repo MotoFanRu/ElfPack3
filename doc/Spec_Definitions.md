@@ -20,7 +20,7 @@ Comments should start with the `#` symbol, inline comments are forbidden.
 1. Comment about the generator tool.
 2. Phone firmware string comment.
 
-   The `PFW` means "phone firmware". The first part is a short name of the phone, such as `C650`, `E398`, `V3xx`, `M702iG`, etc. The remaining parts indicate the firmware version.
+   The `PFW` means "phone firmware". The first part is a short name of the phone, such as `C650`, `E398`, `V3xx`, `M702iG`, etc. The remaining parts indicate the firmware version. Limit is 80 characters.
 
 3. Version string comment.
 

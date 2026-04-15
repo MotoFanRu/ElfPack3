@@ -48,8 +48,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 	}
 	D("[EP3 BIN]: Registered API function '0x%08X' as '%s' name.\n", binloader_func, BINLOADER_FUNC_NAME);
 
-	EP3_BIN_LOAD_T EP3_BIN_Load;
-	EP3_BIN_Load = (EP3_BIN_LOAD_T) suFindName(BINLOADER_FUNC_NAME, SU_NOWAIT, &status);
+	EP3_BIN_LOAD_T EP3_BIN_Load = (EP3_BIN_LOAD_T) suFindName(BINLOADER_FUNC_NAME, SU_NOWAIT, &status);
 	if (status != SU_OK) {
 		D("[EP3 BIN]: Failed to find func '%s', status: '%d'.\n", BINLOADER_FUNC_NAME, status);
 		return;
@@ -98,10 +97,10 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	*/
 	UINTPTR *load_addr = (UINTPTR *) addr;
 	if (addr == NULL_ADDR) {
-		/* Add additional 4 bytes to align the address space.*/
+		/* Add additional 4 bytes to align the address space. */
 		load_addr = (UINTPTR *) EP3_Memory_Alloc(file_size + 4);
 		if (load_addr == NULL) {
-			L("[EP3 BIN]: Failed to allocate %d bytes of memory.\n", file_size);
+			L("[EP3 BIN]: Failed to allocate %d bytes of memory.\n", file_size + 4);
 			DL_FsCloseFile(file_handle);
 			return RESULT_FAIL;
 		}
