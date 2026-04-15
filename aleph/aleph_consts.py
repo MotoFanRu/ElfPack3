@@ -8,7 +8,7 @@ class AlephConsts:
 	P2K_SDK_API: Path = P2K_SDK_ROOT / 'api'
 	P2K_SDK_ASM: Path = P2K_SDK_ROOT / 'asm'
 	P2K_SDK_RES: Path = P2K_SDK_ROOT / 'res'
-	P2K_SDK_INC: Path = P2K_SDK_ROOT / 'inc'
+	P2K_SDK_INC: Path = P2K_SDK_ROOT / 'sdk'
 	P2K_SDK_LDS: Path = P2K_SDK_ROOT / 'lds'
 	P2K_SDK_SRC: Path = P2K_SDK_ROOT / 'src'
 	P2K_SDK_GCC: Path = P2K_SDK_ROOT / 'gcc'
