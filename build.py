@@ -30,6 +30,12 @@ def build_ep3_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		a.log.E(f'Cannot compile: {asm_src.name} => {asm_obj.name}')
 		return False
 
+	a_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_Library.a'
+	objs = [ asm_obj ]
+	if not a.toolchain.gcc_ar(recipe.toolchain, objs, a_res):
+		a.log.E(f'Cannot archive: {a_res}')
+		return False
+
 	# TODO: Links library to .a and .so here?
 	# TODO: Copy library to Release?
 
@@ -60,10 +66,10 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-Wl,-L,{recipe.soc.lds.parent}',
 		f'-Wl,-T,{recipe.soc.lds.name}',
 		f'-Wl,-Ttext={a.hex.u32s(recipe.addresses.inject)}',
+		f'{a.consts.P2K_SDK_BUILD / "P2K_EP3_Library.a"}',
 	]
 	elf_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
 	objs = [obj for _, obj in src_obj]
-	objs.append(a.consts.P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
 	if not a.toolchain.gcc_ld(recipe.toolchain, objs, elf_res, cflags, lflags):
 		a.log.E(f'Cannot link: {elf_res}')
 		return False
@@ -91,6 +97,7 @@ def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-DFTR_LOAD_TO_ADDR={a.hex.u32s(recipe.addresses.loader)}',
 	]
 	src_obj = [
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.o'),
 	]
 	for src, obj in src_obj:
@@ -103,10 +110,10 @@ def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-Wl,-L,{recipe.soc.lds.parent}',
 		f'-Wl,-T,{recipe.soc.lds.name}',
 		f'-Wl,-Ttext={a.hex.u32s(recipe.addresses.loader)}',
+		f'{a.consts.P2K_SDK_BUILD / "P2K_EP3_Library.a"}',
 	]
 	elf_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.elf'
 	objs = [obj for _, obj in src_obj]
-	objs.append(a.consts.P2K_SDK_BUILD / recipe.soc.asm.name.replace('.tpl.S', '.o'))
 	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o')
 	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o')
 	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_File_System.o')

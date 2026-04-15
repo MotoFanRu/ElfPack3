@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from binascii import crc32
 
 from .aleph_logger import AlephLogger
 from .aleph_checker import AlephChecker, CheckerMode
@@ -58,6 +59,11 @@ class AlephModelDef:
 		if len(head.pfw.split('_', 1)) != 2:
 			self.log.E(f'PFW (phone and firmware) header string is wrong: {head.pfw}')
 			self.log.E('Should be in "C650_R365_G_0B.D3.08R" format.')
+			return False
+
+		if len(head.pfw) > 80:
+			self.log.E(f'PFW (phone and firmware) header string is wrong: {head.pfw}')
+			self.log.E(f'Should be 80 characters max, length: {len(head.pfw)}')
 			return False
 
 		if (len(head.ver.split('_', 1)) != 2) and (not head.ver.startswith('EP3_')):
@@ -139,6 +145,10 @@ class AlephModelDef:
 	def syms_by_types(syms: list[SymbolDef], types: list[str]) -> list[SymbolDef]:
 		return [s for s in syms if s.type in types]
 
+	@staticmethod
+	def syms_by_name_crc32(syms: list[SymbolDef], a_crc32: int) -> list[SymbolDef]:
+		return [s for s in syms if crc32(s.name.encode()) == a_crc32]
+
 	def check_addrs_names(
 			self,
 			symbols: list[SymbolDef],
@@ -166,13 +176,26 @@ class AlephModelDef:
 					log(f'{self.hex.u32s(s.addr)} {s.type} {s.name}')
 
 		names_d = self.strs.find_duplicates(names)
-		if names_d and len(names_d) > 0:
+		if names_d and self.chk.is_ok_list(names_d):
 			self.log.E('Duplicate names found:')
 			for name in names_d:
 				self.log.E('')
 				for s in self.syms_by_name(symbols, name):
 					self.log.E(f'{self.hex.u32s(s.addr)} {s.type} {s.name}')
 			return False
+
+		names_crc32 = []
+		for name in names:
+			names_crc32.append(crc32(name.encode()))
+		if self.chk.is_ok_list(names_crc32):
+			names_crc32_d = self.strs.find_duplicates(names_crc32)
+			if names_crc32_d and self.chk.is_ok_list(names_crc32_d):
+				self.log.E('Duplicate CRC32 names found:')
+				for crc in names_crc32_d:
+					self.log.E('')
+					for s in self.syms_by_name_crc32(symbols, crc):
+						self.log.E(f'{self.hex.u32s(s.addr)} {s.type} {s.name}, CRC32: 0x{crc32(s.name.encode()):08X}')
+				return False
 
 		return True
 

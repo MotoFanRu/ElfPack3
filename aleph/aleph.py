@@ -1,3 +1,6 @@
+# TODO: Recheck this on Ubuntu 26.04 LTS.
+from __future__ import annotations
+
 import sys
 from typing import Callable
 from datetime import datetime

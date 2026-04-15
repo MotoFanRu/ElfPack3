@@ -16,8 +16,13 @@ class AlephFileSystem:
 	def read_text_file(self, p_i: Path, encoding: str = 'utf-8') -> str:
 		self.chk.check_files([p_i], CheckerMode.EXCEPTION)
 
-		text = p_i.read_text(encoding)
-		self.chk.is_ok_str(text, CheckerMode.WARN)
+		try:
+			text = p_i.read_text(encoding)
+		except Exception as e:
+			self.log.E(f'Cannot read file: {p_i.name}, {e}')
+			raise
+
+		self.chk.is_ok_str(text, CheckerMode.EXCEPTION)
 
 		return text
 
@@ -45,9 +50,16 @@ class AlephFileSystem:
 				if item.is_file() or item.is_symlink():
 					if delete_files:
 						self.log.D(f'Deleting file: {item}')
-						item.unlink()
+						try:
+							item.unlink()
+						except Exception as e:
+							self.log.E(f'Cannot delete file: {item.name}, {e}')
+							raise
 		else:
-			p_d.mkdir(parents=True, exist_ok=True)
+			try:
+				p_d.mkdir(parents=True, exist_ok=True)
+			except Exception as e:
+				self.log.E(f'Cannot create dir: {p_d}, {e}')
 
 	def copy_file(self, p_i: Path, p_o: Path, overwrite: bool = False, log_it: bool = False) -> None:
 		if log_it:
@@ -57,7 +69,11 @@ class AlephFileSystem:
 		self.chk.check_files([p_i], CheckerMode.EXCEPTION)
 
 		if not overwrite and p_o.exists():
-			raise AlephFileException(f'File is exist: {p_i}')
+			raise AlephFileException(f'File is exist: {p_o}')
 
-		p_o.parent.mkdir(parents=True, exist_ok=True)
-		shutil.copy2(p_i, p_o)
+		self.create_dir(p_o.parent)
+
+		try:
+			shutil.copy2(p_i, p_o)
+		except Exception as e:
+			self.log.E(f'Cannot copy file: {p_i.name}, {e}')

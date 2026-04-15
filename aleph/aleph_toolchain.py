@@ -15,6 +15,8 @@ class Toolchain:
 	gcc: str
 	objcopy: str
 	nm: str
+	ar: str
+	strip: str
 	cflags: list[str]
 	cflags_bin_ldr: list[str]
 	cflags_elf_ldr: list[str]
@@ -35,10 +37,12 @@ class AlephToolchain:
 	GCC_CFLAGS_GENERAL = ['-std=c99', '-nostdinc']
 	GCC_CFLAGS_WARNINGS = ['-Wall', '-Wextra', '-pedantic']
 	GCC_CFLAGS_FEATURES = ['-ffreestanding', '-funsigned-char', '-fshort-enums', '-fshort-wchar', '-fpack-struct=4']
+	GCC_CFLAGS_SECTIONS = ['-ffunction-sections', '-fdata-sections']
 	GCC_CFLAGS_OPTIMIZATIONS = ['-O2']
 	P2K_CFLAGS = ['-D__P2K__', '-DP2K']
 
-	GCC_CFLAGS = GCC_CFLAGS_GENERAL + GCC_CFLAGS_WARNINGS + GCC_CFLAGS_FEATURES + GCC_CFLAGS_OPTIMIZATIONS + P2K_CFLAGS
+	GCC_CFLAGS = GCC_CFLAGS_GENERAL + GCC_CFLAGS_WARNINGS + GCC_CFLAGS_FEATURES + GCC_CFLAGS_SECTIONS
+	GCC_CFLAGS += GCC_CFLAGS_OPTIMIZATIONS + P2K_CFLAGS
 	GCC_CFLAGS_BIN_LDR = ['-DFTR_BIN_LDR']
 	GCC_CFLAGS_ELF_LDR = ['-DFTR_ELF_LDR']
 	GCC_CFLAGS_SO_LIB  = ['-DFTR_SO_LIB', '-fPIC']
@@ -79,6 +83,8 @@ class AlephToolchain:
 				gcc='arm-none-eabi-gcc',
 				objcopy='arm-none-eabi-objcopy',
 				nm='arm-none-eabi-nm',
+				ar='arm-none-eabi-ar',
+				strip='arm-none-eabi-strip',
 				cflags=self.GCC_CFLAGS,
 				cflags_bin_ldr=self.GCC_CFLAGS_BIN_LDR,
 				cflags_elf_ldr=self.GCC_CFLAGS_ELF_LDR,
@@ -93,6 +99,8 @@ class AlephToolchain:
 				gcc='mcore-elf-gcc',
 				objcopy='mcore-elf-objcopy',
 				nm='mcore-elf-nm',
+				ar='mcore-elf-ar',
+				strip='mcore-elf-strip',
 				cflags=self.GCC_CFLAGS,
 				cflags_bin_ldr=self.GCC_CFLAGS_BIN_LDR,
 				cflags_elf_ldr=self.GCC_CFLAGS_ELF_LDR,
@@ -141,7 +149,7 @@ class AlephToolchain:
 			custom_lflags: list[str] | None = None
 	) -> bool:
 		self.log.I(f'  Link: {p_o.name}')
-		self.log.D(f'{", ".join(p.name for p in p_is)} => {p_o.name}')
+		self.log.D(f'[{", ".join(p.name for p in p_is)}] => {p_o.name}')
 
 		gcc_ld_prog = self.resolve_tool(toolchain.bin_dir, toolchain.gcc)
 
@@ -194,3 +202,34 @@ class AlephToolchain:
 		self.log.D(f'{content}')
 
 		return status
+
+	def gcc_ar(self, toolchain: Toolchain, p_is: list[Path], p_o: Path, custom_flags: list[str] | None = None) -> bool:
+		self.log.I(f'  Archive: {p_o.name}')
+		self.log.D(f'[{", ".join(p.name for p in p_is)}] => {p_o.name}')
+
+		gcc_ar_prog = self.resolve_tool(toolchain.bin_dir, toolchain.ar)
+
+		command = [
+			gcc_ar_prog,
+			*(custom_flags or []),
+			'rcs',
+			p_o,
+			*p_is
+		]
+
+		return self.invoker.run_cmd_input(p_is, command)
+
+	def gcc_strip(self, toolchain: Toolchain, p_io: Path, custom_flags: list[str] | None = None) -> bool:
+		self.log.I(f'  Strip: {p_io.name}')
+		self.log.D(f'{p_io} => {p_io}')
+
+		gcc_strip_prog = self.resolve_tool(toolchain.bin_dir, toolchain.strip)
+
+		command = [
+			gcc_strip_prog,
+			'-s',
+			*(custom_flags or []),
+			p_io
+		]
+
+		return self.invoker.run_cmd_input([p_io], command)
