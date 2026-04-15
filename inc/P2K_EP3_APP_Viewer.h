@@ -12,7 +12,7 @@ extern "C" {
 
 extern void EP3_APP_Viewer_Register(void);
 
-typedef BOOL (*EP3_APP_VIEW_T)(const char *title, const char *format, ...);
+typedef BOOL (* EP3_APP_VIEW_T)(const char *title, const char *format, ...);
 extern BOOL EP3_API_APP_View(const char *title, const char *format, ...);
 
 #ifdef __cplusplus

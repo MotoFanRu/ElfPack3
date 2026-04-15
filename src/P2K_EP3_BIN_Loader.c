@@ -71,7 +71,7 @@ void EP3_BIN_Loader_MainRegister(void) {
 	EP3_BIN_Load(file_path, NULL, load_bin_addr, set_bit, FALSE);
 }
 
-STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR addr, BOOL set_bit, BOOL free_it) {
+STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR addr, BOOL a_bit, BOOL free_it) {
 	if ((file_path == NULL) || (file_path[0] == UNICODE_NULL)) {
 		D("[EP3 BIN]: %s\n", "Argument file_path is NULL or empty.");
 		return RESULT_FAIL;
@@ -125,7 +125,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	DL_FsCloseFile(file_handle);
 
 	/* Set Thumb etc. bit if needed (will be ignored on ARM and M-CORE) */
-	if (set_bit) {
+	if (a_bit) {
 		load_addr = (UINTPTR *) (((UINT32) load_addr) | 1);
 	}
 

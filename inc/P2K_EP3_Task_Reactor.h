@@ -19,12 +19,12 @@ typedef struct tagREACTOR_MSG_T {
 	UINTPTR args_addr;
 } REACTOR_MSG_T;
 
-typedef STATUS (*EP3_REACTOR_ROUTINE_T)(UINTPTR *args);
+typedef STATUS (* EP3_REACTOR_ROUTINE_T)(UINTPTR *args);
 
 extern void EP3_Reactor_Task_A(void);
 extern void EP3_Reactor_Task_B(void);
 
-typedef BOOL (*EP3_REACTOR_SEND_TO_CORE_T)(const char *port_name, UINTPTR func_addr, UINTPTR args_addr);
+typedef BOOL (* EP3_REACTOR_SEND_TO_CORE_T)(const char *port_name, UINTPTR func_addr, UINTPTR args_addr);
 extern BOOL EP3_API_Reactor_Send_To_Core(const char *port_name, UINTPTR func_addr, UINTPTR args_addr);
 
 #ifdef __cplusplus
