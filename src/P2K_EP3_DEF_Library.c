@@ -1,7 +1,7 @@
 #include <P2K_SDK_Base.h>
 #include <P2K_C_Lib.h>
 #include <P2K_C_Lib_Portable.h>
-#include <P2K_CRC32_Portable.h>
+#include <P2K_Hash_Portable.h>
 #include <P2K_Logger.h>
 #include <P2K_DL_File_System.h>
 
@@ -167,7 +167,7 @@ static STATUS Check_Content(const char *p, DEF_LIB_Symbol *symbols, UINT32 i) {
 	char sym_str[DEF_LIB_MAX_SYM_NAME_LENGTH] = { ASCII_NULL };
 	PORTABLE_strncpy(sym_str, p + DEF_LIB_PARSER_CONTENT_NAME, sym_len);
 
-	symbols[i].hash = P2K_CRC32(sym_str);
+	symbols[i].hash = FNV1A32(sym_str);
 	symbols[i].addr = hex2addr(p + DEF_LIB_PARSER_CONTENT_ADDR);
 
 	D("Added: 0x%08X 0x%08X %s\n", symbols[i].hash, symbols[i].addr, sym_str);

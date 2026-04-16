@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime
-from binascii import crc32
 
 from .aleph_logger import AlephLogger
 from .aleph_checker import AlephChecker, CheckerMode
@@ -8,6 +7,7 @@ from .aleph_socs import AlephSoCs
 from .aleph_hexer import AlephHexer
 from .aleph_stringer import AlephStringer
 from .aleph_datetime import AlephDateTime
+from .aleph_hash_fnv1a32 import AlephHashFnv1a32
 from .aleph_exception import AlephParserException
 
 @dataclass
@@ -146,8 +146,8 @@ class AlephModelDef:
 		return [s for s in syms if s.type in types]
 
 	@staticmethod
-	def syms_by_name_crc32(syms: list[SymbolDef], a_crc32: int) -> list[SymbolDef]:
-		return [s for s in syms if crc32(s.name.encode()) == a_crc32]
+	def syms_by_name_hash(syms: list[SymbolDef], a_hash: int) -> list[SymbolDef]:
+		return [s for s in syms if AlephHashFnv1a32.hash(s.name.encode()) == a_hash]
 
 	def check_addrs_names(
 			self,
@@ -184,17 +184,19 @@ class AlephModelDef:
 					self.log.E(f'{self.hex.u32s(s.addr)} {s.type} {s.name}')
 			return False
 
-		names_crc32 = []
+		names_hash = []
 		for name in names:
-			names_crc32.append(crc32(name.encode()))
-		if self.chk.is_ok_list(names_crc32):
-			names_crc32_d = self.strs.find_duplicates(names_crc32)
-			if names_crc32_d and self.chk.is_ok_list(names_crc32_d):
-				self.log.E('Duplicate CRC32 names found:')
-				for crc in names_crc32_d:
+			print(f'0x{AlephHashFnv1a32.hash(name.encode()):08X} {name}')
+			names_hash.append(AlephHashFnv1a32.hash(name.encode()))
+		if self.chk.is_ok_list(names_hash):
+			d = self.strs.find_duplicates(names_hash)
+			if d and self.chk.is_ok_list(d):
+				self.log.E('Duplicate Hash Names found:')
+				for h in d:
 					self.log.E('')
-					for s in self.syms_by_name_crc32(symbols, crc):
-						self.log.E(f'{self.hex.u32s(s.addr)} {s.type} {s.name}, CRC32: 0x{crc32(s.name.encode()):08X}')
+					for s in self.syms_by_name_hash(symbols, h):
+						name_hash = AlephHashFnv1a32.hash(s.name.encode())
+						self.log.E(f'{self.hex.u32s(s.addr)} {s.type} {s.name}, Hash: 0x{name_hash:08X}')
 				return False
 
 		return True
