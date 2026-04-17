@@ -97,7 +97,11 @@ static STATUS Check_PFW(const char *p) {
 	char pfw_str[DEF_LIB_MAX_SYM_NAME_LENGTH] = { ASCII_NULL };
 	PORTABLE_strncpy(pfw_str, p + DEF_LIB_PARSER_HEADER_VAL, pfw_len);
 
-	UINT32 separator_offset = PORTABLE_strcspn(pfw_str, "_");
+	const char *p_sep = PORTABLE_strchr(pfw_str, '_');
+	if (p_sep == NULL) {
+		return RESULT_FAIL;
+	}
+	UINT32 separator_offset = (UINT32) (p_sep - pfw_str);
 	if (separator_offset == 0) {
 		return RESULT_FAIL;
 	}
@@ -127,7 +131,11 @@ static STATUS Check_VER(const char *p) {
 	char ver_str[DEF_LIB_MAX_SYM_NAME_LENGTH] = { ASCII_NULL };
 	PORTABLE_strncpy(ver_str, p + DEF_LIB_PARSER_HEADER_VAL, ver_len);
 
-	UINT32 separator_offset = PORTABLE_strcspn(ver_str, "_");
+	const char *p_sep = PORTABLE_strchr(ver_str, '_');
+	if (p_sep == NULL) {
+		return RESULT_FAIL;
+	}
+	UINT32 separator_offset = (UINT32) (p_sep - ver_str);
 	if (separator_offset == 0) {
 		return RESULT_FAIL;
 	}

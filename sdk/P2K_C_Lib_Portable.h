@@ -79,29 +79,6 @@ static inline const char *PORTABLE_strchr(const char *src, int c) {
 	return NULL;
 }
 
-static inline UINT32 PORTABLE_strcspn(const char *src, const char *reject) {
-	if (src == NULL) {
-		return 0;
-	}
-
-	const char *p = src;
-
-	while (*p != ASCII_NULL) {
-		if (reject != NULL) {
-			const char *r = reject;
-			while (*r != ASCII_NULL) {
-				if (*p == *r) {
-					return (UINT32) (p - src);
-				}
-				r++;
-			}
-		}
-		p++;
-	}
-
-	return (UINT32) (p - src);
-}
-
 static inline INT32 PORTABLE_strncmp(const char *str_a, const char *str_b, UINT32 n) {
 	while (n--) {
 		if (*str_a != *str_b) {
