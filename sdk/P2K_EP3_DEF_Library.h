@@ -15,6 +15,7 @@ extern "C" {
 #define DEF_LIB_PARSER_HEADER_VAL      (6)
 #define DEF_LIB_PARSER_HEADER_CPU_NONE "NONE"
 #define DEF_LIB_PARSER_CONTENT_ADDR    (2)
+#define DEF_LIB_PARSER_CONTENT_TYPE    (11)
 #define DEF_LIB_PARSER_CONTENT_NAME    (13)
 
 #define DEF_LIB_EP3_VERSION_SLUG       "EP3"
@@ -29,6 +30,9 @@ extern RAW_DATA UINT32 EP3_firmware;
 extern RAW_DATA UINT32 EP3_version;
 
 extern UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols);
+extern UINT32 EP3_DEF_Library_Get(const DEF_LIB_Symbol *def_lib, UINT32 def_cnt, UINT32 hash);
+extern STATUS EP3_DEF_Library_Insert(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32 hash, UINT32 addr);
+extern STATUS EP3_DEF_Library_Delete(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32 hash);
 
 #ifdef __cplusplus
 }

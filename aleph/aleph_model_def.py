@@ -186,7 +186,6 @@ class AlephModelDef:
 
 		names_hash = []
 		for name in names:
-			print(f'0x{AlephHashFnv1a32.hash(name.encode()):08X} {name}')
 			names_hash.append(AlephHashFnv1a32.hash(name.encode()))
 		if self.chk.is_ok_list(names_hash):
 			d = self.strs.find_duplicates(names_hash)

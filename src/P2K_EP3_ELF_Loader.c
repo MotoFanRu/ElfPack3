@@ -2,6 +2,7 @@
 #include <P2K_Logger.h>
 #include <P2K_SUAPI.h>
 #include <P2K_C_Lib.h>
+#include <P2K_Hash_Portable.h>
 
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_APP_Viewer.h>
@@ -92,10 +93,6 @@ static STATUS task_b(UINTPTR *args) {
 		L("Cannot allocate bytes: %d\n", sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
 		return RESULT_FAIL;
 	}
-	memset(def_library, 0, sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
-
-	UINT32 def_library_symbols_count = EP3_DEF_Library_Load(def_library);
-	L("[EP3 ELF]: Symbols: %d\n", def_library_symbols_count);
 
 	EP3_APP_VIEW_T EP3_APP_View = (EP3_APP_VIEW_T) suFindName(VIEWER_FUNC_NAME, SU_NOWAIT, &status);
 	if (status != SU_OK) {
@@ -107,10 +104,11 @@ static STATUS task_b(UINTPTR *args) {
 		return RESULT_FAIL;
 	}
 
-	return V(
-		"BTask Moto", "MotoFan.Ru \nHello Moto! \n  Lib Count: %d \nLoaded: 0x%08X",
-		def_library_symbols_count, (UINTPTR) def_library
-	);
+	UINT32 def_cnt = EP3_DEF_Library_Load(def_library);
+	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
+	L("[EP3 ELF]: Symbols: %d\n", def_cnt);
+
+	return V("BTask Moto", "MotoFan.Ru \nHello Moto! \n  Lib Cnt: %d \nLoaded: 0x%08X", def_cnt, (UINTPTR) def_library);
 }
 
 static STATUS task_c(UINTPTR *args) {

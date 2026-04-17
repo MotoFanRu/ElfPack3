@@ -169,8 +169,42 @@ static STATUS Check_Content(const char *p, DEF_LIB_Symbol *symbols, UINT32 i) {
 
 	symbols[i].hash = FNV1A32(sym_str);
 	symbols[i].addr = hex2addr(p + DEF_LIB_PARSER_CONTENT_ADDR);
+	if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == 'T') {
+		symbols[i].addr = symbols[i].addr | 1;
+	}
 
 	D("Added: 0x%08X 0x%08X %s\n", symbols[i].hash, symbols[i].addr, sym_str);
+
+	return RESULT_OK;
+}
+
+static void DEF_Library_Sort_Symbols(DEF_LIB_Symbol *def_lib, UINT32 def_cnt) {
+	/* Using insertion sort. */
+	for (UINT32 i = 1; i < def_cnt; ++i) {
+		DEF_LIB_Symbol key = def_lib[i];
+		UINT32 j = i;
+
+		while (j > 0 && def_lib[j - 1].hash > key.hash) {
+			def_lib[j] = def_lib[j - 1];
+			--j;
+		}
+
+		def_lib[j] = key;
+	}
+}
+
+static STATUS DEF_Library_Check_Hash_Collisions(const DEF_LIB_Symbol *def_lib, UINT32 def_cnt) {
+	/* Check only the sorted library. */
+	if (def_cnt < 2) {
+		return RESULT_OK;
+	}
+
+	for (UINT32 i = 1; i < def_cnt; ++i) {
+		if (def_lib[i].hash == def_lib[i - 1].hash) {
+			L("[EP3 DEF]: Collision at %d: 0x%08X 0x%08X\n", i - 1, def_lib[i - 1].hash, def_lib[i - 1].addr);
+			return RESULT_FAIL;
+		}
+	}
 
 	return RESULT_OK;
 }
@@ -214,8 +248,12 @@ static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols)
 		return 0;
 	}
 
-	L("[EP3 DEF]: Library parsed successfully, symbols: %d\n", i);
-	return i;
+	DEF_Library_Sort_Symbols(def_symbols, i);
+	if (DEF_Library_Check_Hash_Collisions(def_symbols, i) == RESULT_OK) {
+		L("[EP3 DEF]: Library parsed successfully, symbols: %d\n", i);
+		return i;
+	}
+	return 0;
 }
 
 UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols) {
@@ -223,6 +261,7 @@ UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols) {
 		L("[EP3 DEF]: %s\n", "Pointer to DEF Library is NULL!\n");
 		return 0;
 	}
+	memset(def_symbols, 0, sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
 
 	WCHAR file_path[PATH_MAX_SHORT];
 	if (!EP3_Find_Internal_System_Component(EP3_ELF_LDR_DEF_NAME, file_path)) {
@@ -279,4 +318,95 @@ UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols) {
 	EP3_Memory_Free(load_addr);
 
 	return symbols_count;
+}
+
+static int DEF_Library_Get_Index(const DEF_LIB_Symbol *def_lib, UINT32 def_cnt, UINT32 hash) {
+	/* Binary search. */
+	if (def_cnt == 0) {
+		return -1;
+	}
+
+	int low = 0;
+	int high = (int) def_cnt - 1;
+
+	while (low <= high) {
+		int mid = low + (high - low) / 2;
+
+		if (def_lib[mid].hash == hash) {
+			return mid;
+		}
+
+		if (def_lib[mid].hash < hash) {
+			low = mid + 1;
+		} else {
+			high = mid - 1;
+		}
+	}
+
+	return -1;
+}
+
+UINT32 EP3_DEF_Library_Get(const DEF_LIB_Symbol *def_lib, UINT32 def_cnt, UINT32 hash) {
+	int idx = DEF_Library_Get_Index(def_lib, def_cnt, hash);
+	if (idx >= 0) {
+		return def_lib[idx].addr;
+	}
+	return 0;
+}
+
+STATUS EP3_DEF_Library_Insert(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32 hash, UINT32 addr) {
+	UINT32 def_cnt = *p_def_cnt;
+	if (def_cnt >= DEF_LIB_MAX_SYM_COUNT) {
+		L("[EP3 DEF]: Library is full: %d\n", def_cnt);
+		return RESULT_FAIL;
+	}
+
+	int idx = DEF_Library_Get_Index(def_lib, def_cnt, hash);
+	if (idx >= 0) {
+		L("[EP3 DEF]: Collision at %d: 0x%08X 0x%08X\n", idx, def_lib[idx].hash, def_lib[idx].addr);
+		def_lib[idx].addr = addr;
+		return RESULT_FAIL;
+	}
+
+	UINT32 pos = 0;
+	while (pos < def_cnt && def_lib[pos].hash < hash) {
+		++pos;
+	}
+
+	for (UINT32 i = def_cnt; i > pos; --i) {
+		def_lib[i] = def_lib[i - 1];
+	}
+
+	def_lib[pos].hash = hash;
+	def_lib[pos].addr = addr;
+
+	L("[EP3 DEF]: Inserted %d: 0x%08X 0x%08X\n", pos, def_lib[pos].hash, def_lib[pos].addr);
+
+	++def_cnt;
+	*p_def_cnt = def_cnt;
+
+	return RESULT_OK;
+}
+
+STATUS EP3_DEF_Library_Delete(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32 hash) {
+	UINT32 def_cnt = *p_def_cnt;
+	int idx = DEF_Library_Get_Index(def_lib, def_cnt, hash);
+	if (idx < 0) {
+		L("[EP3 DEF]: Not found in DEF LIB: 0x%08X\n", hash);
+		return RESULT_FAIL;
+	}
+
+	L("[EP3 DEF]: Deleted: %d: 0x%08X 0x%08X\n", idx, def_lib[idx].hash, def_lib[idx].addr);
+
+	for (UINT32 i = (UINT32) idx; i < def_cnt - 1; ++i) {
+		def_lib[i] = def_lib[i + 1];
+	}
+
+	def_lib[def_cnt - 1].hash = 0x00000000UL;
+	def_lib[def_cnt - 1].addr = 0x00000000UL;
+
+	--def_cnt;
+	*p_def_cnt = def_cnt;
+
+	return RESULT_OK;
 }
