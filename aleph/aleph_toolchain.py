@@ -111,7 +111,7 @@ class AlephToolchain:
 			),
 		}
 
-	def resolve_tool(self, p_d: Path, base_name: str) -> Path:
+	def resolve_tool(self, p_d: Path, base_name: str) -> Path | None:
 		bundled_tool = p_d / (base_name + ('.exe' if self.IS_WINDOWS else ''))
 
 		if bundled_tool.is_file():
@@ -120,14 +120,16 @@ class AlephToolchain:
 		if bundle_path := shutil.which(base_name):
 			return Path(bundle_path)
 
-		self.log.W(f'Tool not found (bundled or PATH): {bundled_tool}')
-		return Path(base_name)
+		self.log.E(f'Tool not found (bundled or PATH): {bundled_tool}')
+		return None
 
 	def gcc_cc(self, toolchain: Toolchain, p_i: Path, p_o: Path, custom_cflags: list[str] | None = None) -> bool:
 		self.log.I(f'  Compile: {p_i.name}')
 		self.log.D(f'{p_i} => {p_o}')
 
 		gcc_cc_prog = self.resolve_tool(toolchain.bin_dir, toolchain.gcc)
+		if not gcc_cc_prog:
+			return False
 
 		command = [
 			gcc_cc_prog,
@@ -151,6 +153,8 @@ class AlephToolchain:
 		self.log.D(f'[{", ".join(p.name for p in p_is)}] => {p_o.name}')
 
 		gcc_ld_prog = self.resolve_tool(toolchain.bin_dir, toolchain.gcc)
+		if not gcc_ld_prog:
+			return False
 
 		command = [
 			gcc_ld_prog,
@@ -170,6 +174,8 @@ class AlephToolchain:
 		self.log.D(f'{p_i} => {p_o}')
 
 		gcc_objcopy_prog = self.resolve_tool(toolchain.bin_dir, toolchain.objcopy)
+		if not gcc_objcopy_prog:
+			return False
 
 		command = [
 			gcc_objcopy_prog,
@@ -186,6 +192,8 @@ class AlephToolchain:
 		self.log.D(f'{p_i} => {p_o}')
 
 		gcc_nm_prog = self.resolve_tool(toolchain.bin_dir, toolchain.nm)
+		if not gcc_nm_prog:
+			return False
 
 		command = [
 			gcc_nm_prog,
@@ -207,11 +215,13 @@ class AlephToolchain:
 		self.log.D(f'[{", ".join(p.name for p in p_is)}] => {p_o.name}')
 
 		gcc_ar_prog = self.resolve_tool(toolchain.bin_dir, toolchain.ar)
+		if not gcc_ar_prog:
+			return False
 
 		command = [
 			gcc_ar_prog,
 			*(custom_flags or []),
-			'rcs',
+			'rcsD',
 			p_o,
 			*p_is
 		]
@@ -223,6 +233,8 @@ class AlephToolchain:
 		self.log.D(f'{p_io} => {p_io}')
 
 		gcc_strip_prog = self.resolve_tool(toolchain.bin_dir, toolchain.strip)
+		if not gcc_strip_prog:
+			return False
 
 		command = [
 			gcc_strip_prog,

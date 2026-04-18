@@ -1,6 +1,6 @@
 # TODO: Only for debugging. Delete it later.
 ['A830_TALON_U_61.06.00I']
-specs = { soc = 'RAINBOW_POG', toolchain = 'GCC_MCORE' }
+specs = { soc = 'RAINBOW', toolchain = 'GCC_MCORE' }
 flags.general = '-DFTR_A830 -DFTR_DEBUG'
 flags.bin_ldr = '-DFTR_LOGGER -DFTR_LOGGER_JAL -DFTR_ALLOC_SUAPI -DFTR_NO_VSNPRINTF'
 flags.elf_ldr = '-DFTR_LOGGER -DFTR_LOGGER_JAL -DFTR_ALLOC_SUAPI'
