@@ -13,6 +13,9 @@ extern "C" {
 #define EP3_ELF_LDR_CFG_NAME           "ep3.ini"
 #define EP3_ELF_LDR_LOG_NAME           "ep3.log"
 
+#define FILE_SIZE_TOO_SMALL            (32)
+#define MEM_SIZE_TOO_SMALL             (32)
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

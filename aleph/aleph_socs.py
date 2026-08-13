@@ -29,7 +29,7 @@ class AlephSoCs:
 	CPU_ARM11_FLAVOR = ['-march=armv6j', '-mtune=arm1136jf-s', '-DFTR_ARM11']
 
 	CPU_MCORE = ['-DFTR_MCORE']
-	CPU_MCORE_BIG_ENDIAN = ['-mbig-endian']
+	CPU_MCORE_BIG_ENDIAN = ['-mbig-endian', '-DFTR_BIG_ENDIAN']
 	CPU_MCORE210_FLAVOR = ['-m210', '-DFTR_MCORE210']  # GCC M-CORE Flags '-m4align', '-m8align' are deprecated.
 	CPU_MCORE340_FLAVOR = ['-m340', '-DFTR_MCORE340']  # GCC M-CORE Flags '-m4align', '-m8align' are deprecated.
 

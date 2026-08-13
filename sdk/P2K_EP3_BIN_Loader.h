@@ -5,7 +5,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define FILE_SIZE_TOO_SMALL            (32)
 #define BINLOADER_FUNC_NAME            "ep3/bin"
 
 typedef STATUS (* EP3_ELF_LDR_ENTRY_POINT_T)(const UINTPTR *args);

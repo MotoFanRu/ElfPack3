@@ -4,6 +4,13 @@
 
 Aleph code refactoring, move to OOP + exceptions.
 
+* Migrated things:
+
+  ```
+  #define DL_FS_MAX_PATH_NAME_LENGTH
+  #define DL_FS_MAX_URI_NAME_LENGTH
+  ```
+
 ## 22-Feb-2026...03-Apr-2026
 
 * Working on Aleph library.
@@ -11,7 +18,7 @@ Aleph code refactoring, move to OOP + exceptions.
 * Working on Skeleton.
 * Working on Log View.
 * Working on va_args.
-* Migrated functions:
+* Migrated things:
 
   ```
   sprintf

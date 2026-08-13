@@ -10,6 +10,13 @@ extern "C" {
 #define DL_FS_SIZE_INVALID             (0)
 #define DL_FS_HANDLE_INVALID           (0xFFFF)
 
+#define DL_FS_MAX_VOLUME_NAME_LENGTH   (2)                 /* Example: "/a" */
+#define DL_FS_MAX_FILE_NAME_LENGTH     (255)
+#define DL_FS_MAX_URI_PROTOCOL_LENGTH  (6)
+                                                           /* VOLUME NAME + '/' + FILE PATH NAME */
+#define DL_FS_MAX_PATH_NAME_LENGTH     (DL_FS_MAX_VOLUME_NAME_LENGTH + 1 + DL_FS_MAX_FILE_NAME_LENGTH)
+#define DL_FS_MAX_URI_NAME_LENGTH      (DL_FS_MAX_URI_PROTOCOL_LENGTH + DL_FS_MAX_PATH_NAME_LENGTH)
+
 typedef UINT16                         DL_FS_HANDLE_T;
 typedef UINT32                         DL_FS_SIZE_T;
 typedef UINT32                         DL_FS_COUNT_T;
