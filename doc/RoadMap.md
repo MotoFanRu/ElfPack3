@@ -8,6 +8,14 @@
 * 🟥 — Failed
 * 🟦 — Out of interest
 
+## Aug, 2026
+
+* 🟨 Log refactoring.
+* 🟨 Error code support.
+* 🟨 ELF Loader integration.
+* 🟨 Create Phoenix_Lab project.
+* 🟨 Merge Phoenix_Lab project.
+
 ## Apr, 2026
 
 * 🟨 SDK Migration.

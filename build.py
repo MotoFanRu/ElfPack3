@@ -49,12 +49,13 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-DFTR_LOAD_TO_ADDR={a.hex.u32s(recipe.addresses.loader)}',
 	]
 	src_obj = [
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',        a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',        a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_File_System.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c',  a.consts.P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_File_System.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Entry_Main.c', a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Entry_Main.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
 	]
 	for src, obj in src_obj:
 		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):
