@@ -71,7 +71,7 @@ class Aleph:
 		self.fasm = AlephFormatAsm(self.log, self.chk, self.hex, self.mdef, self.patch, self.fs)
 		self.fmap = AlephFormatMap(self.log, self.chk, self.mdef, self.fs, self.strs, self.hex, self.patch)
 
-	def set_args(self, fill_args_fn: Callable[[Aleph], None], check_args_fn: Callable[[Aleph], None] = None) -> None:
+	def set_args(self, fill_args_fn: Callable[[Aleph], None], check_args_fn: Callable[[Aleph], None]) -> None:
 		fill_args_fn(self)
 		self.args = self.args_parser.parse_args()
 
