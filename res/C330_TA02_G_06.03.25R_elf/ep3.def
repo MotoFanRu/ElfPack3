@@ -20,6 +20,7 @@
 0x000C7E08 T DL_FsCloseFile
 0x000C7DC0 T DL_FsOpenFile
 0x000C7E42 T DL_FsReadFile
+0x000C7EE6 T DL_FsFSeekFile
 0x000C8178 T DL_FsSGetFileSize
 0x0014DF60 T DL_KeyQueryKeypadActivity
 0x0040DBE4 T memset

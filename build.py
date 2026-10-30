@@ -101,7 +101,6 @@ def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',      a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',       a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader_ARM.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader_ARM.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader_MCORE.c', a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader_MCORE.o'),
 	]
 	for src, obj in src_obj:
 		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):
