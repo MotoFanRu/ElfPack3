@@ -4,6 +4,7 @@
 #include "P2K_SDK_Base.h"
 #include "P2K_EP3_DEF_Library.h"
 #include "P2K_EP3_Image_Manager.h"
+#include "P2K_EP3_SO_Loader.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,9 +29,11 @@ extern "C" {
 #define EP3_CFG_MAX_PATH               (48)
 #define EP3_CFG_MAX_ARGS               (64)
 #define EP3_CFG_MAX_AUTORUN            (16)
+#define EP3_CFG_MAX_LIBPATHS           (3)
 
 #define EP3_CFG_DEFAULT_LIB_CAPACITY   (DEF_LIB_MAX_SYM_COUNT)
 #define EP3_CFG_DEFAULT_MAX_ELFS       (EP3_IMG_DEFAULT_SLOTS)
+#define EP3_CFG_DEFAULT_MAX_SO         (EP3_SO_DEFAULT_MAX)
 
 typedef struct tagEP3_Autorun_Entry {
 	char uri[EP3_CFG_MAX_PATH];           // ASCII path, converted to WCHAR at start time.
@@ -42,6 +45,9 @@ typedef struct tagEP3_Config {
 	char deflib[EP3_CFG_MAX_PATH];        // Def library name or path for EP3_Find_Internal_System_Component().
 	UINT32 lib_capacity;                  // Def lib symbol table capacity in symbols.
 	UINT32 max_elfs;                      // Max concurrently loaded images.
+	UINT32 max_so;                        // Max concurrently loaded .so libraries.
+	UINT32 libpath_cnt;                   // .so search paths (after the module own dir).
+	char libpaths[EP3_CFG_MAX_LIBPATHS][EP3_CFG_MAX_PATH];
 	UINT32 autorun_cnt;
 	EP3_Autorun_Entry_T autorun[EP3_CFG_MAX_AUTORUN];
 } EP3_Config_T;

@@ -104,6 +104,7 @@ void EP3_Config_Defaults(EP3_Config_T *config) {
 	PORTABLE_strncpy(config->deflib, EP3_ELF_LDR_DEF_NAME, EP3_CFG_MAX_PATH - 1);
 	config->lib_capacity = EP3_CFG_DEFAULT_LIB_CAPACITY;
 	config->max_elfs = EP3_CFG_DEFAULT_MAX_ELFS;
+	config->max_so = EP3_CFG_DEFAULT_MAX_SO;
 }
 
 // EXL, 31-Oct-2026: "autorun <path> [0xEVENT] [args...]" — path is a single token,
@@ -178,6 +179,22 @@ static UINT32 Config_Parse(const char *buffer, EP3_Config_T *config) {
 				const char *q = line + 8;
 				config->max_elfs = Read_Number(&q, EP3_CFG_DEFAULT_MAX_ELFS);
 				D("[EP3 CFG]: max_elfs=%d\n", config->max_elfs);
+			} else if (Is_Directive(line, "max_so") == RESULT_OK) {
+				const char *q = line + 6;
+				config->max_so = Read_Number(&q, EP3_CFG_DEFAULT_MAX_SO);
+				D("[EP3 CFG]: max_so=%d\n", config->max_so);
+			} else if (Is_Directive(line, "libpath") == RESULT_OK) {
+				char token[EP3_CFG_MAX_PATH] = { ASCII_NULL };
+				const char *q = line + 7;
+				if (config->libpath_cnt < EP3_CFG_MAX_LIBPATHS) {
+					if (Read_Token(&q, token, sizeof(token)) > 0) {
+						PORTABLE_strncpy(config->libpaths[config->libpath_cnt], token, EP3_CFG_MAX_PATH - 1);
+						config->libpath_cnt++;
+						D("[EP3 CFG]: libpath='%s'\n", config->libpaths[config->libpath_cnt - 1]);
+					}
+				} else {
+					L("[EP3 CFG]: Too many libpath entries, max %d.\n", EP3_CFG_MAX_LIBPATHS);
+				}
 			} else if (Is_Directive(line, "autorun") == RESULT_OK) {
 				if (autorun_cnt < EP3_CFG_MAX_AUTORUN) {
 					const char *q = line + 7;

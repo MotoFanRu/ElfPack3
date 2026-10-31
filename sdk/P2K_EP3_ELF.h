@@ -122,13 +122,24 @@ typedef struct tagElf32_Dyn {
 } Elf32_Dyn;
 
 // Legal values for d_tag (dynamic entry type).
+#define DT_NEEDED                      (1)                 // Offset of needed library name string.
 #define DT_PLTRELSZ                    (2)                 // Size in bytes of PLT relocs.
+#define DT_HASH                        (4)                 // Address of SysV symbol hash table.
 #define DT_STRTAB                      (5)                 // Address of string table.
 #define DT_SYMTAB                      (6)                 // Address of symbol table.
+#define DT_STRSZ                       (10)                // Size of string table.
+#define DT_SYMENT                      (11)                // Size of one symbol table entry.
+#define DT_INIT                        (12)                // Address of init function.
+#define DT_FINI                        (13)                // Address of termination function.
+#define DT_SONAME                      (14)                // Offset of shared object name string.
 #define DT_REL                         (17)                // Address of Rel relocs.
 #define DT_RELSZ                       (18)                // Total size of Rel relocs.
 #define DT_JMPREL                      (23)                // Address of PLT relocs.
 #define DT_BIND_NOW                    (24)                // Process relocations of object.
+#define DT_INIT_ARRAY                  (25)                // Address of init function array.
+#define DT_FINI_ARRAY                  (26)                // Address of termination function array.
+#define DT_INIT_ARRAYSZ                (27)                // Size in bytes of init function array.
+#define DT_FINI_ARRAYSZ                (28)                // Size in bytes of termination function array.
 
 // Relocation table entry without addend (in section of type SHT_REL).
 typedef struct tagElf32_Rel {
@@ -143,8 +154,19 @@ typedef struct tagElf32_Rel {
 // ARM relocation types.
 #define R_ARM_ABS32                    (2)                 // Direct 32 bit.
 #define R_ARM_GLOB_DAT                 (21)                // Create GOT entry.
+#define R_ARM_JUMP_SLOT                (22)                // Create PLT entry.
 #define R_ARM_RELATIVE                 (23)                // Adjust by program base.
 #define R_ARM_RABS32                   (253)               // Word ?S + A For the address of a location in the target segment.
+
+// Symbol table entry binding and types.
+#define STB_LOCAL                      (0)                 // Local symbol.
+#define STB_GLOBAL                     (1)                 // Global symbol.
+#define STB_WEAK                       (2)                 // Weak symbol.
+#define STT_NOTYPE                     (0)                 // No type.
+#define STT_OBJECT                     (1)                 // Data object.
+#define STT_FUNC                       (2)                 // Function.
+
+#define SHN_UNDEF                      (0)                 // Undefined section (import).
 
 // Symbol table entry.
 typedef struct tagElf32_Sym {

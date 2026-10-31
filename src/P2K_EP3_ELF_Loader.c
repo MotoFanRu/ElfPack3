@@ -1,5 +1,6 @@
 #include <P2K_SDK_Base.h>
 #include <P2K_C_Lib.h>
+#include <P2K_C_Lib_Portable.h>
 #include <P2K_Logger.h>
 #include <P2K_DL_File_System.h>
 #include <P2K_Hash_Portable.h>
@@ -12,9 +13,10 @@
 #include <P2K_EP3_DEF_Library.h>
 #include <P2K_EP3_Config.h>
 #include <P2K_EP3_Image_Manager.h>
+#include <P2K_EP3_SO_Loader.h>
 #include <P2K_EP3_ELF_Loader.h>
 
-static STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
+STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
 	UNUSED(file_handle);
 
 #if defined(FTR_ARM)
@@ -34,7 +36,7 @@ static STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header)
 	return RESULT_OK;
 }
 
-static STATUS EP3_ELF_Read_Header(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
+STATUS EP3_ELF_Read_Header(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
 	DL_FS_COUNT_T elements_read;
 
 	if (DL_FsReadFile(elf_header, sizeof(Elf32_Ehdr), 1, file_handle, &elements_read) != DL_FS_RESULT_SUCCESS) {
@@ -170,30 +172,13 @@ static UINT32 EP3_ELF_Calc_Image(Elf32_Phdr *elf_program_headers, Elf32_Ehdr *el
 	return upper_addr - virtual_base;
 }
 
-static UINT32 EP3_ELF_Lookup_Symbol(const DEF_LIB_Symbol *def_lib, UINT32 def_cnt, const char *sym_str) {
-	UINT32 sym_hash = FNV1A32(sym_str);
-	UINT32 sym_addr = EP3_DEF_Library_Get(def_lib, def_cnt, sym_hash);
-
-	if (sym_addr != 0) {
-		D("[EP3 ELF]: Found '%s': 0x%08X\n", sym_str, sym_addr);
-	} else {
-		D("[EP3 ELF]: WARNING! No '%s' func in DEF Lib!\n", sym_str);
-	}
-
-	return sym_addr;
-}
-
-static STATUS EP3_ELF_EP3_Load(
-	DL_FS_HANDLE_T file_handle,
-	const WCHAR *file_path,
-	const char *params,
-	UINT32 event,
-	DEF_LIB_Symbol *def_symbols,
-	UINT32 def_cnt,
-	Elf32_Ehdr *elf_header,
-	void **out_mem_base
-) {
+// EXL, 31-Oct-2026: Shared DYN core used by both ELF and .so loading: deploy PT_LOAD
+//   segments, parse the PT_DYNAMIC tags, collect DT_NEEDED entries, load the dependencies
+//   (refcounted .so images) and apply REL + JMPREL/PLT relocations.
+STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, const char *dir, EP3_DYN_Context *ctx) {
 	DL_FS_COUNT_T elements_read;
+
+	memset(ctx, 0, sizeof(EP3_DYN_Context));
 
 	Elf32_Phdr *elf_program_headers = EP3_Memory_Alloc(sizeof(Elf32_Phdr) * elf_header->e_phnum);
 	if (elf_program_headers == NULL) {
@@ -295,8 +280,6 @@ static STATUS EP3_ELF_EP3_Load(
 	// EXL, 30-Oct-2026: Process the PT_DYNAMIC segment: load dynamic tags then apply relocations.
 	//   ET_DYN (GCC) ELFs only: DT_REL for base relocations, DT_JMPREL for PLT API calls.
 	Elf32_Addr dyn_segment = 0;
-	Elf32_Word dyn_tags[DT_BIND_NOW + 1];
-	memset(dyn_tags, 0, sizeof(dyn_tags));
 
 	for (UINT16 i = 0; i < elf_header->e_phnum; ++i) {
 		if (elf_program_headers[i].p_type != PT_DYNAMIC) {
@@ -310,8 +293,15 @@ static STATUS EP3_ELF_EP3_Load(
 		UINT32 j = 0;
 		do {
 			tag = ((Elf32_Dyn *) dyn_segment)[j++];
-			if (tag.d_tag <= DT_BIND_NOW) {
-				dyn_tags[tag.d_tag] = tag.d_val;
+			// EXL, 31-Oct-2026: DT_NEEDED can repeat, collect every occurrence separately.
+			if (tag.d_tag == DT_NEEDED) {
+				if (ctx->needed_cnt < EP3_SO_MAX_NEEDED) {
+					ctx->needed_off[ctx->needed_cnt++] = tag.d_val;
+				} else {
+					D("[EP3 ELF]: Too many DT_NEEDED entries, max %d.\n", EP3_SO_MAX_NEEDED);
+				}
+			} else if (tag.d_tag < EP3_DYN_TAGS_COUNT) {
+				ctx->dyn_tags[tag.d_tag] = tag.d_val;
 			}
 		} while (tag.d_tag);
 
@@ -323,17 +313,29 @@ static STATUS EP3_ELF_EP3_Load(
 		goto fail_free_image;
 	}
 
-	D("[EP3 ELF]: Relocation start\n DT_REL=0x%08X\n DT_RELSZ=%d\n", dyn_tags[DT_REL], dyn_tags[DT_RELSZ]);
+	ctx->mem_base = (void *) mem_base;
+	ctx->mem_size = mem_needed;
+	ctx->virtual_base = virtual_base;
+	ctx->phys_base = phys_base;
+	ctx->sym_table = (Elf32_Sym *) (phys_base + ctx->dyn_tags[DT_SYMTAB] - virtual_base);
+	ctx->str_table = (char *) (phys_base + ctx->dyn_tags[DT_STRTAB] - virtual_base);
 
-	Elf32_Sym *elf_sym_table = (Elf32_Sym *) (phys_base + dyn_tags[DT_SYMTAB] - virtual_base);
-	char *elf_str_table = (char *) (phys_base + dyn_tags[DT_STRTAB] - virtual_base);
+	// EXL, 31-Oct-2026: Load DT_NEEDED .so dependencies BEFORE relocations, so the
+	//   newly loaded libraries are available as symbol providers.
+	if (ctx->needed_cnt > 0) {
+		if (EP3_SO_Process_Needed(ctx, dir) != RESULT_OK) {
+			D("[EP3 ELF]: %s\n", "WARNING! Some DT_NEEDED libraries failed to load.");
+		}
+	}
+
+	D("[EP3 ELF]: Relocation start\n DT_REL=0x%08X\n DT_RELSZ=%d\n", ctx->dyn_tags[DT_REL], ctx->dyn_tags[DT_RELSZ]);
 
 	// EXL, 30-Oct-2026: Apply "R_ARM_RABS32"/"R_ARM_RELATIVE" base relocations and
-	//   resolve "R_ARM_ABS32"/"R_ARM_GLOB_DAT" symbols via the DEF library.
-	if (dyn_tags[DT_REL] != 0) {
-		Elf32_Rel *rel_table = (Elf32_Rel *) (phys_base + dyn_tags[DT_REL] - virtual_base);
+	//   resolve "R_ARM_ABS32"/"R_ARM_GLOB_DAT" symbols via DEF lib and .so providers.
+	if (ctx->dyn_tags[DT_REL] != 0) {
+		Elf32_Rel *rel_table = (Elf32_Rel *) (phys_base + ctx->dyn_tags[DT_REL] - virtual_base);
 
-		for (UINT32 j = 0; j * sizeof(Elf32_Rel) < dyn_tags[DT_RELSZ]; j++) {
+		for (UINT32 j = 0; j * sizeof(Elf32_Rel) < ctx->dyn_tags[DT_RELSZ]; j++) {
 			// EXL, 30-Oct-2026: Only last byte of UINT32 r_info is relType.
 			Elf32_Word rel_type = ELF32_R_TYPE(rel_table[j].r_info);
 
@@ -346,13 +348,13 @@ static STATUS EP3_ELF_EP3_Load(
 			} else if ((rel_type == R_ARM_ABS32) || (rel_type == R_ARM_GLOB_DAT)) {
 				UINT32 *reloc_addr = (UINT32 *) (phys_base + rel_table[j].r_offset - virtual_base);
 				INT32 sym_idx = (INT32) ELF32_R_SYM(rel_table[j].r_info);
-				const char *sym_str = &elf_str_table[elf_sym_table[sym_idx].st_name];
+				const char *sym_str = &ctx->str_table[ctx->sym_table[sym_idx].st_name];
 
-				// EXL, 30-Oct-2026: Point symbol to the ELF image base if it was not found
-				//   in the DEF library. Workaround for the Lib entry symbol is here.
+				// EXL, 30-Oct-2026: Point symbol to the module image base if it was not
+				//   found in the DEF library or .so providers. Workaround is here.
 				*reloc_addr = phys_base - virtual_base;
 
-				UINT32 sym_addr = EP3_ELF_Lookup_Symbol(def_symbols, def_cnt, sym_str);
+				UINT32 sym_addr = EP3_Resolve_Symbol(sym_str);
 				if (sym_addr != 0) {
 					*reloc_addr = sym_addr;
 				}
@@ -365,8 +367,8 @@ static STATUS EP3_ELF_EP3_Load(
 	// EXL, 30-Oct-2026: DT_JMPREL symbols handling. The GCC uses DT_JMPREL + DT_SYMTAB/DT_STRTAB
 	//   instead of SHT_SYMTAB/SHT_STRTAB sections. Iterate over "R_ARM_JUMP_SLOT" relocations
 	//   in '.rel.plt' section and patch the PLT jump table at runtime.
-	if (dyn_tags[DT_JMPREL] != 0) {
-		Elf32_Rel *rel_table = (Elf32_Rel *) (phys_base + dyn_tags[DT_JMPREL] - virtual_base);
+	if (ctx->dyn_tags[DT_JMPREL] != 0) {
+		Elf32_Rel *rel_table = (Elf32_Rel *) (phys_base + ctx->dyn_tags[DT_JMPREL] - virtual_base);
 
 		// EXL, 30-Oct-2026: This is a pointer to the first jump in the PLT jump table:
 		// E5 2D E0 04 E5 9F E0 04 E0 8F E0 0E E5 BE F0 08 00 00 00 D0 47 78 E7 FD E2 8F C6 00 E2 8C CA 00 E5 BC F0 C0
@@ -377,13 +379,13 @@ static STATUS EP3_ELF_EP3_Load(
 		// EXL, 30-Oct-2026: It has 4778E7FD opcode in Thumb after 4 .plt bytes? If yes, just skip it.
 		plt_jump_tbl_ptr += ((*(plt_jump_tbl_ptr + 5)) == 0x4778E7FD) ? 6 : 5;
 
-		for (UINT32 i = 0; i * sizeof(Elf32_Rel) < dyn_tags[DT_PLTRELSZ]; ++i) {
+		for (UINT32 i = 0; i * sizeof(Elf32_Rel) < ctx->dyn_tags[DT_PLTRELSZ]; ++i) {
 			INT32 sym_idx = (INT32) ELF32_R_SYM(rel_table[i].r_info);
-			const char *sym_str = &elf_str_table[elf_sym_table[sym_idx].st_name];
+			const char *sym_str = &ctx->str_table[ctx->sym_table[sym_idx].st_name];
 
-			UINT32 ldr_st_addr = EP3_ELF_Lookup_Symbol(def_symbols, def_cnt, sym_str);
+			UINT32 ldr_st_addr = EP3_Resolve_Symbol(sym_str);
 			if (ldr_st_addr == 0) {
-				D("[EP3 ELF]: %s\n", "WARNING! ELF can start/execute not correctly!");
+				D("[EP3 ELF]: %s\n", "WARNING! Module can start/execute not correctly!");
 				continue;
 			}
 
@@ -423,25 +425,6 @@ static STATUS EP3_ELF_EP3_Load(
 	EP3_Memory_Free(elf_program_headers);
 	D("[EP3 ELF]: Freed %d bytes of ELF Program Headers.\n", sizeof(Elf32_Phdr) * elf_header->e_phnum);
 
-	// EXL, 31-Oct-2026: Register the image BEFORE starting it, so the entry itself can
-	//   see its own image in the registry (and the slot-full check trips before the run).
-	EP3_Image *image = EP3_Image_Register(
-		EP3_IMG_ELF, (void *) mem_base, mem_needed, file_path, event, EP3_IMG_FLAG_FREE_MEM
-	);
-	if (image == NULL) {
-		goto fail_free_image;
-	}
-
-	// EXL, 31-Oct-2026: Start ELF from the "e_entry" address, "start" stub which calls
-	//   "Register" ELF entry point. The event is passed through to the "reserve" slot.
-	D("[EP3 ELF]: Starting ELF at 0x%08X\n", phys_base + elf_header->e_entry - virtual_base);
-
-	((EP3_ELF_Entry_T) (phys_base + elf_header->e_entry - virtual_base))((const char *) NULL, (char *) params, event);
-
-	D("[EP3 ELF]: %s\n", "ELF returned");
-
-	*out_mem_base = (void *) mem_base;
-
 	return RESULT_OK;
 
 fail_free_image:
@@ -450,18 +433,101 @@ fail_free_image:
 	return RESULT_FAIL;
 }
 
-STATUS EP3_ELF_Load(
-	const WCHAR *file_path, const char *params, UINT32 event, DEF_LIB_Symbol *def_symbols, UINT32 def_cnt, void **out_elf
+// EXL, 31-Oct-2026: DT_INIT + DT_INIT_ARRAY constructors of a module.
+void EP3_ELF_Run_Init(const EP3_DYN_Context *ctx) {
+	if (ctx->dyn_tags[DT_INIT] != 0) {
+		((void (*)(void)) (ctx->phys_base + ctx->dyn_tags[DT_INIT] - ctx->virtual_base))();
+	}
+	if ((ctx->dyn_tags[DT_INIT_ARRAY] != 0) && (ctx->dyn_tags[DT_INIT_ARRAYSZ] != 0)) {
+		void (**init_array)(void) = (void (**)(void)) (
+			ctx->phys_base + ctx->dyn_tags[DT_INIT_ARRAY] - ctx->virtual_base
+		);
+		UINT32 init_cnt = ctx->dyn_tags[DT_INIT_ARRAYSZ] / sizeof(void *);
+		for (UINT32 i = 0; i < init_cnt; ++i) {
+			init_array[i]();
+		}
+	}
+}
+
+// EXL, 31-Oct-2026: DT_FINI_ARRAY (reverse order) + DT_FINI destructors of a module.
+void EP3_ELF_Run_Fini(const EP3_DYN_Context *ctx) {
+	if ((ctx->dyn_tags[DT_FINI_ARRAY] != 0) && (ctx->dyn_tags[DT_FINI_ARRAYSZ] != 0)) {
+		void (**fini_array)(void) = (void (**)(void)) (
+			ctx->phys_base + ctx->dyn_tags[DT_FINI_ARRAY] - ctx->virtual_base
+		);
+		UINT32 fini_cnt = ctx->dyn_tags[DT_FINI_ARRAYSZ] / sizeof(void *);
+		for (UINT32 i = fini_cnt; i > 0; --i) {
+			fini_array[i - 1]();
+		}
+	}
+	if (ctx->dyn_tags[DT_FINI] != 0) {
+		((void (*)(void)) (ctx->phys_base + ctx->dyn_tags[DT_FINI] - ctx->virtual_base))();
+	}
+}
+
+static STATUS EP3_ELF_EP3_Load(
+	DL_FS_HANDLE_T file_handle,
+	const WCHAR *file_path,
+	const char *params,
+	UINT32 event,
+	Elf32_Ehdr *elf_header,
+	void **out_mem_base
 ) {
+	// EXL, 31-Oct-2026: ASCII copy of the module path, its directory is the first
+	//   search location for DT_NEEDED .so dependencies.
+	char module_dir[DL_FS_MAX_URI_NAME_LENGTH + 1];
+	PORTABLE_u_utoa(file_path, module_dir);
+	char *dir_sep = (char *) PORTABLE_strchr(module_dir, '/');
+	if (dir_sep != NULL) {
+		*(dir_sep + 1) = ASCII_NULL;
+	} else {
+		module_dir[0] = ASCII_NULL;
+	}
+
+	EP3_DYN_Context dyn_ctx;
+	if (EP3_ELF_DYN_Load(file_handle, elf_header, module_dir, &dyn_ctx) != RESULT_OK) {
+		return RESULT_FAIL;
+	}
+
+	// EXL, 31-Oct-2026: Register the image BEFORE starting it, so the entry itself can
+	//   see its own image in the registry (and the slot-full check trips before the run).
+	EP3_Image *image = EP3_Image_Register(
+		EP3_IMG_ELF, dyn_ctx.mem_base, dyn_ctx.mem_size, file_path, event, EP3_IMG_FLAG_FREE_MEM
+	);
+	if (image == NULL) {
+		// EXL, 31-Oct-2026: Release the DT_NEEDED .so references the ELF already holds.
+		for (UINT32 i = 0; i < dyn_ctx.needed_so_cnt; ++i) {
+			EP3_SO_Release(dyn_ctx.needed_so[i]);
+		}
+		EP3_Memory_Free(dyn_ctx.mem_base);
+		return RESULT_FAIL;
+	}
+
+	// EXL, 31-Oct-2026: An exporting ELF (built with --export-dynamic, DT_HASH present)
+	//   becomes a symbol provider so .so libraries can call back into it.
+	if (dyn_ctx.dyn_tags[DT_HASH] != 0) {
+		EP3_SO_Register_ELF(&dyn_ctx);
+	}
+
+	// EXL, 31-Oct-2026: Start ELF from the "e_entry" address, "start" stub which calls
+	//   "Register" ELF entry point. The event is passed through to the "reserve" slot.
+	D("[EP3 ELF]: Starting ELF at 0x%08X\n", dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base);
+
+	((EP3_ELF_Entry_T) (dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base))((const char *) NULL, (char *) params, event);
+
+	D("[EP3 ELF]: %s\n", "ELF returned");
+
+	*out_mem_base = dyn_ctx.mem_base;
+
+	return RESULT_OK;
+}
+
+STATUS EP3_ELF_Load(const WCHAR *file_path, const char *params, UINT32 event, void **out_elf) {
 	STATUS status = RESULT_FAIL;
 	char elf_file_path[DL_FS_MAX_URI_NAME_LENGTH + 1];
 
 	if ((file_path == NULL) || (file_path[0] == UNICODE_NULL)) {
 		D("[EP3 ELF]: %s\n", "Argument file_path is NULL or empty.");
-		return RESULT_FAIL;
-	}
-	if ((def_symbols == NULL) || (def_cnt == 0)) {
-		D("[EP3 ELF]: %s\n", "DEF Library is NULL or empty.");
 		return RESULT_FAIL;
 	}
 	if (out_elf != NULL) {
@@ -505,7 +571,7 @@ STATUS EP3_ELF_Load(
 	D("\te_shnum=0x%04X\n", elf_header.e_shnum);
 
 	void *elf_mem_base = NULL;
-	status = EP3_ELF_EP3_Load(file_handle, file_path, params, event, def_symbols, def_cnt, &elf_header, &elf_mem_base);
+	status = EP3_ELF_EP3_Load(file_handle, file_path, params, event, &elf_header, &elf_mem_base);
 
 	DL_FsCloseFile(file_handle);
 
@@ -529,6 +595,10 @@ STATUS EP3_ELF_Unload(void *elf_ptr) {
 	}
 
 	D("[EP3 ELF]: Unloading ELF at 0x%08X (%d bytes).\n", (UINTPTR) image->mem_base, image->mem_size);
+
+	// EXL, 31-Oct-2026: Drop the ELF symbol provider record and release the refcounts
+	//   of its DT_NEEDED .so dependencies (a shared .so survives until the last user).
+	EP3_SO_Unregister_ELF(elf_ptr);
 
 	return EP3_Image_Unregister(image);
 }
@@ -557,10 +627,20 @@ void EP3_ELF_Loader_MainRegister(void) {
 	// EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
 	L("[EP3 ELF]: Symbols: %d\n", def_cnt);
 
+	// EXL, 31-Oct-2026: Init the .so subsystem: resolver context (DEF lib) + search paths.
+	EP3_SO_Init(config.max_so, def_library, def_cnt, config.libpaths, config.libpath_cnt);
+
+	// EXL, 31-Oct-2026: Expose the dl API to ELFs through the DEF library table, so they
+	//   call dlopen/dlsym/dlclose/dlerror like any other firmware function.
+	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlopen"), (UINTPTR) EP3_dlopen);
+	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlsym"), (UINTPTR) EP3_dlsym);
+	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlclose"), (UINTPTR) EP3_dlclose);
+	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlerror"), (UINTPTR) EP3_dlerror);
+
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.
 //	if (config.autorun_cnt == 0) {
-//		EP3_ELF_Load(L"h.elf", NULL, 0, def_library, def_cnt, NULL);
+//		EP3_ELF_Load(L"h.elf", NULL, 0, NULL);
 //	}
 
 	// EXL, 31-Oct-2026: Run autorun entries in config file order. The event is passed
@@ -573,7 +653,7 @@ void EP3_ELF_Loader_MainRegister(void) {
 
 		L("[EP3 ELF]: Autorun #%d: '%s' event=0x%08X\n", i, entry->uri, entry->event);
 
-		if (EP3_ELF_Load(uri, entry->args[0] ? entry->args : NULL, entry->event, def_library, def_cnt, NULL) != RESULT_OK) {
+		if (EP3_ELF_Load(uri, entry->args[0] ? entry->args : NULL, entry->event, NULL) != RESULT_OK) {
 			L("[EP3 ELF]: Autorun #%d failed, continuing.\n", i);
 		}
 	}
