@@ -5,9 +5,14 @@
 
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_Memory.h>
+#include <P2K_EP3_Image_Manager.h>
 #include <P2K_EP3_BIN_Loader.h>
 
 STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR addr, BOOL a_bit, BOOL free_it) {
+#if defined(FTR_BIN_LDR)
+	UNUSED(free_it);
+#endif
+
 	if ((file_path == NULL) || (file_path[0] == UNICODE_NULL)) {
 		D("[EP3 BIN]: %s\n", "Argument file_path is NULL or empty.");
 		return RESULT_FAIL;
@@ -60,6 +65,20 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 
 	DL_FsCloseFile(file_handle);
 
+	/* Disable on BIN_LDR in NOR. */
+#if !defined(FTR_BIN_LDR)
+	// EXL, 31-Oct-2026: Register the loaded binary in the unified image database before the
+	//   jump, so it can be tracked and unloaded by address. "register_it" must be FALSE when
+	//   this code runs from a read-only (NOR) context like P2K_EP3_APP_Entry_Main.c — the
+	//   database lives in the RAM-resident ELF loader, which owns the registry instance.
+	//   Memory is freed on unregister only for allocated images with "free_it" set.
+	EP3_Image *image = NULL;
+	UINT32 img_flags = ((addr == NULL_ADDR) && free_it) ? EP3_IMG_FLAG_FREE_MEM : 0;
+	image = EP3_Image_Register(
+		EP3_IMG_BIN, (void *) load_addr, (UINT32) file_size, file_path, 0, img_flags
+	);
+#endif
+
 	/* Set Thumb etc. bit if needed (will be ignored on ARM and M-CORE) */
 	if (a_bit) {
 		load_addr = (UINTPTR *) (((UINT32) load_addr) | 1);
@@ -71,11 +90,13 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	STATUS result = entry_point(args);
 	D("[EP3 BIN]: Returned status: %d\n", result);
 
-	if (addr == NULL_ADDR) {
-		if (free_it) {
-			EP3_Memory_Free(load_addr);
-		}
+	/* Disable on BIN_LDR in NOR. */
+#if !defined(FTR_BIN_LDR)
+	// EXL, 31-Oct-2026: Drop the registry entry (and memory, per flags) after return.
+	if (image != NULL) {
+		EP3_Image_Unregister(image);
 	}
+#endif
 
 	return result;
 }

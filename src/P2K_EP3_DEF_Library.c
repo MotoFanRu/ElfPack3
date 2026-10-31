@@ -217,7 +217,7 @@ static STATUS DEF_Library_Check_Hash_Collisions(const DEF_LIB_Symbol *def_lib, U
 	return RESULT_OK;
 }
 
-static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols) {
+static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
 	STATUS is_pfw_okay = RESULT_FAIL;
 	STATUS is_ver_okay = RESULT_FAIL;
 	STATUS is_cpu_okay = RESULT_FAIL;
@@ -225,7 +225,7 @@ static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols)
 	const char *p = buffer;
 	UINT32 i = 0;
 
-	while (*p && i < DEF_LIB_MAX_SYM_COUNT) {
+	while (*p && i < max_count) {
 		if (Is_Line_PFW(p) == RESULT_OK) {
 			is_pfw_okay = Check_PFW(p);
 		} else if (Is_Line_VER(p) == RESULT_OK) {
@@ -264,12 +264,15 @@ static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols)
 	return 0;
 }
 
-UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols) {
+UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
 	if (!def_symbols) {
 		L("[EP3 DEF]: %s\n", "Pointer to DEF Library is NULL!\n");
 		return 0;
 	}
-	memset(def_symbols, 0, sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
+	if (max_count == 0) {
+		max_count = DEF_LIB_MAX_SYM_COUNT;
+	}
+	memset(def_symbols, 0, sizeof(DEF_LIB_Symbol) * max_count);
 
 	WCHAR file_path[PATH_MAX_SHORT];
 	if (!EP3_Find_Internal_System_Component(EP3_ELF_LDR_DEF_NAME, file_path)) {
@@ -321,7 +324,7 @@ UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols) {
 		load_addr[file_size + 1] = '\n';
 	}
 
-	UINT32 symbols_count = DEF_Library_Parse(load_addr, def_symbols);
+	UINT32 symbols_count = DEF_Library_Parse(load_addr, def_symbols, max_count);
 
 	EP3_Memory_Free(load_addr);
 

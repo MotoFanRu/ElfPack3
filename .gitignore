@@ -16,3 +16,7 @@ CMakeLists.txt
 cmake-build-debug
 cmake-build-release
 d.sh
+.zcode
+ep1_src
+ep2_src
+em2_src

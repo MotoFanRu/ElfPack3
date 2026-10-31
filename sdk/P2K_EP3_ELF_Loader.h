@@ -13,10 +13,12 @@ typedef UINT32 (*EP3_ELF_Entry_T)(const char *file_uri, char *params, UINT32 res
 
 // EXL, 30-Oct-2026: Load GCC (ET_DYN) ELF, resolve symbols via the DEF library (ep3.def),
 //   apply relocations, register the image and start it from "e_entry".
+//   "event" is passed through to the ELF entry ("reserve" slot).
 //   On success *out_elf receives a handle (image base) usable with EP3_ELF_Unload().
 extern STATUS EP3_ELF_Load(
 	const WCHAR *file_path,
 	const char *params,
+	UINT32 event,
 	DEF_LIB_Symbol *def_symbols,
 	UINT32 def_cnt,
 	void **out_elf

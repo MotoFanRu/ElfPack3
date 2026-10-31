@@ -10,17 +10,9 @@
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_ELF.h>
 #include <P2K_EP3_DEF_Library.h>
+#include <P2K_EP3_Config.h>
+#include <P2K_EP3_Image_Manager.h>
 #include <P2K_EP3_ELF_Loader.h>
-
-#define EP3_ELF_MAX_LOADED             (8)
-
-// EXL, 30-Oct-2026: Registry of loaded ELF images, used by EP3_ELF_Unload().
-typedef struct tagEP3_ELF_Image {
-	void *mem_base;                    // Physical base of allocated ELF image.
-	UINT32 mem_size;                   // Size of allocated ELF image.
-} EP3_ELF_Image;
-
-static EP3_ELF_Image EP3_ELF_Images[EP3_ELF_MAX_LOADED];
 
 static STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
 	UNUSED(file_handle);
@@ -193,7 +185,9 @@ static UINT32 EP3_ELF_Lookup_Symbol(const DEF_LIB_Symbol *def_lib, UINT32 def_cn
 
 static STATUS EP3_ELF_EP3_Load(
 	DL_FS_HANDLE_T file_handle,
+	const WCHAR *file_path,
 	const char *params,
+	UINT32 event,
 	DEF_LIB_Symbol *def_symbols,
 	UINT32 def_cnt,
 	Elf32_Ehdr *elf_header,
@@ -429,29 +423,24 @@ static STATUS EP3_ELF_EP3_Load(
 	EP3_Memory_Free(elf_program_headers);
 	D("[EP3 ELF]: Freed %d bytes of ELF Program Headers.\n", sizeof(Elf32_Phdr) * elf_header->e_phnum);
 
-	// EXL, 30-Oct-2026: Register the image, then start ELF from the "e_entry" address,
-	//   "start" stub which calls "Register" ELF entry point.
-	void *elf_handle = (void *) mem_base;
-
-	for (UINT32 i = 0; i < EP3_ELF_MAX_LOADED; ++i) {
-		if (EP3_ELF_Images[i].mem_base == NULL) {
-			EP3_ELF_Images[i].mem_base = (void *) mem_base;
-			EP3_ELF_Images[i].mem_size = mem_needed;
-			break;
-		}
-		if (i == (EP3_ELF_MAX_LOADED - 1)) {
-			D("[EP3 ELF]: Too many loaded ELFs, max %d.\n", EP3_ELF_MAX_LOADED);
-			goto fail_free_image;
-		}
+	// EXL, 31-Oct-2026: Register the image BEFORE starting it, so the entry itself can
+	//   see its own image in the registry (and the slot-full check trips before the run).
+	EP3_Image *image = EP3_Image_Register(
+		EP3_IMG_ELF, (void *) mem_base, mem_needed, file_path, event, EP3_IMG_FLAG_FREE_MEM
+	);
+	if (image == NULL) {
+		goto fail_free_image;
 	}
 
+	// EXL, 31-Oct-2026: Start ELF from the "e_entry" address, "start" stub which calls
+	//   "Register" ELF entry point. The event is passed through to the "reserve" slot.
 	D("[EP3 ELF]: Starting ELF at 0x%08X\n", phys_base + elf_header->e_entry - virtual_base);
 
-	((EP3_ELF_Entry_T) (phys_base + elf_header->e_entry - virtual_base))((const char *) NULL, (char *) params, 0);
+	((EP3_ELF_Entry_T) (phys_base + elf_header->e_entry - virtual_base))((const char *) NULL, (char *) params, event);
 
 	D("[EP3 ELF]: %s\n", "ELF returned");
 
-	*out_mem_base = elf_handle;
+	*out_mem_base = (void *) mem_base;
 
 	return RESULT_OK;
 
@@ -461,7 +450,9 @@ fail_free_image:
 	return RESULT_FAIL;
 }
 
-STATUS EP3_ELF_Load(const WCHAR *file_path, const char *params, DEF_LIB_Symbol *def_symbols, UINT32 def_cnt, void **out_elf) {
+STATUS EP3_ELF_Load(
+	const WCHAR *file_path, const char *params, UINT32 event, DEF_LIB_Symbol *def_symbols, UINT32 def_cnt, void **out_elf
+) {
 	STATUS status = RESULT_FAIL;
 	char elf_file_path[DL_FS_MAX_URI_NAME_LENGTH + 1];
 
@@ -514,7 +505,7 @@ STATUS EP3_ELF_Load(const WCHAR *file_path, const char *params, DEF_LIB_Symbol *
 	D("\te_shnum=0x%04X\n", elf_header.e_shnum);
 
 	void *elf_mem_base = NULL;
-	status = EP3_ELF_EP3_Load(file_handle, params, def_symbols, def_cnt, &elf_header, &elf_mem_base);
+	status = EP3_ELF_EP3_Load(file_handle, file_path, params, event, def_symbols, def_cnt, &elf_header, &elf_mem_base);
 
 	DL_FsCloseFile(file_handle);
 
@@ -531,35 +522,61 @@ STATUS EP3_ELF_Unload(void *elf_ptr) {
 		return RESULT_FAIL;
 	}
 
-	for (UINT32 i = 0; i < EP3_ELF_MAX_LOADED; ++i) {
-		if (EP3_ELF_Images[i].mem_base == elf_ptr) {
-			D("[EP3 ELF]: Unloading ELF at 0x%08X (%d bytes).\n", (UINTPTR) EP3_ELF_Images[i].mem_base, EP3_ELF_Images[i].mem_size);
-			EP3_Memory_Free(EP3_ELF_Images[i].mem_base);
-			EP3_ELF_Images[i].mem_base = NULL;
-			EP3_ELF_Images[i].mem_size = 0;
-			return RESULT_OK;
-		}
+	EP3_Image *image = EP3_Image_Find(elf_ptr);
+	if (image == NULL) {
+		D("[EP3 ELF]: Unknown ELF pointer: 0x%08X\n", (UINTPTR) elf_ptr);
+		return RESULT_FAIL;
 	}
 
-	D("[EP3 ELF]: Unknown ELF pointer: 0x%08X\n", (UINTPTR) elf_ptr);
+	D("[EP3 ELF]: Unloading ELF at 0x%08X (%d bytes).\n", (UINTPTR) image->mem_base, image->mem_size);
 
-	return RESULT_FAIL;
+	return EP3_Image_Unregister(image);
 }
 
 __attribute__((used, section(".text.bin.entry_point")))
 void EP3_ELF_Loader_MainRegister(void) {
 	L("%s\n", "Hello Moto!");
 
-	DEF_LIB_Symbol *def_library = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
+	// EXL, 31-Oct-2026: Parse ep3.cfg (settings + autorun) before anything else.
+	EP3_Config_T config;
+	if (EP3_Config_Load(&config) != RESULT_OK) {
+		L("[EP3 ELF]: %s\n", "Failed to load config, using defaults.");
+		EP3_Config_Defaults(&config);
+	}
+
+	// EXL, 31-Oct-2026: Init the image registry with the configured slot count.
+	EP3_Image_Init(config.max_elfs);
+
+	DEF_LIB_Symbol *def_library = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * config.lib_capacity);
 	if (def_library == NULL) {
-		L("Cannot allocate bytes: %d\n", sizeof(DEF_LIB_Symbol) * DEF_LIB_MAX_SYM_COUNT);
+		L("Cannot allocate bytes: %d\n", sizeof(DEF_LIB_Symbol) * config.lib_capacity);
 		return;
 	}
 
-	UINT32 def_cnt = EP3_DEF_Library_Load(def_library);
+	UINT32 def_cnt = EP3_DEF_Library_Load(def_library, config.lib_capacity);
 	// EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
 	L("[EP3 ELF]: Symbols: %d\n", def_cnt);
 
-	EP3_ELF_Load(L"h.elf", NULL, def_library, def_cnt, NULL);
+	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
+	//   when there is no autorun list to execute.
+	if (config.autorun_cnt == 0) {
+		EP3_ELF_Load(L"h.elf", NULL, 0, def_library, def_cnt, NULL);
+	}
+
+	// EXL, 31-Oct-2026: Run autorun entries in config file order. The event is passed
+	//   through to the ELF entry ("reserve" slot). One failed entry does not stop the rest.
+	for (UINT32 i = 0; i < config.autorun_cnt; ++i) {
+		EP3_Autorun_Entry_T *entry = &config.autorun[i];
+
+		WCHAR uri[EP3_CFG_MAX_PATH];
+		PORTABLE_u_atou(entry->uri, uri);
+
+		L("[EP3 ELF]: Autorun #%d: '%s' event=0x%08X\n", i, entry->uri, entry->event);
+
+		if (EP3_ELF_Load(uri, entry->args[0] ? entry->args : NULL, entry->event, def_library, def_cnt, NULL) != RESULT_OK) {
+			L("[EP3 ELF]: Autorun #%d failed, continuing.\n", i);
+		}
+	}
+
 	L("%s\n", "End!");
 }
