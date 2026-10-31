@@ -71,11 +71,14 @@ typedef struct tagEP3_DYN_Context {
 extern STATUS EP3_ELF_Read_Header(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header);
 extern STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header);
 
-// EXL, 31-Oct-2026: Deploy an ET_DYN image, parse dynamic tags, load DT_NEEDED
-//   dependencies and apply all relocations (REL + JMPREL/PLT).
-//   "dir" is the ASCII directory of the loading module ("" if unknown), the first
-//   search location for DT_NEEDED .so files.
-extern STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, const char *dir, EP3_DYN_Context *ctx);
+// EXL, 31-Oct-2026: First pass of the DYN core: deploy an ET_DYN image and parse the
+//   dynamic tags. Register the module as a symbol provider BEFORE the second pass!
+extern STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, EP3_DYN_Context *ctx);
+
+// EXL, 31-Oct-2026: Second pass of the DYN core: load DT_NEEDED dependencies (recursive)
+//   and apply all relocations (REL + JMPREL/PLT). "dir" is the ASCII directory of the
+//   loading module ("" if unknown), the first search location for DT_NEEDED .so files.
+extern STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir);
 
 // EXL, 31-Oct-2026: Init/fini helpers for DT_INIT + DT_INIT_ARRAY / DT_FINI_ARRAY + DT_FINI.
 extern void EP3_ELF_Run_Init(const EP3_DYN_Context *ctx);
@@ -100,7 +103,11 @@ extern EP3_SO *EP3_SO_Find_By_Name(const char *name);
 extern STATUS EP3_SO_Process_Needed(EP3_DYN_Context *ctx, const char *dir);
 
 // EXL, 31-Oct-2026: ELF provider registration (a PIE ELF with DT_HASH exports).
-extern STATUS EP3_SO_Register_ELF(EP3_DYN_Context *ctx);
+//   Must be called AFTER EP3_ELF_DYN_Load and BEFORE EP3_ELF_DYN_Link, so the DT_NEEDED
+//   libraries can resolve the ELF exports during their own relocation. Returns the
+//   provider record; attach the loaded dependencies after EP3_ELF_DYN_Link.
+extern EP3_SO *EP3_SO_Register_ELF(EP3_DYN_Context *ctx);
+extern void EP3_SO_Attach_Needed(EP3_SO *so, EP3_DYN_Context *ctx);
 extern STATUS EP3_SO_Unregister_ELF(void *elf_mem_base);
 
 // EXL, 31-Oct-2026: dl API, registered into the DEF library table at boot.

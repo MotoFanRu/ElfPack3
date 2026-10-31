@@ -147,7 +147,7 @@ UINT32 EP3_Resolve_Symbol(const char *sym_str) {
 		}
 	}
 
-	D("[EP3 SO]: WARNING! No '%s' func found!\n", sym_str);
+	D("[EP3 SO]: WARNING! No '%s' symbol found!\n", sym_str);
 
 	return 0;
 }
@@ -183,7 +183,15 @@ void EP3_SO_Init(
 
 	EP3_SO_LibPath_Cnt = 0;
 	for (UINT32 i = 0; (i < libpath_cnt) && (i < EP3_SO_MAX_LIBPATHS); ++i) {
-		PORTABLE_strncpy(EP3_SO_LibPaths[EP3_SO_LibPath_Cnt], libpaths[i], EP3_SO_LIBPATH_LEN - 1);
+		char *dst = EP3_SO_LibPaths[EP3_SO_LibPath_Cnt];
+		PORTABLE_strncpy(dst, libpaths[i], EP3_SO_LIBPATH_LEN - 2);
+
+		// EXL, 31-Oct-2026: Ensure the trailing separator, SO_Build_Path concatenates.
+		UINT32 len = (UINT32) PORTABLE_strlen(dst);
+		if ((len > 0) && (dst[len - 1] != '/')) {
+			dst[len++] = '/';
+			dst[len] = ASCII_NULL;
+		}
 		EP3_SO_LibPath_Cnt++;
 	}
 
@@ -368,8 +376,9 @@ EP3_SO *EP3_SO_Load(const char *name, const char *dir) {
 	char lib_dir[EP3_SO_LIBPATH_LEN];
 	SO_Dir_Of(path, lib_dir, EP3_SO_LIBPATH_LEN);
 
+	// EXL, 31-Oct-2026: Two-pass scheme, pass 1: deploy the image and parse the tags.
 	EP3_DYN_Context dyn_ctx;
-	if (EP3_ELF_DYN_Load(file_handle, &elf_header, lib_dir, &dyn_ctx) != RESULT_OK) {
+	if (EP3_ELF_DYN_Load(file_handle, &elf_header, &dyn_ctx) != RESULT_OK) {
 		SO_Set_Error("Failed to load library image.");
 		DL_FsCloseFile(file_handle);
 		return NULL;
@@ -377,7 +386,9 @@ EP3_SO *EP3_SO_Load(const char *name, const char *dir) {
 
 	DL_FsCloseFile(file_handle);
 
-	// EXL, 31-Oct-2026: Fill the record: identity, exports, held dependencies.
+	// EXL, 31-Oct-2026: Fill the record and activate it BEFORE the link pass: the
+	//   DT_NEEDED libraries may import this library exports (circular ELF <-> .so),
+	//   export addresses are valid right after deployment.
 	so->kind = EP3_SO_KIND_LIB;
 	so->mem_base = dyn_ctx.mem_base;
 	so->mem_size = dyn_ctx.mem_size;
@@ -388,9 +399,6 @@ EP3_SO *EP3_SO_Load(const char *name, const char *dir) {
 	so->hash_table = (dyn_ctx.dyn_tags[DT_HASH] != 0) ?
 		(Elf32_Word *) (dyn_ctx.phys_base + dyn_ctx.dyn_tags[DT_HASH] - dyn_ctx.virtual_base) : NULL;
 	so->needed_cnt = 0;
-	for (UINT32 i = 0; i < dyn_ctx.needed_so_cnt; ++i) {
-		so->needed[so->needed_cnt++] = dyn_ctx.needed_so[i];
-	}
 	so->refs = 1;
 	SO_Fill_Name(so, &dyn_ctx, name_only);
 	so->active = TRUE;
@@ -399,7 +407,21 @@ EP3_SO *EP3_SO_Load(const char *name, const char *dir) {
 		D("[EP3 SO]: WARNING! '%s' has no DT_HASH, it cannot export symbols.\n", so->name);
 	}
 
-	// EXL, 31-Oct-2026: Run the library constructors.
+	// EXL, 31-Oct-2026: Pass 2: load DT_NEEDED dependencies, then relocate.
+	EP3_ELF_DYN_Link(&dyn_ctx, lib_dir);
+
+	// EXL, 31-Oct-2026: Keep the loaded DT_NEEDED references for the release path.
+	for (UINT32 i = 0; i < dyn_ctx.needed_so_cnt; ++i) {
+		if (so->needed_cnt < EP3_SO_MAX_NEEDED) {
+			so->needed[so->needed_cnt++] = dyn_ctx.needed_so[i];
+		} else {
+			D("[EP3 SO]: Too many '%s' DT_NEEDED dependencies to attach.\n", so->name);
+			EP3_SO_Release(dyn_ctx.needed_so[i]);
+		}
+	}
+
+	// EXL, 31-Oct-2026: Run the library constructors AFTER relocation, so they can
+	//   use the resolved imports.
 	EP3_ELF_Run_Init(&dyn_ctx);
 
 	// EXL, 31-Oct-2026: Track the library in the unified image manager.
@@ -473,9 +495,9 @@ STATUS EP3_SO_Release(EP3_SO *so) {
 	return status;
 }
 
-STATUS EP3_SO_Register_ELF(EP3_DYN_Context *ctx) {
+EP3_SO *EP3_SO_Register_ELF(EP3_DYN_Context *ctx) {
 	if ((ctx == NULL) || (ctx->mem_base == NULL)) {
-		return RESULT_FAIL;
+		return NULL;
 	}
 
 	EP3_SO *so = NULL;
@@ -487,7 +509,7 @@ STATUS EP3_SO_Register_ELF(EP3_DYN_Context *ctx) {
 	}
 	if (so == NULL) {
 		D("[EP3 SO]: %s\n", "No free slot for the ELF symbol provider.");
-		return RESULT_FAIL;
+		return NULL;
 	}
 
 	so->kind = EP3_SO_KIND_ELF_PROVIDER;
@@ -499,17 +521,29 @@ STATUS EP3_SO_Register_ELF(EP3_DYN_Context *ctx) {
 	so->str_table = ctx->str_table;
 	so->hash_table = (ctx->dyn_tags[DT_HASH] != 0) ?
 		(Elf32_Word *) (ctx->phys_base + ctx->dyn_tags[DT_HASH] - ctx->virtual_base) : NULL;
-	so->needed_cnt = 0;
-	for (UINT32 i = 0; i < ctx->needed_so_cnt; ++i) {
-		so->needed[so->needed_cnt++] = ctx->needed_so[i];
-	}
+	so->needed_cnt = 0;                 // Dependencies are attached after EP3_ELF_DYN_Link.
 	so->refs = 0;                       // ELF providers are not refcounted here.
 	PORTABLE_strncpy(so->name, "elf:provider", EP3_SO_NAME_LEN - 1);
 	so->active = TRUE;
 
 	L("[EP3 SO]: ELF at 0x%08X registered as symbol provider.\n", so->mem_base);
 
-	return RESULT_OK;
+	return so;
+}
+
+void EP3_SO_Attach_Needed(EP3_SO *so, EP3_DYN_Context *ctx) {
+	if ((so == NULL) || (so->kind != EP3_SO_KIND_ELF_PROVIDER)) {
+		return;
+	}
+
+	for (UINT32 i = 0; i < ctx->needed_so_cnt; ++i) {
+		if (so->needed_cnt < EP3_SO_MAX_NEEDED) {
+			so->needed[so->needed_cnt++] = ctx->needed_so[i];
+		} else {
+			D("[EP3 SO]: %s\n", "Too many ELF DT_NEEDED dependencies to attach.");
+			EP3_SO_Release(ctx->needed_so[i]);
+		}
+	}
 }
 
 STATUS EP3_SO_Unregister_ELF(void *elf_mem_base) {

@@ -175,7 +175,7 @@ static UINT32 EP3_ELF_Calc_Image(Elf32_Phdr *elf_program_headers, Elf32_Ehdr *el
 // EXL, 31-Oct-2026: Shared DYN core used by both ELF and .so loading: deploy PT_LOAD
 //   segments, parse the PT_DYNAMIC tags, collect DT_NEEDED entries, load the dependencies
 //   (refcounted .so images) and apply REL + JMPREL/PLT relocations.
-STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, const char *dir, EP3_DYN_Context *ctx) {
+STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, EP3_DYN_Context *ctx) {
 	DL_FS_COUNT_T elements_read;
 
 	memset(ctx, 0, sizeof(EP3_DYN_Context));
@@ -320,6 +320,21 @@ STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, cons
 	ctx->sym_table = (Elf32_Sym *) (phys_base + ctx->dyn_tags[DT_SYMTAB] - virtual_base);
 	ctx->str_table = (char *) (phys_base + ctx->dyn_tags[DT_STRTAB] - virtual_base);
 
+	EP3_Memory_Free(elf_program_headers);
+	D("[EP3 ELF]: Freed %d bytes of ELF Program Headers.\n", sizeof(Elf32_Phdr) * elf_header->e_phnum);
+
+	return RESULT_OK;
+
+fail_free_image:
+	EP3_Memory_Free(mem_base);
+	EP3_Memory_Free(elf_program_headers);
+	return RESULT_FAIL;
+}
+
+// EXL, 31-Oct-2026: Second pass of the DYN core: load DT_NEEDED dependencies (all
+//   providers must be registered before this, see the two-pass scheme) and apply
+//   REL + JMPREL/PLT relocations.
+STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 	// EXL, 31-Oct-2026: Load DT_NEEDED .so dependencies BEFORE relocations, so the
 	//   newly loaded libraries are available as symbol providers.
 	if (ctx->needed_cnt > 0) {
@@ -327,6 +342,9 @@ STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, cons
 			D("[EP3 ELF]: %s\n", "WARNING! Some DT_NEEDED libraries failed to load.");
 		}
 	}
+
+	Elf32_Addr phys_base = ctx->phys_base;
+	Elf32_Addr virtual_base = ctx->virtual_base;
 
 	D("[EP3 ELF]: Relocation start\n DT_REL=0x%08X\n DT_RELSZ=%d\n", ctx->dyn_tags[DT_REL], ctx->dyn_tags[DT_RELSZ]);
 
@@ -422,15 +440,7 @@ STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, cons
 		}
 	}
 
-	EP3_Memory_Free(elf_program_headers);
-	D("[EP3 ELF]: Freed %d bytes of ELF Program Headers.\n", sizeof(Elf32_Phdr) * elf_header->e_phnum);
-
 	return RESULT_OK;
-
-fail_free_image:
-	EP3_Memory_Free(mem_base);
-	EP3_Memory_Free(elf_program_headers);
-	return RESULT_FAIL;
 }
 
 // EXL, 31-Oct-2026: DT_INIT + DT_INIT_ARRAY constructors of a module.
@@ -484,9 +494,25 @@ static STATUS EP3_ELF_EP3_Load(
 		module_dir[0] = ASCII_NULL;
 	}
 
+	// EXL, 31-Oct-2026: Two-pass dynamic linking, pass 1: deploy the image.
 	EP3_DYN_Context dyn_ctx;
-	if (EP3_ELF_DYN_Load(file_handle, elf_header, module_dir, &dyn_ctx) != RESULT_OK) {
+	if (EP3_ELF_DYN_Load(file_handle, elf_header, &dyn_ctx) != RESULT_OK) {
 		return RESULT_FAIL;
+	}
+
+	// EXL, 31-Oct-2026: Register the ELF as a symbol provider BEFORE the link pass, so
+	//   the DT_NEEDED .so libraries can resolve the ELF exports during their relocation.
+	//   Export addresses are valid right after deployment (relocations only fix
+	//   intra-image pointers). The record also holds the DT_NEEDED refs for unload.
+	EP3_SO *elf_provider = EP3_SO_Register_ELF(&dyn_ctx);
+
+	// EXL, 31-Oct-2026: Pass 2: load DT_NEEDED dependencies, then relocate.
+	EP3_ELF_DYN_Link(&dyn_ctx, module_dir);
+
+	// EXL, 31-Oct-2026: The provider record keeps the loaded DT_NEEDED .so references
+	//   so EP3_ELF_Unload can release them (a shared .so outlives one user).
+	if (elf_provider != NULL) {
+		EP3_SO_Attach_Needed(elf_provider, &dyn_ctx);
 	}
 
 	// EXL, 31-Oct-2026: Register the image BEFORE starting it, so the entry itself can
@@ -495,18 +521,10 @@ static STATUS EP3_ELF_EP3_Load(
 		EP3_IMG_ELF, dyn_ctx.mem_base, dyn_ctx.mem_size, file_path, event, EP3_IMG_FLAG_FREE_MEM
 	);
 	if (image == NULL) {
-		// EXL, 31-Oct-2026: Release the DT_NEEDED .so references the ELF already holds.
-		for (UINT32 i = 0; i < dyn_ctx.needed_so_cnt; ++i) {
-			EP3_SO_Release(dyn_ctx.needed_so[i]);
-		}
+		// EXL, 31-Oct-2026: Unregistering the provider also releases the DT_NEEDED refs.
+		EP3_SO_Unregister_ELF(dyn_ctx.mem_base);
 		EP3_Memory_Free(dyn_ctx.mem_base);
 		return RESULT_FAIL;
-	}
-
-	// EXL, 31-Oct-2026: An exporting ELF (built with --export-dynamic, DT_HASH present)
-	//   becomes a symbol provider so .so libraries can call back into it.
-	if (dyn_ctx.dyn_tags[DT_HASH] != 0) {
-		EP3_SO_Register_ELF(&dyn_ctx);
 	}
 
 	// EXL, 31-Oct-2026: Start ELF from the "e_entry" address, "start" stub which calls

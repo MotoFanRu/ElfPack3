@@ -67,6 +67,13 @@ void ui_notify(int value) {
 	EP3_Logger("[TestSO]: ui_notify called from .so library, value=%d\n", value);
 }
 
+// EXL, 31-Oct-2026: dlerror() returns NULL when there is no error (POSIX), but the
+//   freestanding logger prints garbage for NULL — show it as an empty string.
+static const char *dl_err_or_empty(void) {
+	const char *err = dlerror();
+	return (err != NULL) ? err : "";
+}
+
 void Register(void) {
 	D("[TestSO]: %s\n", "Enter!");
 
@@ -76,12 +83,12 @@ void Register(void) {
 
 	// EXL, 31-Oct-2026: 2. Explicit dlopen + dlsym path.
 	void *handle = dlopen("mylib.so");
-	D("[TestSO]: dlopen(mylib.so) = 0x%08X, dlerror='%s'\n", handle, dlerror());
+	D("[TestSO]: dlopen(mylib.so) = 0x%08X, dlerror='%s'\n", handle, dl_err_or_empty());
 
 	if (handle != NULL) {
 		typedef int (*mylib_add_t)(int a, int b);
 		mylib_add_t add_fn = (mylib_add_t) ((UINTPTR) dlsym(handle, "mylib_add"));
-		D("[TestSO]: dlsym(mylib_add) = 0x%08X, dlerror='%s'\n", add_fn, dlerror());
+		D("[TestSO]: dlsym(mylib_add) = 0x%08X, dlerror='%s'\n", add_fn, dl_err_or_empty());
 
 		if (add_fn != NULL) {
 			result = add_fn(20, 23);
@@ -89,7 +96,7 @@ void Register(void) {
 		}
 
 		void *missing_fn = dlsym(handle, "mylib_missing");
-		D("[TestSO]: dlsym(mylib_missing) = 0x%08X, dlerror='%s'\n", missing_fn, dlerror());
+		D("[TestSO]: dlsym(mylib_missing) = 0x%08X, dlerror='%s'\n", missing_fn, dl_err_or_empty());
 
 		// EXL, 31-Oct-2026: dlclose drops the dlopen reference, the library stays
 		//   in memory because the DT_NEEDED dependency still holds a refcount.

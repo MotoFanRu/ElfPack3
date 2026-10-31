@@ -15,9 +15,11 @@ extern "C" {
 //   both LF and CR LF line endings are accepted:
 //
 //     # ElfPack settings
-//     deflib ep3.def
-//     lib_capacity 1024
-//     max_elfs 8
+//     deflib ep3.def            # def library name/path
+//     lib_capacity 1024         # def lib symbol capacity (~8 bytes per symbol)
+//     max_elfs 8                # max concurrently loaded ELFs + BINs
+//     max_so 8                  # max concurrently loaded .so libraries (GLOBAL, all ELFs share it)
+//     libpath a/elf/lib/        # extra .so search dir (trailing slash required, up to 3 lines)
 //
 //     # Autorun: autorun <path> [event] [args...]
 //     autorun a/elf/my.elf 0x5999 hello world

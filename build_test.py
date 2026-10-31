@@ -65,24 +65,57 @@ def build_ep3_test_so(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	cflags = [
 		*recipe.soc.opt, *recipe.toolchain.cflags_lib_so, *recipe.flags.build, *recipe.flags.elf_ldr
 	]
+
+	def link_so(obj, name):
+		lflags = [
+			*recipe.toolchain.lflags_so_lib,
+			f'-Wl,-soname,{name}',
+			'-Wl,--hash-style=sysv',
+			'-Wl,-zmax-page-size=4',
+		]
+		so_res = a.consts.P2K_SDK_BUILD / name
+		if not a.toolchain.gcc_ld(recipe.toolchain, [obj], so_res, cflags, lflags):
+			a.log.E(f'Cannot create: {so_res}')
+			return False
+		a.fs.copy_file(so_res, a.consts.P2K_SDK_RELEASE / recipe_name / name, True, True)
+		return True
+
+	# EXL, 31-Oct-2026: mylib.so for TestSO_1 and lib1.so (MyLib clone) for TestSO_2.
 	so_src = a.consts.P2K_SDK_SRC / 'test' / 'MyLib_1.c'
 	so_obj = a.consts.P2K_SDK_BUILD / 'MyLib_1.o'
 	if not a.toolchain.gcc_cc(recipe.toolchain, so_src, so_obj, cflags):
 		a.log.E(f'Cannot compile: {so_src.name} => {so_obj.name}')
 		return False
+	if not link_so(so_obj, 'mylib.so') or not link_so(so_obj, 'lib1.so'):
+		return False
 
+	# EXL, 31-Oct-2026: lib2.so — constructor + firmware data symbol GLOBAL_VARIABLE.
+	so_src = a.consts.P2K_SDK_SRC / 'test' / 'MyLib_2.c'
+	so_obj = a.consts.P2K_SDK_BUILD / 'MyLib_2.o'
+	if not a.toolchain.gcc_cc(recipe.toolchain, so_src, so_obj, cflags):
+		a.log.E(f'Cannot compile: {so_src.name} => {so_obj.name}')
+		return False
+	if not link_so(so_obj, 'lib2.so'):
+		return False
+
+	# EXL, 31-Oct-2026: lib3.so — SO -> SO call into lib1.so (DT_NEEDED via stub link).
+	so_src = a.consts.P2K_SDK_SRC / 'test' / 'MyLib_3.c'
+	so_obj = a.consts.P2K_SDK_BUILD / 'MyLib_3.o'
+	if not a.toolchain.gcc_cc(recipe.toolchain, so_src, so_obj, cflags):
+		a.log.E(f'Cannot compile: {so_src.name} => {so_obj.name}')
+		return False
 	lflags = [
 		*recipe.toolchain.lflags_so_lib,
-		'-Wl,-soname,mylib.so',
+		'-Wl,-soname,lib3.so',
 		'-Wl,--hash-style=sysv',
 		'-Wl,-zmax-page-size=4',
+		f'{a.consts.P2K_SDK_BUILD / "lib1.so"}',
 	]
-	so_res = a.consts.P2K_SDK_BUILD / 'mylib.so'
+	so_res = a.consts.P2K_SDK_BUILD / 'lib3.so'
 	if not a.toolchain.gcc_ld(recipe.toolchain, [so_obj], so_res, cflags, lflags):
 		a.log.E(f'Cannot create: {so_res}')
 		return False
-
-	a.fs.copy_file(so_res, a.consts.P2K_SDK_RELEASE / recipe_name / 'mylib.so', True, True)
+	a.fs.copy_file(so_res, a.consts.P2K_SDK_RELEASE / recipe_name / 'lib3.so', True, True)
 
 	return True
 
@@ -157,6 +190,41 @@ def build_ep3_elf_so(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 
 	return True
 
+def build_ep3_elf_so2(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
+	a.log.I(f' Build ELF SO Test 2:')
+
+	cflags = [
+		*recipe.soc.opt, *recipe.toolchain.cflags_elf_ldr, *recipe.flags.build, *recipe.flags.elf_ldr
+	]
+	so_src = a.consts.P2K_SDK_SRC / 'test' / 'TestSO_2.c'
+	so_obj = a.consts.P2K_SDK_BUILD / 'TestSO_2.o'
+	if not a.toolchain.gcc_cc(recipe.toolchain, so_src, so_obj, cflags):
+		a.log.E(f'Cannot compile: {so_src.name} => {so_obj.name}')
+		return False
+
+	lflags = [
+		*recipe.toolchain.lflags_elf_ldr,
+		'-Wl,-zmax-page-size=4',
+		'-Wl,-eRegister',
+		'-pie',
+		# EXL, 31-Oct-2026: Export ui_notify (SO -> ELF call) into the dynamic symbol table.
+		'-Wl,--export-dynamic',
+		# EXL, 31-Oct-2026: The fake libep3.so stub supplies import symbols (APP_*, ...).
+		f'-L{a.consts.P2K_SDK_BUILD}', '-lep3',
+		# EXL, 31-Oct-2026: DT_NEEDED lib1.so, lib2.so, lib3.so (stub links only).
+		f'{a.consts.P2K_SDK_BUILD / "lib1.so"}',
+		f'{a.consts.P2K_SDK_BUILD / "lib2.so"}',
+		f'{a.consts.P2K_SDK_BUILD / "lib3.so"}',
+	]
+	so_elf_res = a.consts.P2K_SDK_BUILD / 'TestSO_2.elf'
+	if not a.toolchain.gcc_ld(recipe.toolchain, [so_obj], so_elf_res, cflags, lflags):
+		a.log.E(f'Cannot link: {so_elf_res}')
+		return False
+
+	a.fs.copy_file(so_elf_res, a.consts.P2K_SDK_RELEASE / recipe_name / 'so2.elf', True, True)
+
+	return True
+
 def cook_recipe(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	a.log.I('')
 	a.log.I(f'Cook recipe: {recipe_name}')
@@ -168,6 +236,7 @@ def cook_recipe(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		(build_ep3_test_so, [a, recipe_name, recipe], 'Cannot build EP3 Test SO'),
 		(build_ep3_elf_ui, [a, recipe_name, recipe], 'Cannot build ELF UI'),
 		(build_ep3_elf_so, [a, recipe_name, recipe], 'Cannot build ELF SO'),
+		(build_ep3_elf_so2, [a, recipe_name, recipe], 'Cannot build ELF SO 2'),
 	]
 
 	for func, args, error_msg in build_steps:
