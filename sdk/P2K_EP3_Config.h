@@ -17,9 +17,9 @@ extern "C" {
 //     # ElfPack settings
 //     deflib ep3.def            # def library name/path
 //     lib_capacity 1024         # def lib symbol capacity (~8 bytes per symbol)
-//     max_elfs 8                # max concurrently loaded ELFs + BINs
-//     max_so 8                  # max concurrently loaded .so libraries (GLOBAL, all ELFs share it)
-//     libpath a/elf/lib/        # extra .so search dir (trailing slash required, up to 3 lines)
+//     max_elfs 8                # max concurrently loaded images: ELFs + BINs + .so
+//                               #   libraries + ELF symbol providers (one shared registry)
+//     libpath a/elf/lib/        # extra .so search dir (trailing slash optional, up to 3 lines)
 //
 //     # Autorun: autorun <path> [event] [args...]
 //     autorun a/elf/my.elf 0x5999 hello world
@@ -35,7 +35,6 @@ extern "C" {
 
 #define EP3_CFG_DEFAULT_LIB_CAPACITY   (DEF_LIB_MAX_SYM_COUNT)
 #define EP3_CFG_DEFAULT_MAX_ELFS       (EP3_IMG_DEFAULT_SLOTS)
-#define EP3_CFG_DEFAULT_MAX_SO         (EP3_SO_DEFAULT_MAX)
 
 typedef struct tagEP3_Autorun_Entry {
 	char uri[EP3_CFG_MAX_PATH];           // ASCII path, converted to WCHAR at start time.
@@ -46,8 +45,7 @@ typedef struct tagEP3_Autorun_Entry {
 typedef struct tagEP3_Config {
 	char deflib[EP3_CFG_MAX_PATH];        // Def library name or path for EP3_Find_Internal_System_Component().
 	UINT32 lib_capacity;                  // Def lib symbol table capacity in symbols.
-	UINT32 max_elfs;                      // Max concurrently loaded images.
-	UINT32 max_so;                        // Max concurrently loaded .so libraries.
+	UINT32 max_elfs;                      // Max concurrently loaded images (ELF + BIN + .so + providers).
 	UINT32 libpath_cnt;                   // .so search paths (after the module own dir).
 	char libpaths[EP3_CFG_MAX_LIBPATHS][EP3_CFG_MAX_PATH];
 	UINT32 autorun_cnt;

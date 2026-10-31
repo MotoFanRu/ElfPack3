@@ -90,8 +90,10 @@ extern UINT32 EP3_Resolve_Symbol(const char *sym_str);
 
 // EXL, 31-Oct-2026: SO subsystem lifecycle and registry. "def_symbols/def_cnt" feed the
 //   symbol resolver; "libpaths" are extra .so search dirs (after the loading module dir).
+//   The SO table size follows the image registry capacity (max_elfs): ELFs, BINs, .so
+//   libraries and ELF symbol providers all draw from the same image budget.
 extern void EP3_SO_Init(
-	UINT32 max_so, DEF_LIB_Symbol *def_symbols, UINT32 def_cnt,
+	DEF_LIB_Symbol *def_symbols, UINT32 def_cnt,
 	char libpaths[][EP3_SO_LIBPATH_LEN], UINT32 libpath_cnt
 );
 extern EP3_SO *EP3_SO_Load(const char *name, const char *dir);   // Loads or dedups (refs++).

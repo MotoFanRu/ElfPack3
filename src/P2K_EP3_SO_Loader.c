@@ -153,9 +153,12 @@ UINT32 EP3_Resolve_Symbol(const char *sym_str) {
 }
 
 void EP3_SO_Init(
-	UINT32 max_so, DEF_LIB_Symbol *def_symbols, UINT32 def_cnt,
+	DEF_LIB_Symbol *def_symbols, UINT32 def_cnt,
 	char libpaths[][EP3_SO_LIBPATH_LEN], UINT32 libpath_cnt
 ) {
+	// EXL, 31-Oct-2026: One shared budget: SO records (libraries + ELF providers) follow
+	//   the image registry capacity set by EP3_Image_Init(max_elfs).
+	UINT32 max_so = EP3_Image_Capacity();
 	if (max_so == 0) {
 		max_so = EP3_SO_DEFAULT_MAX;
 	}

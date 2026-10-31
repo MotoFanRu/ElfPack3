@@ -52,6 +52,7 @@ extern STATUS EP3_Image_Unload(void *addr);
 
 extern EP3_Image *EP3_Image_Find(void *addr);
 extern UINT32 EP3_Image_Count(void);
+extern UINT32 EP3_Image_Capacity(void);
 extern EP3_Image *EP3_Image_At(UINT32 index);
 
 #ifdef __cplusplus

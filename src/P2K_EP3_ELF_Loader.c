@@ -646,7 +646,7 @@ void EP3_ELF_Loader_MainRegister(void) {
 	L("[EP3 ELF]: Symbols: %d\n", def_cnt);
 
 	// EXL, 31-Oct-2026: Init the .so subsystem: resolver context (DEF lib) + search paths.
-	EP3_SO_Init(config.max_so, def_library, def_cnt, config.libpaths, config.libpath_cnt);
+	EP3_SO_Init(def_library, def_cnt, config.libpaths, config.libpath_cnt);
 
 	// EXL, 31-Oct-2026: Expose the dl API to ELFs through the DEF library table, so they
 	//   call dlopen/dlsym/dlclose/dlerror like any other firmware function.

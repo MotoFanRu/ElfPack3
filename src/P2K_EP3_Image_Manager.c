@@ -164,6 +164,10 @@ UINT32 EP3_Image_Count(void) {
 	return count;
 }
 
+UINT32 EP3_Image_Capacity(void) {
+	return EP3_Images_Slot_Count;
+}
+
 EP3_Image *EP3_Image_At(UINT32 index) {
 	if (index >= EP3_Images_Slot_Count) {
 		return NULL;
