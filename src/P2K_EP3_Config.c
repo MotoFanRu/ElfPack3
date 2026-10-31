@@ -261,6 +261,9 @@ STATUS EP3_Config_Load(EP3_Config_T *config) {
 
 	UINT32 autorun_cnt = Config_Parse(buffer, config);
 
+	// EXL, 31-Oct-2026: Config_Parse only returns the count, store it in the config here.
+	config->autorun_cnt = autorun_cnt;
+
 	EP3_Memory_Free(buffer);
 
 	L("[EP3 CFG]: Config parsed: lib_capacity=%d max_elfs=%d autorun=%d\n",

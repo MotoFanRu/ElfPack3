@@ -559,9 +559,9 @@ void EP3_ELF_Loader_MainRegister(void) {
 
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.
-	if (config.autorun_cnt == 0) {
-		EP3_ELF_Load(L"h.elf", NULL, 0, def_library, def_cnt, NULL);
-	}
+//	if (config.autorun_cnt == 0) {
+//		EP3_ELF_Load(L"h.elf", NULL, 0, def_library, def_cnt, NULL);
+//	}
 
 	// EXL, 31-Oct-2026: Run autorun entries in config file order. The event is passed
 	//   through to the ELF entry ("reserve" slot). One failed entry does not stop the rest.
