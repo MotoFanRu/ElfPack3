@@ -47,7 +47,8 @@ def build_ep3_elf_ui(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		*recipe.soc.opt, *recipe.toolchain.cflags_elf_ldr, *recipe.flags.build, *recipe.flags.elf_ldr
 	]
 	src_obj = [
-		(a.consts.P2K_SDK_SRC / 'test' / 'HelloUI.c', a.consts.P2K_SDK_BUILD / 'HelloUI.o'),
+		(a.consts.P2K_SDK_SRC / 'test' / 'HelloUI_1.c', a.consts.P2K_SDK_BUILD / 'HelloUI_1.o'),
+		(a.consts.P2K_SDK_SRC / 'test' / 'HelloUI_2.c', a.consts.P2K_SDK_BUILD / 'HelloUI_2.o'),
 	]
 	for src, obj in src_obj:
 		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):
@@ -61,13 +62,18 @@ def build_ep3_elf_ui(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		'-pie',
 		f'-L{a.consts.P2K_SDK_BUILD}', '-lep3',
 	]
-	elf_res = a.consts.P2K_SDK_BUILD / 'HelloUI.elf'
-	objs = [obj for _, obj in src_obj]
-	if not a.toolchain.gcc_ld(recipe.toolchain, objs, elf_res, cflags, lflags):
-		a.log.E(f'Cannot link: {elf_res}')
+	elf1_res = a.consts.P2K_SDK_BUILD / 'HelloUI_1.elf'
+	elf2_res = a.consts.P2K_SDK_BUILD / 'HelloUI_2.elf'
+	# objs = [obj for _, obj in src_obj]
+	if not a.toolchain.gcc_ld(recipe.toolchain, [a.consts.P2K_SDK_BUILD / 'HelloUI_1.o'], elf1_res, cflags, lflags):
+		a.log.E(f'Cannot link: {elf1_res}')
+		return False
+	if not a.toolchain.gcc_ld(recipe.toolchain, [a.consts.P2K_SDK_BUILD / 'HelloUI_2.o'], elf2_res, cflags, lflags):
+		a.log.E(f'Cannot link: {elf2_res}')
 		return False
 
-	a.fs.copy_file(elf_res, a.consts.P2K_SDK_RELEASE / recipe_name / 'h.elf', True, True)
+	a.fs.copy_file(elf1_res, a.consts.P2K_SDK_RELEASE / recipe_name / 'a.elf', True, True)
+	a.fs.copy_file(elf2_res, a.consts.P2K_SDK_RELEASE / recipe_name / 'b.elf', True, True)
 
 	return True
 

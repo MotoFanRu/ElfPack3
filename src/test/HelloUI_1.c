@@ -148,7 +148,7 @@ static SYN_RETURN_STATUS_T AppView(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T
 		app_env.routeId = appd->apd.port_id;
 
 		memset(&content, 0, sizeof(UIS_CONTENT_T));
-		status |= UIS_MakeContentFromString("q0Nq1", &content, L"Hello Moto Title!", L"Hello Moto Body!");
+		status |= UIS_MakeContentFromString("q0Nq1", &content, L"ELF 1 Title!", L"Hello Moto 1 ELF!");
 
 		appd->apd.dialog_hdl = UIS_CreateViewer(&app_env, &content, SYN_NULL);
 		status |= (appd->apd.dialog_hdl == UIS_NULL_HANDLE);
