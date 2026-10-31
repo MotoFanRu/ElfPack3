@@ -28,6 +28,10 @@ extern "C" {
 //   The event (hex) and the rest of the line (args) are optional. Unknown directives
 //   are logged and skipped for forward compatibility.
 
+// EXL, 31-Oct-2026: Load the per-image config "<image_path>.cfg" (see EP3_Image_Cfg_T
+//   in P2K_EP3_Image_Manager.h). Missing file yields defaults (system allocator).
+extern STATUS EP3_Image_Config_Load(const WCHAR *image_path, EP3_Image_Cfg_T *cfg);
+
 #define EP3_CFG_MAX_PATH               (48)
 #define EP3_CFG_MAX_ARGS               (64)
 #define EP3_CFG_MAX_AUTORUN            (16)

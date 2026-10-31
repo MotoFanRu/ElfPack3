@@ -16,6 +16,16 @@
 static EP3_Image *EP3_Images = NULL;
 static UINT32 EP3_Images_Slot_Count = 0;
 
+// EXL, 31-Oct-2026: The freestanding SDK has no memcpy declaration, copy bytes manually.
+static void IMG_Byte_Copy(void *dst, const void *src, UINT32 size) {
+	UINT8 *d = (UINT8 *) dst;
+	const UINT8 *s = (const UINT8 *) src;
+
+	for (UINT32 i = 0; i < size; ++i) {
+		d[i] = s[i];
+	}
+}
+
 void EP3_Image_Init(UINT32 max_slots) {
 	if (max_slots == 0) {
 		max_slots = EP3_IMG_DEFAULT_SLOTS;
@@ -110,7 +120,13 @@ STATUS EP3_Image_Unregister(EP3_Image *image) {
 
 	L("[EP3 IMG]: Unregistering image type=%d at 0x%08X (%d bytes).\n", image->type, image->mem_base, image->mem_size);
 
-	if ((image->flags & EP3_IMG_FLAG_FREE_MEM) && (image->mem_base != NULL)) {
+	if (image->saved_copy != NULL) {
+		// EXL, 31-Oct-2026: Fixed load_address (IRAM) image: restore the saved original
+		//   block, the "mem_base" itself is not owned by the loader.
+		D("[EP3 IMG]: Restoring original block to 0x%08X.\n", image->mem_base);
+		IMG_Byte_Copy(image->mem_base, image->saved_copy, image->mem_size);
+		EP3_Memory_Free(image->saved_copy);
+	} else if ((image->flags & EP3_IMG_FLAG_FREE_MEM) && (image->mem_base != NULL)) {
 		EP3_Memory_Free(image->mem_base);
 	}
 	if (image->uri != NULL) {

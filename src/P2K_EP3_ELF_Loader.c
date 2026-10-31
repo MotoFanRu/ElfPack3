@@ -175,7 +175,9 @@ static UINT32 EP3_ELF_Calc_Image(Elf32_Phdr *elf_program_headers, Elf32_Ehdr *el
 // EXL, 31-Oct-2026: Shared DYN core used by both ELF and .so loading: deploy PT_LOAD
 //   segments, parse the PT_DYNAMIC tags, collect DT_NEEDED entries, load the dependencies
 //   (refcounted .so images) and apply REL + JMPREL/PLT relocations.
-STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, EP3_DYN_Context *ctx) {
+STATUS EP3_ELF_DYN_Load(
+	DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, const EP3_Image_Cfg_T *image_cfg, EP3_DYN_Context *ctx
+) {
 	DL_FS_COUNT_T elements_read;
 
 	memset(ctx, 0, sizeof(EP3_DYN_Context));
@@ -226,13 +228,48 @@ STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, EP3_
 		}
 	}
 
-	UINT32 *mem_base = EP3_Memory_Alloc(mem_needed);
-	if (mem_base == NULL) {
-		D("[EP3 ELF]: Failed to allocate %d bytes.\n", mem_needed);
-		EP3_Memory_Free(elf_program_headers);
-		return RESULT_FAIL;
+	// EXL, 31-Oct-2026: Fixed load_address (e.g. IRAM, ~10x faster execution): deploy at
+	//   "load_address" instead of the allocator. Save the original block of the image
+	//   size to the heap (restored on unload), unless "leave_it" is set. A missing/zero/
+	//   misaligned address or a failed save allocation falls back to the allocator.
+	UINT32 *mem_base = NULL;
+	if (
+		(image_cfg != NULL) &&
+		(image_cfg->load_address != 0) &&
+		((image_cfg->load_address & 0x3) == 0)
+	) {
+		mem_base = (UINT32 *) image_cfg->load_address;
+
+		if (!image_cfg->leave_it) {
+			ctx->saved_copy = EP3_Memory_Alloc(mem_needed);
+			if (ctx->saved_copy == NULL) {
+				D("[EP3 ELF]: Failed to allocate %d bytes for the original block copy.\n", mem_needed);
+				D("[EP3 ELF]: %s\n", "Falling back to the system allocator.");
+				mem_base = NULL;
+			} else {
+				UINT8 *save = (UINT8 *) ctx->saved_copy;
+				UINT8 *orig = (UINT8 *) mem_base;
+				for (UINT32 i = 0; i < mem_needed; ++i) {
+					save[i] = orig[i];
+				}
+				ctx->fixed_load = 1;
+				D("[EP3 ELF]: Saved original block 0x%08X (%d bytes) to 0x%08X.\n", mem_base, mem_needed, ctx->saved_copy);
+			}
+		} else {
+			ctx->fixed_load = 1;
+			D("[EP3 ELF]: %s\n", "leave_it is set, the original block is not saved.");
+		}
 	}
-	memset(mem_base, 0x00, mem_needed);
+
+	if (mem_base == NULL) {
+		mem_base = EP3_Memory_Alloc(mem_needed);
+		if (mem_base == NULL) {
+			D("[EP3 ELF]: Failed to allocate %d bytes.\n", mem_needed);
+			EP3_Memory_Free(elf_program_headers);
+			return RESULT_FAIL;
+		}
+		memset(mem_base, 0x00, mem_needed);
+	}
 
 	Elf32_Addr phys_base = (Elf32_Addr) mem_base;
 
@@ -326,7 +363,21 @@ STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, EP3_
 	return RESULT_OK;
 
 fail_free_image:
-	EP3_Memory_Free(mem_base);
+	// EXL, 31-Oct-2026: A fixed load_address block is not owned by the loader, restore
+	//   the saved original content instead of freeing it.
+	if (ctx->fixed_load) {
+		if (ctx->saved_copy != NULL) {
+			UINT8 *save = (UINT8 *) ctx->saved_copy;
+			UINT8 *orig = (UINT8 *) mem_base;
+			for (UINT32 i = 0; i < mem_needed; ++i) {
+				orig[i] = save[i];
+			}
+			EP3_Memory_Free(ctx->saved_copy);
+			ctx->saved_copy = NULL;
+		}
+	} else {
+		EP3_Memory_Free(mem_base);
+	}
 	EP3_Memory_Free(elf_program_headers);
 	return RESULT_FAIL;
 }
@@ -494,9 +545,14 @@ static STATUS EP3_ELF_EP3_Load(
 		module_dir[0] = ASCII_NULL;
 	}
 
+	// EXL, 31-Oct-2026: Per-image config "app.elf.cfg": optional fixed load_address
+	//   (e.g. IRAM) + leave_it. Missing file = system allocator.
+	EP3_Image_Cfg_T image_cfg;
+	EP3_Image_Config_Load(file_path, &image_cfg);
+
 	// EXL, 31-Oct-2026: Two-pass dynamic linking, pass 1: deploy the image.
 	EP3_DYN_Context dyn_ctx;
-	if (EP3_ELF_DYN_Load(file_handle, elf_header, &dyn_ctx) != RESULT_OK) {
+	if (EP3_ELF_DYN_Load(file_handle, elf_header, &image_cfg, &dyn_ctx) != RESULT_OK) {
 		return RESULT_FAIL;
 	}
 
@@ -517,15 +573,31 @@ static STATUS EP3_ELF_EP3_Load(
 
 	// EXL, 31-Oct-2026: Register the image BEFORE starting it, so the entry itself can
 	//   see its own image in the registry (and the slot-full check trips before the run).
+	//   A fixed load_address block is not owned by the loader: no FREE_MEM flag, the
+	//   original block copy rides in the image record and is restored on unregister.
 	EP3_Image *image = EP3_Image_Register(
-		EP3_IMG_ELF, dyn_ctx.mem_base, dyn_ctx.mem_size, file_path, event, EP3_IMG_FLAG_FREE_MEM
+		EP3_IMG_ELF, dyn_ctx.mem_base, dyn_ctx.mem_size, file_path, event,
+		dyn_ctx.fixed_load ? 0 : EP3_IMG_FLAG_FREE_MEM
 	);
 	if (image == NULL) {
 		// EXL, 31-Oct-2026: Unregistering the provider also releases the DT_NEEDED refs.
 		EP3_SO_Unregister_ELF(dyn_ctx.mem_base);
-		EP3_Memory_Free(dyn_ctx.mem_base);
+		if (dyn_ctx.fixed_load) {
+			// EXL, 31-Oct-2026: Restore the saved original block (no manager record yet).
+			if (dyn_ctx.saved_copy != NULL) {
+				UINT8 *save = (UINT8 *) dyn_ctx.saved_copy;
+				UINT8 *orig = (UINT8 *) dyn_ctx.mem_base;
+				for (UINT32 i = 0; i < dyn_ctx.mem_size; ++i) {
+					orig[i] = save[i];
+				}
+				EP3_Memory_Free(dyn_ctx.saved_copy);
+			}
+		} else {
+			EP3_Memory_Free(dyn_ctx.mem_base);
+		}
 		return RESULT_FAIL;
 	}
+	image->saved_copy = dyn_ctx.saved_copy;
 
 	// EXL, 31-Oct-2026: Start ELF from the "e_entry" address, "start" stub which calls
 	//   "Register" ELF entry point. The event is passed through to the "reserve" slot.

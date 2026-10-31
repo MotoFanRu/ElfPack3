@@ -10,6 +10,7 @@
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_File_System.h>
+#include <P2K_EP3_Config.h>
 #include <P2K_EP3_Image_Manager.h>
 #include <P2K_EP3_SO_Loader.h>
 
@@ -379,9 +380,15 @@ EP3_SO *EP3_SO_Load(const char *name, const char *dir) {
 	char lib_dir[EP3_SO_LIBPATH_LEN];
 	SO_Dir_Of(path, lib_dir, EP3_SO_LIBPATH_LEN);
 
+	// EXL, 31-Oct-2026: Per-image config "app.so.cfg": optional fixed load_address
+	//   (e.g. IRAM) + leave_it. Missing file = system allocator.
+	PORTABLE_u_atou(path, wpath);
+	EP3_Image_Cfg_T image_cfg;
+	EP3_Image_Config_Load(wpath, &image_cfg);
+
 	// EXL, 31-Oct-2026: Two-pass scheme, pass 1: deploy the image and parse the tags.
 	EP3_DYN_Context dyn_ctx;
-	if (EP3_ELF_DYN_Load(file_handle, &elf_header, &dyn_ctx) != RESULT_OK) {
+	if (EP3_ELF_DYN_Load(file_handle, &elf_header, &image_cfg, &dyn_ctx) != RESULT_OK) {
 		SO_Set_Error("Failed to load library image.");
 		DL_FsCloseFile(file_handle);
 		return NULL;
@@ -427,21 +434,36 @@ EP3_SO *EP3_SO_Load(const char *name, const char *dir) {
 	//   use the resolved imports.
 	EP3_ELF_Run_Init(&dyn_ctx);
 
-	// EXL, 31-Oct-2026: Track the library in the unified image manager.
-	PORTABLE_u_atou(path, wpath);
+	// EXL, 31-Oct-2026: Track the library in the unified image manager. A fixed
+	//   load_address block is not owned by the loader: no FREE_MEM flag, the original
+	//   block copy rides in the image record and is restored on unregister.
 	EP3_Image *image = EP3_Image_Register(
-		EP3_IMG_SO, dyn_ctx.mem_base, dyn_ctx.mem_size, wpath, 0, EP3_IMG_FLAG_FREE_MEM
+		EP3_IMG_SO, dyn_ctx.mem_base, dyn_ctx.mem_size, wpath, 0,
+		dyn_ctx.fixed_load ? 0 : EP3_IMG_FLAG_FREE_MEM
 	);
 	if (image == NULL) {
 		EP3_ELF_Run_Fini(&dyn_ctx);
 		for (UINT32 i = 0; i < so->needed_cnt; ++i) {
 			EP3_SO_Release(so->needed[i]);
 		}
-		EP3_Memory_Free(dyn_ctx.mem_base);
+		if (dyn_ctx.fixed_load) {
+			// EXL, 31-Oct-2026: Restore the saved original block (no manager record yet).
+			if (dyn_ctx.saved_copy != NULL) {
+				UINT8 *save = (UINT8 *) dyn_ctx.saved_copy;
+				UINT8 *orig = (UINT8 *) dyn_ctx.mem_base;
+				for (UINT32 i = 0; i < dyn_ctx.mem_size; ++i) {
+					orig[i] = save[i];
+				}
+				EP3_Memory_Free(dyn_ctx.saved_copy);
+			}
+		} else {
+			EP3_Memory_Free(dyn_ctx.mem_base);
+		}
 		memset(so, 0, sizeof(EP3_SO));
 		SO_Set_Error("Image registry is full.");
 		return NULL;
 	}
+	image->saved_copy = dyn_ctx.saved_copy;
 
 	L("[EP3 SO]: Loaded '%s' at 0x%08X (%d bytes), refs=%d.\n", so->name, so->mem_base, so->mem_size, so->refs);
 

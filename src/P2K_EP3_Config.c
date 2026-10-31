@@ -1,6 +1,7 @@
 #include <P2K_SDK_Base.h>
 #include <P2K_C_Lib.h>
 #include <P2K_C_Lib_Portable.h>
+#include <P2K_UIS_Ustring.h>
 #include <P2K_Logger.h>
 #include <P2K_DL_File_System.h>
 
@@ -281,6 +282,113 @@ STATUS EP3_Config_Load(EP3_Config_T *config) {
 	L("[EP3 CFG]: Config parsed: lib_capacity=%d max_elfs=%d autorun=%d\n",
 		config->lib_capacity, config->max_elfs, autorun_cnt
 	);
+
+	return RESULT_OK;
+}
+
+// EXL, 31-Oct-2026: Per-image config "<image>.cfg" (e.g. app.elf.cfg), same directive
+//   style as ep3.cfg. Only two directives are meaningful here: "load_address" (hex or
+//   decimal) and "leave_it" (decimal). Missing file or fields yield the defaults.
+
+static void Image_Config_Defaults(EP3_Image_Cfg_T *cfg) {
+	cfg->load_address = 0;
+	cfg->leave_it = 0;
+}
+
+static void Image_Config_Parse(const char *buffer, EP3_Image_Cfg_T *cfg) {
+	const char *p = buffer;
+
+	while (*p) {
+		if (Is_Line_Content(p) == RESULT_OK) {
+			const char *line = p;
+
+			if (Is_Directive(line, "load_address") == RESULT_OK) {
+				const char *q = line + 12;
+				cfg->load_address = Read_Number(&q, 0);
+				D("[EP3 CFG]: load_address=0x%08X\n", cfg->load_address);
+			} else if (Is_Directive(line, "leave_it") == RESULT_OK) {
+				const char *q = line + 8;
+				cfg->leave_it = Read_Number(&q, 0);
+				D("[EP3 CFG]: leave_it=%d\n", cfg->leave_it);
+			} else {
+				char directive[16] = { ASCII_NULL };
+				const char *q = line;
+				Read_Token(&q, directive, sizeof(directive));
+				L("[EP3 CFG]: Unknown directive '%s', skipped.\n", directive);
+			}
+		}
+
+		Skip_To_Next_Line(&p);
+	}
+}
+
+STATUS EP3_Image_Config_Load(const WCHAR *image_path, EP3_Image_Cfg_T *cfg) {
+	if ((image_path == NULL) || (image_path[0] == UNICODE_NULL) || (cfg == NULL)) {
+		return RESULT_FAIL;
+	}
+
+	Image_Config_Defaults(cfg);
+
+	// EXL, 31-Oct-2026: The config path is the image path + ".cfg" suffix.
+	WCHAR cfg_path[DL_FS_MAX_URI_NAME_LENGTH + 5];
+	UINT32 len = 0;
+	while ((image_path[len] != UNICODE_NULL) && (len < DL_FS_MAX_URI_NAME_LENGTH)) {
+		cfg_path[len] = image_path[len];
+		len++;
+	}
+	cfg_path[len++] = '.';
+	cfg_path[len++] = 'c';
+	cfg_path[len++] = 'f';
+	cfg_path[len++] = 'g';
+	cfg_path[len] = UNICODE_NULL;
+
+	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(cfg_path, DL_FS_OWNER_RESERVED);
+	if (file_size < EP3_CFG_TOO_SMALL) {
+		D("[EP3 CFG]: No per-image config for this image (%d bytes).\n", file_size);
+		return RESULT_OK;
+	}
+
+	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(cfg_path, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
+	if (file_handle == DL_FS_HANDLE_INVALID) {
+		D("[EP3 CFG]: %s\n", "Failed to open the per-image config.");
+		return RESULT_OK;
+	}
+
+	char *buffer = (char *) EP3_Memory_Alloc(file_size + 2);
+	if (buffer == NULL) {
+		L("[EP3 CFG]: Failed to allocate %d bytes.\n", file_size + 2);
+		DL_FsCloseFile(file_handle);
+		return RESULT_FAIL;
+	}
+	memset(buffer, 0, file_size + 2);
+
+	DL_FS_COUNT_T elements_read;
+	if (DL_FsReadFile(buffer, file_size, 1, file_handle, &elements_read) != DL_FS_RESULT_SUCCESS) {
+		L("[EP3 CFG]: %s\n", "Failed to read the per-image config.");
+		EP3_Memory_Free(buffer);
+		DL_FsCloseFile(file_handle);
+		return RESULT_FAIL;
+	}
+	if (elements_read != 1) {
+		L("[EP3 CFG]: elements_read=%d, should be 1.\n", elements_read);
+		EP3_Memory_Free(buffer);
+		DL_FsCloseFile(file_handle);
+		return RESULT_FAIL;
+	}
+
+	DL_FsCloseFile(file_handle);
+
+	// EXL, 31-Oct-2026: Add proper line endings (if missed).
+	if ((buffer[file_size - 1] != '\r') && (buffer[file_size - 1] != '\n')) {
+		buffer[file_size + 0] = '\r';
+		buffer[file_size + 1] = '\n';
+	}
+
+	Image_Config_Parse(buffer, cfg);
+
+	EP3_Memory_Free(buffer);
+
+	L("[EP3 CFG]: Image config: load_address=0x%08X leave_it=%d\n", cfg->load_address, cfg->leave_it);
 
 	return RESULT_OK;
 }

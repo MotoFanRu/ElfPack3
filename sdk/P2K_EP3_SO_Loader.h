@@ -4,6 +4,7 @@
 #include "P2K_SDK_Base.h"
 #include "P2K_EP3_ELF.h"
 #include "P2K_EP3_DEF_Library.h"
+#include "P2K_EP3_Image_Manager.h"
 #include "P2K_EP3_ELF_Loader.h"
 
 #ifdef __cplusplus
@@ -66,6 +67,9 @@ typedef struct tagEP3_DYN_Context {
 	UINT32 needed_so_cnt;
 	Elf32_Sym *sym_table;
 	char *str_table;
+	UINT32 fixed_load;                    // 1 = deployed at the fixed load_address (IRAM).
+	void *saved_copy;                     // Heap copy of the original block, restore on
+	                                      //   unload (NULL when fixed_load or leave_it).
 } EP3_DYN_Context;
 
 extern STATUS EP3_ELF_Read_Header(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header);
@@ -73,7 +77,11 @@ extern STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header)
 
 // EXL, 31-Oct-2026: First pass of the DYN core: deploy an ET_DYN image and parse the
 //   dynamic tags. Register the module as a symbol provider BEFORE the second pass!
-extern STATUS EP3_ELF_DYN_Load(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, EP3_DYN_Context *ctx);
+//   "image_cfg" (optional) provides a fixed load_address (IRAM) with save/restore of
+//   the original block unless "leave_it" is set; NULL = system allocator.
+extern STATUS EP3_ELF_DYN_Load(
+	DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, const EP3_Image_Cfg_T *image_cfg, EP3_DYN_Context *ctx
+);
 
 // EXL, 31-Oct-2026: Second pass of the DYN core: load DT_NEEDED dependencies (recursive)
 //   and apply all relocations (REL + JMPREL/PLT). "dir" is the ASCII directory of the

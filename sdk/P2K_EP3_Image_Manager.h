@@ -16,6 +16,21 @@ extern "C" {
 
 #define EP3_IMG_FLAG_FREE_MEM          (1 << 0)  // Free "mem_base" on unregister.
 
+// EXL, 31-Oct-2026: Per-image configuration, "<image>.cfg" next to the image file
+//   (app.elf.cfg / app.so.cfg / app.ldr.cfg), same directive format as ep3.cfg:
+//
+//     load_address 0x10000000   # fixed load address, 0/missing/misaligned = system allocator
+//     leave_it 1                # 1 = load without saving/restoring the original block
+//
+//   When "load_address" is valid, the loader saves the original memory block of the
+//   image size to the heap, deploys the image at "load_address" (e.g. IRAM for a ~10x
+//   execution speedup) and restores the saved block back on unload. With "leave_it 1"
+//   no save/restore happens and the image stays resident at "load_address".
+typedef struct tagEP3_Image_Cfg {
+	UINT32 load_address;                  // Fixed load address, 0 = system allocator.
+	UINT32 leave_it;                      // 1 = skip save/restore of the original block.
+} EP3_Image_Cfg_T;
+
 typedef enum tagEP3_Image_Type {
 	EP3_IMG_ELF = 0,
 	EP3_IMG_BIN,
@@ -29,6 +44,8 @@ typedef struct tagEP3_Image {
 	WCHAR *uri;                           // Heap copy of the source file path.
 	UINT32 event;                         // Event passed to the ELF entry ("reserve" slot).
 	UINT32 flags;
+	void *saved_copy;                     // Heap copy of the original block at a fixed
+	                                      //   load_address (IRAM), restored on unregister.
 } EP3_Image;
 
 // EXL, 31-Oct-2026: Allocate the image registry from the heap with "max_slots" entries
