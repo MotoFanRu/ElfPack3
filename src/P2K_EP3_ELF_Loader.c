@@ -13,6 +13,7 @@
 #include <P2K_EP3_DEF_Library.h>
 #include <P2K_EP3_Config.h>
 #include <P2K_EP3_Image_Manager.h>
+#include <P2K_EP3_Events.h>
 #include <P2K_EP3_SO_Loader.h>
 #include <P2K_EP3_ELF_Loader.h>
 
@@ -601,11 +602,21 @@ static STATUS EP3_ELF_EP3_Load(
 
 	// EXL, 31-Oct-2026: Start ELF from the "e_entry" address, "start" stub which calls
 	//   "Register" ELF entry point. The event is passed through to the "reserve" slot.
+	// EXL, 02-Nov-2026: Event base assignment (em2 style): the ep3.cfg autorun code
+	//   pins the base explicitly, otherwise the loader allocates a fresh 0x40 block.
+	BOOL event_auto = (event == 0);
+	if (event_auto) {
+		event = EP3_API_Request_Event_Base();
+	}
+
 	// EXL, 02-Nov-2026: Build the EP3_ImageArgs_T block (path, argv/envp, event, dir,
 	//   img_man + api dispatch tables). Owned by the image record, freed on unregister.
 	EP3_ImageArgs_T *img_args = EP3_ImageArgs_Build(file_path, params, event);
 	if (img_args == NULL) {
 		L("[EP3 ELF]: %s\n", "Failed to build the image arguments.");
+		if (event_auto) {
+			EP3_API_Release_Event_Base(event);
+		}
 		EP3_SO_Unregister_ELF(dyn_ctx.mem_base);
 		if (dyn_ctx.fixed_load) {
 			if (dyn_ctx.saved_copy != NULL) {
@@ -633,10 +644,14 @@ static STATUS EP3_ELF_EP3_Load(
 
 	*out_mem_base = dyn_ctx.mem_base;
 
-	// EXL, 02-Nov-2026: A non-OK result means failed start: unload the image now.
+	// EXL, 02-Nov-2026: A non-OK result means failed start: unload the image now and
+	//   release the auto-assigned event base.
 	if (entry_result != (UINT32) RESULT_OK) {
 		L("[EP3 ELF]: Entry returned %d, unloading the image.\n", entry_result);
 		*out_mem_base = NULL;
+		if (event_auto) {
+			EP3_API_Release_Event_Base(event);
+		}
 		EP3_ELF_Unload(dyn_ctx.mem_base);
 		return RESULT_FAIL;
 	}
@@ -804,6 +819,10 @@ void EP3_ELF_Loader_MainRegister(void) {
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("setenv"), (UINTPTR) EP3_API_setenv);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("getenv"), (UINTPTR) EP3_API_getenv);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("unsetenv"), (UINTPTR) EP3_API_unsetenv);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Send_Event"), (UINTPTR) EP3_API_Send_Event);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Send_Event_To_App"), (UINTPTR) EP3_API_Send_Event_To_App);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Send_Event_To_App_Empty"), (UINTPTR) EP3_API_Send_Event_To_App_Empty);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Request_Event_Base"), (UINTPTR) EP3_API_Request_Event_Base);
 
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.

@@ -2,6 +2,7 @@
 #define P2K_EP3_ENVIRONMENT_H
 
 #include "P2K_SDK_Base.h"
+#include "P2K_EP3_Events.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +45,12 @@ typedef struct tagEP3_Loader_Api {
 	STATUS (*setenv)(const char *name, const char *value);
 	const char *(*getenv)(const char *name);
 	STATUS (*unsetenv)(const char *name);
+	// EXL, 02-Nov-2026: Event system (appended at the end — ABI stability).
+	UINT32 (*request_event_base)(void);
+	void (*release_event_base)(UINT32 base);
+	STATUS (*send_event)(UINT32 evcode);
+	STATUS (*send_event_to_app)(AFW_APP_REGISTRY_ID_T reg_id, UINT32 evcode, void *attachment, UINT32 att_size, AFW_EV_BUF_FLAG_T flag);
+	STATUS (*send_event_to_app_empty)(AFW_APP_REGISTRY_ID_T reg_id, UINT32 evcode);
 } EP3_Loader_Api_T;
 
 extern const EP3_Loader_Api_T EP3_Loader_Api;

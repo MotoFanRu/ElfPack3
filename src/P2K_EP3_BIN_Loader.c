@@ -7,6 +7,7 @@
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_Image_Manager.h>
+#include <P2K_EP3_Events.h>
 #if !defined(FTR_BIN_LDR)
 #include <P2K_EP3_Config.h>
 #endif
@@ -149,7 +150,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	//   unregister); saved_block rides on the record and is restored when the entry is
 	//   removed — immediately for ephemeral images, or later by EP3_Image_Unload(addr).
 	EP3_Image *image = EP3_Image_Register(
-		EP3_IMG_BIN, (void *) load_addr, (UINT32) file_size, file_path, 0,
+		EP3_IMG_BIN, (void *) load_addr, (UINT32) file_size, file_path, event,
 		mem_owner ? EP3_IMG_FLAG_FREE_MEM : 0
 	);
 	if (image != NULL) {
@@ -171,9 +172,12 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	//   the legacy "args" pointer array has no text form). Heap-owned, freed on
 	//   unregister, so a resident binary keeps valid pointers. The NOR loader has no
 	//   image database instance, so its boot-time block is simply left allocated.
+	// EXL, 02-Nov-2026: Auto-assign the event base (BINs have no explicit cfg event).
+	UINT32 event = EP3_API_Request_Event_Base();
+
 	EP3_ImageArgs_T img_args_fallback;
 	memset(&img_args_fallback, 0, sizeof(EP3_ImageArgs_T));
-	EP3_ImageArgs_T *img_args = EP3_ImageArgs_Build(file_path, NULL, 0);
+	EP3_ImageArgs_T *img_args = EP3_ImageArgs_Build(file_path, NULL, event);
 	if (img_args == NULL) {
 		L("[EP3 BIN]: %s\n", "Failed to build the image arguments.");
 		img_args = &img_args_fallback;
@@ -196,6 +200,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	//   their registered apps keep working, the saved block (if any) is restored later
 	//   by EP3_Image_Unload(addr).
 	if (!resident || (result != (STATUS) RESULT_OK)) {
+		EP3_API_Release_Event_Base(event);
 		if (image != NULL) {
 			EP3_Image_Unregister(image);
 		} else if (saved_block != NULL) {

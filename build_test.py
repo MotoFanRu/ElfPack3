@@ -39,6 +39,10 @@ def build_ep3_so_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		'0x00000018 T setenv',
 		'0x0000001A T getenv',
 		'0x0000001C T unsetenv',
+		'0x0000001E T EP3_API_Send_Event',
+		'0x00000020 T EP3_API_Send_Event_To_App',
+		'0x00000022 T EP3_API_Send_Event_To_App_Empty',
+		'0x00000024 T EP3_API_Request_Event_Base',
 	]
 	for fake in def_fake:
 		sym_name = fake.split()[2]

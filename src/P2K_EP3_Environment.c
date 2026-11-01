@@ -4,6 +4,7 @@
 #include <P2K_Logger.h>
 
 #include <P2K_EP3_Memory.h>
+#include <P2K_EP3_Events.h>
 #include <P2K_EP3_Config.h>
 #include <P2K_EP3_Environment.h>
 
@@ -245,5 +246,10 @@ STATUS EP3_Env_Get_At(UINT32 index, const char **name, const char **value) {
 const EP3_Loader_Api_T EP3_Loader_Api = {
 	EP3_API_setenv,
 	EP3_API_getenv,
-	EP3_API_unsetenv
+	EP3_API_unsetenv,
+	EP3_API_Request_Event_Base,
+	EP3_API_Release_Event_Base,
+	EP3_API_Send_Event,
+	EP3_API_Send_Event_To_App,
+	EP3_API_Send_Event_To_App_Empty
 };
