@@ -32,6 +32,38 @@ extern "C" {
 //   in P2K_EP3_Image_Manager.h). Missing file yields defaults (system allocator).
 extern STATUS EP3_Image_Config_Load(const WCHAR *image_path, EP3_Image_Cfg_T *cfg);
 
+// EXL, 01-Nov-2026: Simple option storage API on top of the ep3.cfg-style text parser
+//   and a plain binary blob storage. Files are addressed as "<path>/<name>" (when
+//   "path" is NULL or empty the "name" is used as-is for a flat file system; "name"
+//   must not be NULL). Text options are stored one per line as "<param> <value>",
+//   unknown lines and comments are preserved on rewrite.
+//
+//     EP3_API_CFG_TXT_SaveOption(L"/a/elf", L"my.cfg", "volume", EP3_CFG_TYPE_INT, &vol);
+//     EP3_API_CFG_TXT_SaveOption(NULL, L"my.cfg", "nick", EP3_CFG_TYPE_STRING, "moto");
+//     EP3_API_CFG_TXT_ReadOption(L"/a/elf", L"my.cfg", "volume", EP3_CFG_TYPE_INT, &vol);
+//
+//   Text notes: an INT is stored as a sign-aware decimal, a STRING is stored verbatim
+//   and must not contain spaces/tabs/newlines (it is a single line token). "value_size"
+//   limits the STRING copy on read (ignored for INT). The first "param" occurrence is
+//   replaced, later duplicates are left untouched, a missing "param" is appended.
+//
+//   Binary notes: EP3_API_CFG_BIN_Save writes exactly "size" bytes (truncating any
+//   previous content), EP3_API_CFG_BIN_Read requires the file to hold at least "size"
+//   bytes and copies them into "data". Structured records need stable packing.
+typedef enum tagEP3_CFG_Type {
+	EP3_CFG_TYPE_INT = 0,                 // Sign-aware decimal (or 0xHEX) value, UINT32/INT32.
+	EP3_CFG_TYPE_STRING                   // Whitespace-free string token.
+} EP3_CFG_Type_T;
+
+extern STATUS EP3_API_CFG_TXT_SaveOption(
+	const WCHAR *path, const WCHAR *name, const char *param, EP3_CFG_Type_T type, const void *value
+);
+extern STATUS EP3_API_CFG_TXT_ReadOption(
+	const WCHAR *path, const WCHAR *name, const char *param, EP3_CFG_Type_T type, void *value, UINT32 value_size
+);
+extern STATUS EP3_API_CFG_BIN_Save(const WCHAR *path, const WCHAR *name, const void *data, UINT32 size);
+extern STATUS EP3_API_CFG_BIN_Read(const WCHAR *path, const WCHAR *name, void *data, UINT32 size);
+
 #define EP3_CFG_MAX_PATH               (48)
 #define EP3_CFG_MAX_ARGS               (64)
 #define EP3_CFG_MAX_AUTORUN            (16)

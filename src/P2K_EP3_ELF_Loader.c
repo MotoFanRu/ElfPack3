@@ -743,11 +743,18 @@ void EP3_ELF_Loader_MainRegister(void) {
 	// EXL, 31-Oct-2026: Expose the loader API to ELFs through the DEF library table, so
 	//   they call dlopen/dlsym/dlclose/dlerror and the def hot reload like any other
 	//   firmware function.
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_Logger"), (UINTPTR) EP3_Logger);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlopen"), (UINTPTR) EP3_dlopen);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlsym"), (UINTPTR) EP3_dlsym);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlclose"), (UINTPTR) EP3_dlclose);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlerror"), (UINTPTR) EP3_dlerror);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Def_Reload"), (UINTPTR) EP3_API_Def_Reload);
+
+	// EXL, 01-Nov-2026: The config storage API is reachable from ELFs the same way.
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_CFG_TXT_SaveOption"), (UINTPTR) EP3_API_CFG_TXT_SaveOption);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_CFG_TXT_ReadOption"), (UINTPTR) EP3_API_CFG_TXT_ReadOption);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_CFG_BIN_Save"), (UINTPTR) EP3_API_CFG_BIN_Save);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_CFG_BIN_Read"), (UINTPTR) EP3_API_CFG_BIN_Read);
 
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.

@@ -392,3 +392,365 @@ STATUS EP3_Image_Config_Load(const WCHAR *image_path, EP3_Image_Cfg_T *cfg) {
 
 	return RESULT_OK;
 }
+
+// EXL, 01-Nov-2026: Simple option storage API. Text files use the same "<param> <value>"
+//   directive format as ep3.cfg (the same tokenizer walks them), binary files are plain
+//   blobs. File path = "<path>/<name>", "path" may be NULL/empty for a flat file system.
+
+#define EP3_CFG_MAX_VALUE              (96)
+
+// EXL, 01-Nov-2026: Build "<path>/<name>" (with separator auto-fix) or just "name".
+static void CFG_Build_Path(const WCHAR *path, const WCHAR *name, WCHAR *out, UINT32 out_size) {
+	UINT32 pos = 0;
+
+	if ((path != NULL) && (path[0] != UNICODE_NULL)) {
+		while ((path[pos] != UNICODE_NULL) && (pos < (out_size - 2))) {
+			out[pos] = path[pos];
+			pos++;
+		}
+		if ((pos > 0) && (out[pos - 1] != L'/')) {
+			out[pos++] = L'/';
+		}
+	}
+
+	while ((*name != UNICODE_NULL) && (pos < (out_size - 1))) {
+		out[pos] = *(name++);
+		pos++;
+	}
+	out[pos] = UNICODE_NULL;
+}
+
+// EXL, 01-Nov-2026: Read the whole file to a heap buffer (caller frees). Missing or
+//   empty files yield (*out_buffer == NULL, *out_size == 0) without a failure.
+static STATUS CFG_TXT_Read_All(const WCHAR *wpath, char **out_buffer, UINT32 *out_size) {
+	*out_buffer = NULL;
+	*out_size = 0;
+
+	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(wpath, DL_FS_OWNER_RESERVED);
+	if (file_size < EP3_CFG_TOO_SMALL) {
+		return RESULT_OK;
+	}
+
+	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(wpath, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
+	if (file_handle == DL_FS_HANDLE_INVALID) {
+		return RESULT_OK;
+	}
+
+	char *buffer = (char *) EP3_Memory_Alloc(file_size + 2);
+	if (buffer == NULL) {
+		DL_FsCloseFile(file_handle);
+		return RESULT_FAIL;
+	}
+	memset(buffer, 0, file_size + 2);
+
+	DL_FS_COUNT_T elements_read;
+	if (DL_FsReadFile(buffer, file_size, 1, file_handle, &elements_read) != DL_FS_RESULT_SUCCESS) {
+		EP3_Memory_Free(buffer);
+		DL_FsCloseFile(file_handle);
+		return RESULT_FAIL;
+	}
+	DL_FsCloseFile(file_handle);
+
+	// EXL, 01-Nov-2026: Guarantee proper line endings for the line walker.
+	if ((buffer[file_size - 1] != '\r') && (buffer[file_size - 1] != '\n')) {
+		buffer[file_size + 0] = '\r';
+		buffer[file_size + 1] = '\n';
+	}
+
+	*out_buffer = buffer;
+	*out_size = file_size;
+
+	return RESULT_OK;
+}
+
+// EXL, 01-Nov-2026: Write the whole buffer, truncating any previous content.
+static STATUS CFG_Write_All(const WCHAR *wpath, const void *data, UINT32 size) {
+	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(wpath, DL_FS_WRITE_MODE, DL_FS_OWNER_RESERVED);
+	if (file_handle == DL_FS_HANDLE_INVALID) {
+		L("[EP3 CFG]: Failed to open '%p' for writing.\n", wpath);
+		return RESULT_FAIL;
+	}
+
+	DL_FS_COUNT_T elements_written;
+	DL_FS_RESULT_T result = DL_FsWriteFile((void *) data, 1, size, file_handle, &elements_written);
+	DL_FsCloseFile(file_handle);
+
+	if ((result != DL_FS_RESULT_SUCCESS) || (elements_written != size)) {
+		L("[EP3 CFG]: Failed to write %d bytes (written %d).\n", size, elements_written);
+		return RESULT_FAIL;
+	}
+
+	return RESULT_OK;
+}
+
+// EXL, 01-Nov-2026: Sign-aware decimal / 0xHEX token parser (Read_Number is unsigned).
+static INT32 CFG_Parse_Int_Token(const char *token) {
+	INT32 sign = 1;
+	if ((token[0] == '-') || (token[0] == '+')) {
+		sign = (token[0] == '-') ? -1 : 1;
+		token++;
+	}
+
+	UINT32 val = 0;
+	if ((token[0] == '0') && ((token[1] == 'x') || (token[1] == 'X'))) {
+		val = hex2addr(token + 2);
+	} else {
+		while ((token[0] >= '0') && (token[0] <= '9')) {
+			val = (val * 10) + (UINT32) (token[0] - '0');
+			token++;
+		}
+	}
+
+	return (INT32) val * sign;
+}
+
+// EXL, 01-Nov-2026: Read one option from a "<param> <value>" text file.
+STATUS EP3_API_CFG_TXT_ReadOption(
+	const WCHAR *path, const WCHAR *name, const char *param, EP3_CFG_Type_T type, void *value, UINT32 value_size
+) {
+	if ((name == NULL) || (name[0] == UNICODE_NULL) || (param == NULL) || (param[0] == ASCII_NULL) || (value == NULL)) {
+		L("[EP3 CFG]: %s\n", "ReadOption: invalid arguments.");
+		return RESULT_FAIL;
+	}
+
+	WCHAR wpath[DL_FS_MAX_URI_NAME_LENGTH + 1];
+	CFG_Build_Path(path, name, wpath, DL_FS_MAX_URI_NAME_LENGTH + 1);
+
+	char *buffer = NULL;
+	UINT32 buffer_size = 0;
+	if (CFG_TXT_Read_All(wpath, &buffer, &buffer_size) != RESULT_OK) {
+		return RESULT_FAIL;
+	}
+	if (buffer == NULL) {
+		D("[EP3 CFG]: %s\n", "ReadOption: option file is missing.");
+		return RESULT_FAIL;
+	}
+
+	STATUS status = RESULT_FAIL;
+	const char *p = buffer;
+
+	while (*p) {
+		if (Is_Line_Content(p) == RESULT_OK) {
+			char token[EP3_CFG_MAX_VALUE] = { ASCII_NULL };
+			const char *q = p;
+
+			if ((Read_Token(&q, token, sizeof(token)) > 0) && (PORTABLE_strncmp(token, param, EP3_CFG_MAX_VALUE) == 0)) {
+				if (type == EP3_CFG_TYPE_INT) {
+					char num_token[32] = { ASCII_NULL };
+					Read_Token(&q, num_token, sizeof(num_token));
+					*((INT32 *) value) = CFG_Parse_Int_Token(num_token);
+				} else {
+					// EXL, 01-Nov-2026: STRING: the rest of the line (comment symbols are
+					//   not stripped here, keep them out of stored values).
+					Skip_Spaces(&q);
+					UINT32 len = 0;
+					while (*q && (*q != '\r') && (*q != '\n') && ((len + 1) < value_size)) {
+						((char *) value)[len++] = *(q);
+						q++;
+					}
+					((char *) value)[len] = ASCII_NULL;
+				}
+				status = RESULT_OK;
+				break;
+			}
+		}
+
+		Skip_To_Next_Line(&p);
+	}
+
+	EP3_Memory_Free(buffer);
+
+	if (status != RESULT_OK) {
+		D("[EP3 CFG]: ReadOption: '%s' not found.\n", param);
+	}
+
+	return status;
+}
+
+// EXL, 01-Nov-2026: Save one option into a "<param> <value>" text file: the first
+//   matching line is replaced in place, comments and all other lines are preserved,
+//   a missing option is appended. The file is created when it does not exist.
+
+// EXL, 01-Nov-2026: Save one option into a "<param> <value>" text file: the first
+//   matching line is replaced in place, comments and all other lines are preserved,
+//   a missing option is appended. The file is created when it does not exist.
+// EXL, 01-Nov-2026: Save one option into a "<param> <value>" text file: the first
+//   matching line is replaced in place, comments and all other lines are preserved,
+//   a missing option is appended. The file is created when it does not exist.
+STATUS EP3_API_CFG_TXT_SaveOption(
+	const WCHAR *path, const WCHAR *name, const char *param, EP3_CFG_Type_T type, const void *value
+) {
+	if ((name == NULL) || (name[0] == UNICODE_NULL) || (param == NULL) || (param[0] == ASCII_NULL) || (value == NULL)) {
+		L("[EP3 CFG]: %s\n", "SaveOption: invalid arguments.");
+		return RESULT_FAIL;
+	}
+
+	// EXL, 01-Nov-2026: Render the value text. A STRING must be a single line token.
+	char value_text[EP3_CFG_MAX_VALUE] = { ASCII_NULL };
+	if (type == EP3_CFG_TYPE_INT) {
+		snprintf(value_text, sizeof(value_text), "%d", *((const INT32 *) value));
+	} else {
+		const char *src = (const char *) value;
+		UINT32 len = 0;
+		while (src[len] != ASCII_NULL) {
+			if ((src[len] == ' ') || (src[len] == '\t') || (src[len] == '\r') || (src[len] == '\n') || ((len + 1) >= sizeof(value_text))) {
+				L("[EP3 CFG]: %s\n", "SaveOption: STRING value must be a single line token.");
+				return RESULT_FAIL;
+			}
+			len++;
+		}
+		PORTABLE_strncpy(value_text, src, sizeof(value_text) - 1);
+	}
+
+	WCHAR wpath[DL_FS_MAX_URI_NAME_LENGTH + 1];
+	CFG_Build_Path(path, name, wpath, DL_FS_MAX_URI_NAME_LENGTH + 1);
+
+	char *old_buffer = NULL;
+	UINT32 old_size = 0;
+	if (CFG_TXT_Read_All(wpath, &old_buffer, &old_size) != RESULT_OK) {
+		return RESULT_FAIL;
+	}
+
+	UINT32 param_len = (UINT32) PORTABLE_strlen(param);
+	UINT32 value_len = (UINT32) PORTABLE_strlen(value_text);
+	UINT32 new_line_len = param_len + 1 + value_len + 2;
+
+	char *out = (char *) EP3_Memory_Alloc(old_size + new_line_len + 4);
+	if (out == NULL) {
+		L("[EP3 CFG]: %s\n", "SaveOption: failed to allocate the output buffer.");
+		EP3_Memory_Free(old_buffer);
+		return RESULT_FAIL;
+	}
+
+	// EXL, 01-Nov-2026: Rebuild the file line by line, replacing the first match.
+	const char *p = old_buffer;
+	char *w = out;
+	BOOL replaced = FALSE;
+
+	while (*p) {
+		const char *line = p;
+		const char *le = p;
+		while (*le && (*le != '\r') && (*le != '\n')) {
+			le++;
+		}
+		UINT32 line_len = (UINT32) (le - p);
+		UINT32 nl_len = 0;
+		if (*le == '\r') {
+			nl_len++;
+			le++;
+		}
+		if (*le == '\n') {
+			nl_len++;
+			le++;
+		}
+
+		// EXL, 01-Nov-2026: Content lines only, first token must be the "param".
+		BOOL match = FALSE;
+		if ((line_len > 0) && (line[0] != '#') && (line[0] != ';') && (line[0] != ' ') && (line[0] != '\t')) {
+			UINT32 tlen = 0;
+			while ((tlen < line_len) && (line[tlen] != ' ') && (line[tlen] != '\t')) {
+				tlen++;
+			}
+			if ((tlen == param_len) && (PORTABLE_strncmp(line, param, param_len) == 0)) {
+				match = TRUE;
+			}
+		}
+
+		if (match && !replaced) {
+			for (UINT32 i = 0; i < param_len; ++i) {
+				*(w++) = param[i];
+			}
+			*(w++) = ' ';
+			for (UINT32 i = 0; i < value_len; ++i) {
+				*(w++) = value_text[i];
+			}
+			*(w++) = '\r';
+			*(w++) = '\n';
+			replaced = TRUE;
+		} else {
+			for (UINT32 i = 0; i < (line_len + nl_len); ++i) {
+				*(w++) = line[i];
+			}
+		}
+
+		p = le;
+	}
+
+	// EXL, 01-Nov-2026: No match — append the option as a new last line.
+	if (!replaced) {
+		if ((w > out) && (w[-1] != '\n')) {
+			*(w++) = '\r';
+			*(w++) = '\n';
+		}
+		for (UINT32 i = 0; i < param_len; ++i) {
+			*(w++) = param[i];
+		}
+		*(w++) = ' ';
+		for (UINT32 i = 0; i < value_len; ++i) {
+			*(w++) = value_text[i];
+		}
+		*(w++) = '\r';
+		*(w++) = '\n';
+	}
+
+	EP3_Memory_Free(old_buffer);
+
+	STATUS status = CFG_Write_All(wpath, out, (UINT32) (w - out));
+
+	EP3_Memory_Free(out);
+
+	L("[EP3 CFG]: SaveOption '%s' = '%s': %s\n", param, value_text, (status == RESULT_OK) ? "saved" : "FAILED");
+
+	return status;
+}
+
+// EXL, 01-Nov-2026: Write a binary record, truncating any previous content.
+STATUS EP3_API_CFG_BIN_Save(const WCHAR *path, const WCHAR *name, const void *data, UINT32 size) {
+	if ((name == NULL) || (name[0] == UNICODE_NULL) || (data == NULL) || (size == 0)) {
+		L("[EP3 CFG]: %s\n", "BIN_Save: invalid arguments.");
+		return RESULT_FAIL;
+	}
+
+	WCHAR wpath[DL_FS_MAX_URI_NAME_LENGTH + 1];
+	CFG_Build_Path(path, name, wpath, DL_FS_MAX_URI_NAME_LENGTH + 1);
+
+	STATUS status = CFG_Write_All(wpath, data, size);
+
+	L("[EP3 CFG]: BIN_Save %d bytes: %s\n", size, (status == RESULT_OK) ? "saved" : "FAILED");
+
+	return status;
+}
+
+// EXL, 01-Nov-2026: Read a binary record, the file must hold at least "size" bytes.
+STATUS EP3_API_CFG_BIN_Read(const WCHAR *path, const WCHAR *name, void *data, UINT32 size) {
+	if ((name == NULL) || (name[0] == UNICODE_NULL) || (data == NULL) || (size == 0)) {
+		L("[EP3 CFG]: %s\n", "BIN_Read: invalid arguments.");
+		return RESULT_FAIL;
+	}
+
+	WCHAR wpath[DL_FS_MAX_URI_NAME_LENGTH + 1];
+	CFG_Build_Path(path, name, wpath, DL_FS_MAX_URI_NAME_LENGTH + 1);
+
+	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(wpath, DL_FS_OWNER_RESERVED);
+	if (file_size < (DL_FS_SIZE_T) size) {
+		D("[EP3 CFG]: BIN_Read: file too small (%d < %d bytes).\n", file_size, size);
+		return RESULT_FAIL;
+	}
+
+	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(wpath, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
+	if (file_handle == DL_FS_HANDLE_INVALID) {
+		L("[EP3 CFG]: %s\n", "BIN_Read: failed to open the file.");
+		return RESULT_FAIL;
+	}
+
+	DL_FS_COUNT_T elements_read;
+	DL_FS_RESULT_T result = DL_FsReadFile(data, 1, size, file_handle, &elements_read);
+	DL_FsCloseFile(file_handle);
+
+	if ((result != DL_FS_RESULT_SUCCESS) || (elements_read != size)) {
+		L("[EP3 CFG]: BIN_Read: failed to read %d bytes (read %d).\n", size, elements_read);
+		return RESULT_FAIL;
+	}
+
+	return RESULT_OK;
+}

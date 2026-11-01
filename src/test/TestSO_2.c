@@ -7,7 +7,8 @@
 #include <P2K_UIS_Ustring_Portable.h>
 #include <P2K_Logger.h>
 
-#include "P2K_EP3_DEF_Library.h"
+#include <P2K_EP3_Config.h>
+#include <P2K_EP3_DEF_Library.h>
 
 // EXL, 31-Oct-2026: Complex .so test ELF: depends on lib1.so (MyLib clone),
 //   lib2.so (constructor + firmware data symbol GLOBAL_VARIABLE) and lib3.so
@@ -60,7 +61,7 @@ static const APP_STATE_TRANSIT_T app_state_trans_table[] = {
 };
 
 static const AFW_EVENT_CODE_T app_event_reg_table[] = {
-	0x0000AFE8
+	0x000003C9
 };
 
 static const char app_name_string[APP_NAME_SIZE + 1] = "TestSO2";
@@ -72,7 +73,7 @@ void ui_notify(int value) {
 
 void Register(void) {
 	D("[TestSO2]: %s\n", "Enter!");
-	
+
 	EP3_API_Def_Reload();
 
 	// EXL, 31-Oct-2026: 1. lib1.so direct call (DT_NEEDED), also triggers ui_notify.
@@ -99,14 +100,64 @@ void Register(void) {
 		D("[TestSO2]: %s\n", "Cannot register TestSO2 application.");
 	}
 
-	status |= AFW_CreateInternalQueuedEvAux(
-		0x0000AFE8,
-		AFW_BUF_FLAG_READ_ONLY,
-		0,
-		NULL
-	);
+	// status |= AFW_CreateInternalQueuedEvAux(
+	// 	0x000003C9,
+	// 	AFW_BUF_FLAG_READ_ONLY,
+	// 	0,
+	// 	NULL
+	// );
 
 	D("[TestSO2]: %s\n", "Exit!");
+}
+
+static void smoke_test(void) {
+	STATUS res;
+
+	int int_val;
+	char char_val[8];
+	res = EP3_API_CFG_TXT_ReadOption(NULL, L"elf.txt", "option_1", EP3_CFG_TYPE_INT, &int_val, sizeof(int));
+	D("[AAAAAAAAAA]: Log 1: %d\n", res);
+	res = EP3_API_CFG_TXT_ReadOption(NULL, L"elf.txt", "option_2", EP3_CFG_TYPE_STRING, &char_val, 8);
+	D("[AAAAAAAAAA]: Log 2: %d\n", res);
+
+	int_val = 42;
+	res = EP3_API_CFG_TXT_SaveOption(NULL, L"elf.txt", "option_1", EP3_CFG_TYPE_INT, &int_val);
+	D("[AAAAAAAAAA]: Log 3: %d\n", res);
+	char_val[0] = 'E';
+	char_val[1] = 'L';
+	char_val[2] = 'F';
+	char_val[3] = '\0';
+	res = EP3_API_CFG_TXT_SaveOption(NULL, L"elf.txt", "option_2", EP3_CFG_TYPE_STRING, &char_val);
+	D("[AAAAAAAAAA]: Log 4: %d\n", res);
+
+	int int_val_2;
+	char char_val_2[8];
+	res = EP3_API_CFG_TXT_ReadOption(NULL, L"elf.txt", "option_1", EP3_CFG_TYPE_INT, &int_val_2, sizeof(int));
+	D("[AAAAAAAAAA]: Log 5: %d %d\n", res, int_val_2);
+	res = EP3_API_CFG_TXT_ReadOption(NULL, L"elf.txt", "option_2", EP3_CFG_TYPE_STRING, &char_val_2, 8);
+	D("[AAAAAAAAAA]: Log 6: %d %s\n", res, char_val_2);
+
+	typedef struct tagTestStruct {
+		int int_val;
+		char char_val[8];
+	} TEST_T;
+
+	TEST_T test1;
+	TEST_T test2;
+
+	res = EP3_API_CFG_BIN_Read(NULL, L"elf.dat", &test1, sizeof(TEST_T));
+	D("[AAAAAAAAAA]: Log 7: %d\n", res);
+
+	test1.int_val = 50;
+	test1.char_val[0] = 'Z';
+	test1.char_val[1] = 'I';
+	test1.char_val[2] = 'P';
+	test1.char_val[3] = '\0';
+	res = EP3_API_CFG_BIN_Save(NULL, L"elf.dat", &test1, sizeof(TEST_T));
+	D("[AAAAAAAAAA]: Log 8: %d\n", res);
+
+	res = EP3_API_CFG_BIN_Read(NULL, L"elf.dat", &test2, sizeof(TEST_T));
+	D("[AAAAAAAAAA]: Log 9: %d %d %s\n", res, test2.int_val, test2.char_val);
 }
 
 static SYN_RETURN_STATUS_T AppStart(
@@ -115,7 +166,7 @@ static SYN_RETURN_STATUS_T AppStart(
 	D("[TestSO2]: %s, p_evg=0x%08X, reg_id=0x%04X, reg_hdl=0x%08X\n", "Enter!", p_evg, reg_id, reg_hdl);
 
 	AFW_EVENT_T *event = AFW_GetEv(p_evg);
-	if (event->ev_code != 0x0000AFE8) {
+	if (event->ev_code != 0x000003C9) {
 		D("[TestSO2]: Unknown event ev_code=0x%08X\n", event->ev_code);
 		return SYN_FAIL;
 	}
@@ -168,6 +219,8 @@ static SYN_RETURN_STATUS_T AppExit(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T
 	status |= APP_Exit(p_evg, p_apd, SYN_NULL);
 
 	D("[TestSO2]: %s, p_evg=0x%08X, p_apd=0x%08X, ret=%d\n", "Exit!", p_evg, p_apd, status);
+
+	smoke_test();
 
 	return status;
 }
