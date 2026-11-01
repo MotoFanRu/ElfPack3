@@ -145,7 +145,7 @@ def build_ep3_elf_ui(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	lflags = [
 		*recipe.toolchain.lflags_elf_ldr,
 		'-Wl,-zmax-page-size=4',
-		'-Wl,-eRegister',
+		'-Wl,-eEP3_Main',
 		'-pie',
 		f'-L{a.consts.P2K_SDK_BUILD}', '-lep3',
 	]
@@ -179,7 +179,7 @@ def build_ep3_elf_so(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	lflags = [
 		*recipe.toolchain.lflags_elf_ldr,
 		'-Wl,-zmax-page-size=4',
-		'-Wl,-eRegister',
+		'-Wl,-eEP3_Main',
 		'-pie',
 		# EXL, 31-Oct-2026: Export ui_notify (SO -> ELF call) into the dynamic symbol table.
 		'-Wl,--export-dynamic',
@@ -213,7 +213,7 @@ def build_ep3_elf_so2(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	lflags = [
 		*recipe.toolchain.lflags_elf_ldr,
 		'-Wl,-zmax-page-size=4',
-		'-Wl,-eRegister',
+		'-Wl,-eEP3_Main',
 		'-pie',
 		# EXL, 31-Oct-2026: Export ui_notify (SO -> ELF call) into the dynamic symbol table.
 		'-Wl,--export-dynamic',

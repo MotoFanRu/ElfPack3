@@ -58,6 +58,10 @@ typedef struct tagEP3_Image_Manager {
 	EP3_Image *(*find)(void *addr);
 	EP3_Image *(*find_by_uri)(const WCHAR *uri, EP3_Image_Type_T type);
 	STATUS (*unload)(void *addr);
+	// EXL, 02-Nov-2026: ldrFindElf/ldrIsLoaded/ldrUnloadElf equivalents.
+	EP3_Image *(*find_by_name)(const WCHAR *name);
+	BOOL (*is_loaded)(const WCHAR *name);
+	STATUS (*unload_by_uri)(const WCHAR *uri);
 } EP3_Image_Manager_T;
 
 extern const EP3_Image_Manager_T EP3_Image_Manager;
@@ -87,6 +91,17 @@ extern EP3_Image *EP3_Image_Find(void *addr);
 //   (exact WCHAR match). Used to prevent launching a second instance of the same
 //   ELF/BIN; .so libraries are deduplicated by the dynamic linker instead.
 extern EP3_Image *EP3_Image_Find_By_Uri(const WCHAR *uri, EP3_Image_Type_T type);
+
+// EXL, 02-Nov-2026: Find a running image by its file NAME (the last URI path
+//   component, e.g. L"app.elf") — the ldrFindElf()/ldrIsLoaded() equivalent.
+//   Any image type matches. Returns NULL when not found.
+extern EP3_Image *EP3_Image_Find_By_Name(const WCHAR *name);
+extern BOOL EP3_Image_Is_Loaded(const WCHAR *name);
+
+// EXL, 02-Nov-2026: Unload a running image by its source file URI (exact match
+//   first, then by file name) — the self-unload path: a running image knows
+//   args->path but not its own mem_base (the ldrUnloadElf() equivalent).
+extern STATUS EP3_Image_Unload_By_Uri(const WCHAR *uri);
 
 extern UINT32 EP3_Image_Count(void);
 extern UINT32 EP3_Image_Capacity(void);

@@ -222,6 +222,73 @@ EP3_Image *EP3_Image_At(UINT32 index) {
 	return &EP3_Images[index];
 }
 
+// EXL, 02-Nov-2026: Wide basename of a URI (pointer into the uri string).
+static const WCHAR *IMG_Base_Name(const WCHAR *uri) {
+	const WCHAR *base = uri;
+	for (UINT32 i = 0; uri[i] != UNICODE_NULL; ++i) {
+		if (uri[i] == L'/') {
+			base = &uri[i + 1];
+		}
+	}
+	return base;
+}
+
+// EXL, 02-Nov-2026: Compare two wide strings for equality.
+static BOOL IMG_Wstr_Eq(const WCHAR *a, const WCHAR *b) {
+	while ((*a != UNICODE_NULL) && (*a == *b)) {
+		a++;
+		b++;
+	}
+	return (*a == UNICODE_NULL) && (*b == UNICODE_NULL);
+}
+
+EP3_Image *EP3_Image_Find_By_Name(const WCHAR *name) {
+	if ((name == NULL) || (name[0] == UNICODE_NULL)) {
+		return NULL;
+	}
+
+	for (UINT32 i = 0; i < EP3_Images_Slot_Count; ++i) {
+		EP3_Image *image = &EP3_Images[i];
+		if ((image->mem_base == NULL) || (image->uri == NULL)) {
+			continue;
+		}
+		if (IMG_Wstr_Eq(IMG_Base_Name(image->uri), name)) {
+			return image;
+		}
+	}
+
+	return NULL;
+}
+
+BOOL EP3_Image_Is_Loaded(const WCHAR *name) {
+	return (EP3_Image_Find_By_Name(name) != NULL);
+}
+
+STATUS EP3_Image_Unload_By_Uri(const WCHAR *uri) {
+	if ((uri == NULL) || (uri[0] == UNICODE_NULL)) {
+		L("[EP3 IMG]: %s\n", "Unload_By_Uri: argument uri is NULL or empty.");
+		return RESULT_FAIL;
+	}
+
+	EP3_Image *image = NULL;
+	for (UINT32 i = 0; (i < EP3_Images_Slot_Count) && (image == NULL); ++i) {
+		EP3_Image *slot = &EP3_Images[i];
+		if ((slot->mem_base == NULL) || (slot->uri == NULL)) {
+			continue;
+		}
+		if (IMG_Wstr_Eq(slot->uri, uri) || IMG_Wstr_Eq(IMG_Base_Name(slot->uri), uri)) {
+			image = slot;
+		}
+	}
+
+	if (image == NULL) {
+		L("[EP3 IMG]: Unload_By_Uri: %s\n", "no running image for this URI.");
+		return RESULT_FAIL;
+	}
+
+	return EP3_Image_Unregister(image);
+}
+
 // EXL, 02-Nov-2026: Dispatch table exposed to images through EP3_ImageArgs_T.img_man.
 const EP3_Image_Manager_T EP3_Image_Manager = {
 	EP3_Image_Capacity,
@@ -229,5 +296,8 @@ const EP3_Image_Manager_T EP3_Image_Manager = {
 	EP3_Image_At,
 	EP3_Image_Find,
 	EP3_Image_Find_By_Uri,
-	EP3_Image_Unload
+	EP3_Image_Unload,
+	EP3_Image_Find_By_Name,
+	EP3_Image_Is_Loaded,
+	EP3_Image_Unload_By_Uri
 };
