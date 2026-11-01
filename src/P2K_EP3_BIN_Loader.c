@@ -19,6 +19,16 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 		return RESULT_FAIL;
 	}
 
+
+#if !defined(FTR_BIN_LDR)
+	// EXL, 01-Nov-2026: Refuse a second instance of an already registered binary.
+	//   Skipped in the NOR loader: it has no image database instance.
+	if (EP3_Image_Find_By_Uri(file_path, EP3_IMG_BIN) != NULL) {
+		L("[EP3 BIN]: %s\n", "This binary is already running, launch refused.");
+		return RESULT_FAIL;
+	}
+#endif
+
 	/* Use `DL_FsSGetFileSize()` instead `DL_FsGetFileSize()` to reduce the number of functions. */
 	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(file_path, DL_FS_OWNER_RESERVED);
 	if (file_size < FILE_SIZE_TOO_SMALL) {

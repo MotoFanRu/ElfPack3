@@ -68,6 +68,12 @@ extern STATUS EP3_Image_Unregister(EP3_Image *image);
 extern STATUS EP3_Image_Unload(void *addr);
 
 extern EP3_Image *EP3_Image_Find(void *addr);
+
+// EXL, 01-Nov-2026: Find a running image of the given type by its source file URI
+//   (exact WCHAR match). Used to prevent launching a second instance of the same
+//   ELF/BIN; .so libraries are deduplicated by the dynamic linker instead.
+extern EP3_Image *EP3_Image_Find_By_Uri(const WCHAR *uri, EP3_Image_Type_T type);
+
 extern UINT32 EP3_Image_Count(void);
 extern UINT32 EP3_Image_Capacity(void);
 extern EP3_Image *EP3_Image_At(UINT32 index);

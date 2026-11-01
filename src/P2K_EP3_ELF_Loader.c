@@ -624,6 +624,15 @@ STATUS EP3_ELF_Load(const WCHAR *file_path, const char *params, UINT32 event, vo
 		*out_elf = NULL;
 	}
 
+	// EXL, 01-Nov-2026: Refuse to launch a second instance of an already running ELF.
+	//   .so libraries do not need this: the dynamic linker dedups them by name (refs).
+	if (EP3_Image_Find_By_Uri(file_path, EP3_IMG_ELF) != NULL) {
+		char running_path[DL_FS_MAX_URI_NAME_LENGTH + 1];
+		PORTABLE_u_utoa(file_path, running_path);
+		L("[EP3 ELF]: '%s' is already running, launch refused.\n", running_path);
+		return RESULT_FAIL;
+	}
+
 	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(file_path, DL_FS_OWNER_RESERVED);
 	if (file_size < FILE_SIZE_TOO_SMALL) {
 		PORTABLE_u_utoa(file_path, elf_file_path);

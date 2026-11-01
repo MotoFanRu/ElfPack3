@@ -168,6 +168,32 @@ STATUS EP3_Image_Unload(void *addr) {
 	return EP3_Image_Unregister(image);
 }
 
+EP3_Image *EP3_Image_Find_By_Uri(const WCHAR *uri, EP3_Image_Type_T type) {
+	if ((uri == NULL) || (uri[0] == UNICODE_NULL)) {
+		return NULL;
+	}
+
+	for (UINT32 i = 0; i < EP3_Images_Slot_Count; ++i) {
+		EP3_Image *image = &EP3_Images[i];
+		if ((image->mem_base == NULL) || (image->type != type) || (image->uri == NULL)) {
+			continue;
+		}
+
+		// EXL, 01-Nov-2026: Exact wide-string compare (no wcscmp in the portable set).
+		const WCHAR *a = image->uri;
+		const WCHAR *b = uri;
+		while ((*a != UNICODE_NULL) && (*a == *b)) {
+			a++;
+			b++;
+		}
+		if ((*a == UNICODE_NULL) && (*b == UNICODE_NULL)) {
+			return image;
+		}
+	}
+
+	return NULL;
+}
+
 UINT32 EP3_Image_Count(void) {
 	UINT32 count = 0;
 
