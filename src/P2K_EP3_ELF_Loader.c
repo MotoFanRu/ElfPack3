@@ -693,6 +693,24 @@ STATUS EP3_ELF_Unload(void *elf_ptr) {
 	return EP3_Image_Unregister(image);
 }
 
+// EXL, 31-Oct-2026: The live DEF library context. Kept here so the hot reload can be
+//   triggered at any time through the registered EP3_API_Def_Reload() call.
+static DEF_LIB_Symbol *EP3_Def_Library = NULL;
+static UINT32 EP3_Def_Cnt = 0;
+static UINT32 EP3_Def_Capacity = 0;
+
+// EXL, 31-Oct-2026: Hot reload of the DEF library, callable from anywhere (registered
+//   into the DEF library table itself). Merge semantics: new symbols inserted, address/
+//   type fixes applied, removed symbols kept — see EP3_DEF_Library_Reload().
+void EP3_API_Def_Reload(void) {
+	if (EP3_Def_Library == NULL) {
+		L("[EP3 DEF]: %s\n", "Reload: the DEF library is not initialized yet.");
+		return;
+	}
+
+	EP3_DEF_Library_Reload(EP3_Def_Library, &EP3_Def_Cnt, EP3_Def_Capacity);
+}
+
 __attribute__((used, section(".text.bin.entry_point")))
 void EP3_ELF_Loader_MainRegister(void) {
 	L("%s\n", "Hello Moto!");
@@ -707,25 +725,29 @@ void EP3_ELF_Loader_MainRegister(void) {
 	// EXL, 31-Oct-2026: Init the image registry with the configured slot count.
 	EP3_Image_Init(config.max_elfs);
 
-	DEF_LIB_Symbol *def_library = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * config.lib_capacity);
-	if (def_library == NULL) {
+	EP3_Def_Library = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * config.lib_capacity);
+	if (EP3_Def_Library == NULL) {
 		L("Cannot allocate bytes: %d\n", sizeof(DEF_LIB_Symbol) * config.lib_capacity);
 		return;
 	}
+	EP3_Def_Capacity = config.lib_capacity;
 
-	UINT32 def_cnt = EP3_DEF_Library_Load(def_library, config.lib_capacity);
-	// EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
-	L("[EP3 ELF]: Symbols: %d\n", def_cnt);
+	EP3_Def_Cnt = EP3_DEF_Library_Load(EP3_Def_Library, EP3_Def_Capacity);
+	// EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
+	L("[EP3 ELF]: Symbols: %d\n", EP3_Def_Cnt);
 
-	// EXL, 31-Oct-2026: Init the .so subsystem: resolver context (DEF lib) + search paths.
-	EP3_SO_Init(def_library, def_cnt, config.libpaths, config.libpath_cnt);
+	// EXL, 31-Oct-2026: Init the .so subsystem: resolver context (DEF lib, by pointer so
+	//   hot def reloads are picked up) + search paths.
+	EP3_SO_Init(EP3_Def_Library, &EP3_Def_Cnt, config.libpaths, config.libpath_cnt);
 
-	// EXL, 31-Oct-2026: Expose the dl API to ELFs through the DEF library table, so they
-	//   call dlopen/dlsym/dlclose/dlerror like any other firmware function.
-	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlopen"), (UINTPTR) EP3_dlopen);
-	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlsym"), (UINTPTR) EP3_dlsym);
-	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlclose"), (UINTPTR) EP3_dlclose);
-	EP3_DEF_Library_Insert(def_library, &def_cnt, FNV1A32("dlerror"), (UINTPTR) EP3_dlerror);
+	// EXL, 31-Oct-2026: Expose the loader API to ELFs through the DEF library table, so
+	//   they call dlopen/dlsym/dlclose/dlerror and the def hot reload like any other
+	//   firmware function.
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlopen"), (UINTPTR) EP3_dlopen);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlsym"), (UINTPTR) EP3_dlsym);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlclose"), (UINTPTR) EP3_dlclose);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlerror"), (UINTPTR) EP3_dlerror);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Def_Reload"), (UINTPTR) EP3_API_Def_Reload);
 
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.

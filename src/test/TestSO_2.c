@@ -7,6 +7,8 @@
 #include <P2K_UIS_Ustring_Portable.h>
 #include <P2K_Logger.h>
 
+#include "P2K_EP3_DEF_Library.h"
+
 // EXL, 31-Oct-2026: Complex .so test ELF: depends on lib1.so (MyLib clone),
 //   lib2.so (constructor + firmware data symbol GLOBAL_VARIABLE) and lib3.so
 //   (SO -> SO call into lib1.so). The GLOBAL_VARIABLE value is displayed
@@ -70,6 +72,8 @@ void ui_notify(int value) {
 
 void Register(void) {
 	D("[TestSO2]: %s\n", "Enter!");
+	
+	EP3_API_Def_Reload();
 
 	// EXL, 31-Oct-2026: 1. lib1.so direct call (DT_NEEDED), also triggers ui_notify.
 	int result = mylib_add(2, 3);

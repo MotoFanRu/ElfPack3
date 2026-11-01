@@ -31,6 +31,7 @@ def build_ep3_so_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		'0x00000006 T dlsym',
 		'0x00000008 T dlclose',
 		'0x0000000A T dlerror',
+		'0x0000000C T EP3_API_Def_Reload',
 	]
 	for fake in def_fake:
 		sym_name = fake.split()[2]

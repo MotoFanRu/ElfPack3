@@ -23,7 +23,7 @@ static EP3_SO *EP3_SO_Table = NULL;
 static UINT32 EP3_SO_Table_Size = 0;
 
 static DEF_LIB_Symbol *EP3_SO_Def_Lib = NULL;
-static UINT32 EP3_SO_Def_Cnt = 0;
+static UINT32 *EP3_SO_Def_Cnt_Ptr = NULL;   // Live count: hot def library reload aware.
 
 static char EP3_SO_LibPaths[EP3_SO_MAX_LIBPATHS][EP3_SO_LIBPATH_LEN];
 static UINT32 EP3_SO_LibPath_Cnt = 0;
@@ -128,8 +128,8 @@ UINT32 EP3_Resolve_Symbol(const char *sym_str) {
 	}
 
 	// EXL, 31-Oct-2026: 1. DEF library (firmware functions, FNV1A binary search).
-	if (EP3_SO_Def_Lib != NULL && EP3_SO_Def_Cnt > 0) {
-		UINT32 sym_addr = EP3_DEF_Library_Get(EP3_SO_Def_Lib, EP3_SO_Def_Cnt, FNV1A32(sym_str));
+	if ((EP3_SO_Def_Lib != NULL) && (EP3_SO_Def_Cnt_Ptr != NULL) && (*EP3_SO_Def_Cnt_Ptr > 0)) {
+		UINT32 sym_addr = EP3_DEF_Library_Get(EP3_SO_Def_Lib, *EP3_SO_Def_Cnt_Ptr, FNV1A32(sym_str));
 		if (sym_addr != 0) {
 			D("[EP3 SO]: Found '%s' in DEF Lib: 0x%08X\n", sym_str, sym_addr);
 			return sym_addr;
@@ -154,7 +154,7 @@ UINT32 EP3_Resolve_Symbol(const char *sym_str) {
 }
 
 void EP3_SO_Init(
-	DEF_LIB_Symbol *def_symbols, UINT32 def_cnt,
+	DEF_LIB_Symbol *def_symbols, UINT32 *p_def_cnt,
 	char libpaths[][EP3_SO_LIBPATH_LEN], UINT32 libpath_cnt
 ) {
 	// EXL, 31-Oct-2026: One shared budget: SO records (libraries + ELF providers) follow
@@ -183,7 +183,7 @@ void EP3_SO_Init(
 	EP3_SO_Table_Size = max_so;
 
 	EP3_SO_Def_Lib = def_symbols;
-	EP3_SO_Def_Cnt = def_cnt;
+	EP3_SO_Def_Cnt_Ptr = p_def_cnt;
 
 	EP3_SO_LibPath_Cnt = 0;
 	for (UINT32 i = 0; (i < libpath_cnt) && (i < EP3_SO_MAX_LIBPATHS); ++i) {

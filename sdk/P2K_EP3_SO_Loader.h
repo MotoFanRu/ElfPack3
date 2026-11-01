@@ -96,12 +96,13 @@ extern void EP3_ELF_Run_Fini(const EP3_DYN_Context *ctx);
 //   Returns 0 when not found. Thumb functions carry the interworking bit in the address.
 extern UINT32 EP3_Resolve_Symbol(const char *sym_str);
 
-// EXL, 31-Oct-2026: SO subsystem lifecycle and registry. "def_symbols/def_cnt" feed the
+// EXL, 31-Oct-2026: SO subsystem lifecycle and registry. "def_symbols" and "p_def_cnt"
+//   (a POINTER to the live count, so hot def library reloads are picked up) feed the
 //   symbol resolver; "libpaths" are extra .so search dirs (after the loading module dir).
 //   The SO table size follows the image registry capacity (max_elfs): ELFs, BINs, .so
 //   libraries and ELF symbol providers all draw from the same image budget.
 extern void EP3_SO_Init(
-	DEF_LIB_Symbol *def_symbols, UINT32 def_cnt,
+	DEF_LIB_Symbol *def_symbols, UINT32 *p_def_cnt,
 	char libpaths[][EP3_SO_LIBPATH_LEN], UINT32 libpath_cnt
 );
 extern EP3_SO *EP3_SO_Load(const char *name, const char *dir);   // Loads or dedups (refs++).

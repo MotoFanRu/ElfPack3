@@ -421,3 +421,62 @@ STATUS EP3_DEF_Library_Delete(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32
 
 	return RESULT_OK;
 }
+
+STATUS EP3_DEF_Library_Reload(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32 max_count) {
+	if ((def_lib == NULL) || (p_def_cnt == NULL) || (max_count == 0)) {
+		L("[EP3 DEF]: %s\n", "Reload: invalid arguments.");
+		return RESULT_FAIL;
+	}
+
+	UINT32 def_cnt = *p_def_cnt;
+
+	// EXL, 31-Oct-2026: Parse the fresh ep3.def into a scratch table, then merge it
+	//   into the live one. The live table is never wiped: runtime-registered entries
+	//   (dlopen and friends) and already-resolved functions stay untouched.
+	DEF_LIB_Symbol *fresh = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * max_count);
+	if (fresh == NULL) {
+		L("[EP3 DEF]: Reload: failed to allocate %d bytes for the scratch table.\n", sizeof(DEF_LIB_Symbol) * max_count);
+		return RESULT_FAIL;
+	}
+
+	UINT32 fresh_cnt = EP3_DEF_Library_Load(fresh, max_count);
+	if (fresh_cnt == 0) {
+		L("[EP3 DEF]: %s\n", "Reload: nothing to merge, the live table is kept as is.");
+		EP3_Memory_Free(fresh);
+		return RESULT_FAIL;
+	}
+
+	UINT32 inserted = 0;
+	UINT32 updated = 0;
+	UINT32 unchanged = 0;
+
+	for (UINT32 i = 0; i < fresh_cnt; ++i) {
+		int idx = DEF_Library_Get_Index(def_lib, def_cnt, fresh[i].hash);
+
+		if (idx >= 0) {
+			// EXL, 31-Oct-2026: Known symbol: apply address/type fixes in place.
+			if (def_lib[idx].addr != fresh[i].addr) {
+				L("[EP3 DEF]: Reload: updated 0x%08X: 0x%08X => 0x%08X\n", fresh[i].hash, def_lib[idx].addr, fresh[i].addr);
+				def_lib[idx].addr = fresh[i].addr;
+				updated++;
+			} else {
+				unchanged++;
+			}
+		} else {
+			// EXL, 31-Oct-2026: New symbol: sorted insert.
+			if (EP3_DEF_Library_Insert(def_lib, &def_cnt, fresh[i].hash, fresh[i].addr) == RESULT_OK) {
+				inserted++;
+			}
+		}
+	}
+
+	EP3_Memory_Free(fresh);
+
+	*p_def_cnt = def_cnt;
+
+	L("[EP3 DEF]: Reload done: +%d new, ~%d updated, =%d unchanged, total %d (removed are kept).\n",
+		inserted, updated, unchanged, def_cnt
+	);
+
+	return RESULT_OK;
+}
