@@ -6,8 +6,29 @@
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_Image_Manager.h>
+#if !defined(FTR_BIN_LDR)
 #include <P2K_EP3_Config.h>
+#endif
 #include <P2K_EP3_BIN_Loader.h>
+
+/*
+* EXL, 01-Nov-2026: Image lifetime rules (RAM builds, FTR_BIN_LDR NOR loader is untouched):
+*
+*   "free_it"   = FALSE (default for resident apps) — the image STAYS registered after
+*                 its entry returns: no restore, no free, no unregister. A binary that
+*                 registered itself to events keeps working and can be unloaded later
+*                 by address. TRUE — the image is torn down right after the entry
+*                 returns (restore/free/unregister), like a one-shot script.
+*   "leave_it"  (per-image .cfg at a fixed load_address) — 1: load destructively, never
+*                 save/restore the original block. 0 (default): save the original block
+*                 and restore it when the image is eventually removed. Saving is skipped
+*                 for resident images: the block would never be restored while the
+*                 resident code is alive.
+*   "load_address" (.cfg) takes precedence over the "addr" argument; missing/zero/
+*                 misaligned address falls back to the argument, then the allocator.
+*   EP3_IMG_FLAG_FREE_MEM is set exactly when this call heap-allocated the image, so a
+*                 later EP3_Image_Unload(addr) frees the memory in every case.
+*/
 
 STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR addr, BOOL a_bit, BOOL free_it) {
 #if defined(FTR_BIN_LDR)
@@ -19,6 +40,12 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 		return RESULT_FAIL;
 	}
 
+	/* Use `DL_FsSGetFileSize()` instead `DL_FsGetFileSize()` to reduce the number of functions. */
+	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(file_path, DL_FS_OWNER_RESERVED);
+	if (file_size < FILE_SIZE_TOO_SMALL) {
+		L("[EP3 BIN]: File '%s' is not exist or too small (%d bytes).\n", EP3_ELF_LDR_NAME, file_size);
+		return RESULT_FAIL;
+	}
 
 #if !defined(FTR_BIN_LDR)
 	// EXL, 01-Nov-2026: Refuse a second instance of an already registered binary.
@@ -28,13 +55,6 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 		return RESULT_FAIL;
 	}
 #endif
-
-	/* Use `DL_FsSGetFileSize()` instead `DL_FsGetFileSize()` to reduce the number of functions. */
-	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(file_path, DL_FS_OWNER_RESERVED);
-	if (file_size < FILE_SIZE_TOO_SMALL) {
-		L("[EP3 BIN]: File '%s' is not exist or too small (%d bytes).\n", EP3_ELF_LDR_NAME, file_size);
-		return RESULT_FAIL;
-	}
 
 	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(file_path, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
 	if (file_handle == DL_FS_HANDLE_INVALID) {
@@ -50,25 +70,21 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	UINTPTR *load_addr = (UINTPTR *) addr;
 
 #if !defined(FTR_BIN_LDR)
-	/*
-	* EXL, 31-Oct-2026: RAM bin loader only — there is no point in the fixed load_address
-	*   (IRAM) functionality for the NOR RO flash loader (FTR_BIN_LDR). The per-image
-	*   config "app.ldr.cfg" takes precedence over the "addr" argument, if such argument
-	*   is present. A missing/zero/misaligned address or a failed save allocation falls
-	*   back to the argument, then to the system allocator.
-	*/
 	UINT8 *saved_block = NULL;
 	BOOL fixed_load = FALSE;
+	BOOL mem_owner = FALSE;               // This call heap-allocated the image.
+	BOOL resident = !free_it;             // free_it is the inverse of the cfg "leave_it".
 
+	// EXL, 01-Nov-2026: Per-image config "app.ldr.cfg" takes precedence over "addr".
 	EP3_Image_Cfg_T image_cfg;
 	if (EP3_Image_Config_Load(file_path, &image_cfg) == RESULT_OK) {
 		if ((image_cfg.load_address != 0) && ((image_cfg.load_address & 0x3) == 0)) {
 			load_addr = (UINTPTR *) image_cfg.load_address;
 			fixed_load = TRUE;
 
-			if (!image_cfg.leave_it) {
-				// EXL, 31-Oct-2026: Save the original block of the image size to the
-				//   heap, restored after the binary returns (BIN runs synchronously).
+			// EXL, 01-Nov-2026: Save the original block only for images that will be
+			//   torn down eventually — a resident image would never restore it.
+			if (!image_cfg.leave_it && !resident) {
 				saved_block = (UINT8 *) EP3_Memory_Alloc(file_size);
 				if (saved_block == NULL) {
 					L("[EP3 BIN]: Failed to allocate %d bytes for the original block copy.\n", file_size);
@@ -82,7 +98,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 					}
 					L("[EP3 BIN]: Saved original block 0x%08X (%d bytes) to 0x%08X.\n", load_addr, file_size, saved_block);
 				}
-			} else {
+			} else if (image_cfg.leave_it) {
 				L("[EP3 BIN]: %s\n", "leave_it is set, the original block is not saved.");
 			}
 		}
@@ -99,6 +115,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 
 		/* Align load address to 4 bytes. */
 		load_addr = (UINTPTR *) (((UINTPTR) load_addr + 3) & ~3UL);
+		mem_owner = TRUE;
 	}
 #endif
 
@@ -125,16 +142,19 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 
 	/* Disable on BIN_LDR in NOR. */
 #if !defined(FTR_BIN_LDR)
-	// EXL, 31-Oct-2026: Register the loaded binary in the unified image database before the
-	//   jump, so it can be tracked and unloaded by address. "register_it" must be FALSE when
-	//   this code runs from a read-only (NOR) context like P2K_EP3_APP_Entry_Main.c — the
-	//   database lives in the RAM-resident ELF loader, which owns the registry instance.
-	//   Memory is freed on unregister only for allocated images with "free_it" set.
-	EP3_Image *image = NULL;
-	UINT32 img_flags = (!fixed_load && (addr == NULL_ADDR) && free_it) ? EP3_IMG_FLAG_FREE_MEM : 0;
-	image = EP3_Image_Register(
-		EP3_IMG_BIN, (void *) load_addr, (UINT32) file_size, file_path, 0, img_flags
+	// EXL, 01-Nov-2026: Register the image BEFORE the jump so it is tracked from the
+	//   first instruction. EP3_IMG_FLAG_FREE_MEM marks heap-allocated images (freed on
+	//   unregister); saved_block rides on the record and is restored when the entry is
+	//   removed — immediately for ephemeral images, or later by EP3_Image_Unload(addr).
+	EP3_Image *image = EP3_Image_Register(
+		EP3_IMG_BIN, (void *) load_addr, (UINT32) file_size, file_path, 0,
+		mem_owner ? EP3_IMG_FLAG_FREE_MEM : 0
 	);
+	if (image != NULL) {
+		image->saved_copy = saved_block;
+	} else {
+		EP3_Memory_Free(saved_block);
+	}
 #endif
 
 	/* Set Thumb etc. bit if needed (will be ignored on ARM and M-CORE) */
@@ -148,22 +168,25 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	STATUS result = entry_point(args);
 	D("[EP3 BIN]: Returned status: %d\n", result);
 
-#if !defined(FTR_BIN_LDR)
-	// EXL, 31-Oct-2026: A fixed load_address block is not owned by the loader, restore
-	//   the saved original content after the synchronous binary returns.
-	if (saved_block != NULL) {
-		UINT8 *orig = (UINT8 *) (((UINTPTR) load_addr) & ~1UL);
-		for (UINT32 i = 0; i < file_size; ++i) {
-			orig[i] = saved_block[i];
-		}
-		L("[EP3 BIN]: Restored original block to 0x%08X.\n", orig);
-		EP3_Memory_Free(saved_block);
-	}
-
 	/* Disable on BIN_LDR in NOR. */
-	// EXL, 31-Oct-2026: Drop the registry entry (and memory, per flags) after return.
-	if (image != NULL) {
-		EP3_Image_Unregister(image);
+#if !defined(FTR_BIN_LDR)
+	// EXL, 01-Nov-2026: Tear the image down only when "free_it" is set. Resident
+	//   binaries stay registered: their registered apps keep working, the saved block
+	//   (if any) is restored later by EP3_Image_Unload(addr).
+	if (!resident) {
+		if (image != NULL) {
+			EP3_Image_Unregister(image);
+		} else if (saved_block != NULL) {
+			// EXL, 01-Nov-2026: No registry slot — restore manually.
+			UINT8 *orig = (UINT8 *) (((UINTPTR) load_addr) & ~1UL);
+			for (UINT32 i = 0; i < file_size; ++i) {
+				orig[i] = saved_block[i];
+			}
+			L("[EP3 BIN]: Restored original block to 0x%08X.\n", orig);
+			EP3_Memory_Free(saved_block);
+		}
+	} else {
+		L("[EP3 BIN]: %s\n", "Image stays resident (free_it is not set).");
 	}
 #endif
 
