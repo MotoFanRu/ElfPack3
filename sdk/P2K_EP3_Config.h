@@ -5,6 +5,7 @@
 #include "P2K_EP3_DEF_Library.h"
 #include "P2K_EP3_Image_Manager.h"
 #include "P2K_EP3_SO_Loader.h"
+#include "P2K_EP3_Environment.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,6 +20,9 @@ extern "C" {
 //     lib_capacity 1024         # def lib symbol capacity (~8 bytes per symbol)
 //     max_elfs 8                # max concurrently loaded images: ELFs + BINs + .so
 //                               #   libraries + ELF symbol providers (one shared registry)
+//     env_max 8                 # shared environment variables: count limit,
+//     env_name_max 16           #   name length limit and value length limit
+//     env_value_max 32          #   (buffers include the NUL terminator)
 //     libpath a/elf/lib/        # extra .so search dir (trailing slash optional, up to 3 lines)
 //
 //     # Autorun: autorun <path> [event] [args...]
@@ -71,6 +75,9 @@ extern STATUS EP3_API_CFG_BIN_Read(const WCHAR *path, const WCHAR *name, void *d
 
 #define EP3_CFG_DEFAULT_LIB_CAPACITY   (DEF_LIB_MAX_SYM_COUNT)
 #define EP3_CFG_DEFAULT_MAX_ELFS       (EP3_IMG_DEFAULT_SLOTS)
+#define EP3_CFG_DEFAULT_ENV_MAX        (8)
+#define EP3_CFG_DEFAULT_ENV_NAME_MAX   (16)
+#define EP3_CFG_DEFAULT_ENV_VALUE_MAX  (32)
 
 typedef struct tagEP3_Autorun_Entry {
 	char uri[EP3_CFG_MAX_PATH];           // ASCII path, converted to WCHAR at start time.
@@ -82,6 +89,9 @@ typedef struct tagEP3_Config {
 	char deflib[EP3_CFG_MAX_PATH];        // Def library name or path for EP3_Find_Internal_System_Component().
 	UINT32 lib_capacity;                  // Def lib symbol table capacity in symbols.
 	UINT32 max_elfs;                      // Max concurrently loaded images (ELF + BIN + .so + providers).
+	UINT32 env_max;                       // Shared environment variables: count, name and
+	UINT32 env_name_max;                  //   value length limits (buffers include the NUL).
+	UINT32 env_value_max;
 	UINT32 libpath_cnt;                   // .so search paths (after the module own dir).
 	char libpaths[EP3_CFG_MAX_LIBPATHS][EP3_CFG_MAX_PATH];
 	UINT32 autorun_cnt;

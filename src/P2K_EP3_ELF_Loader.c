@@ -749,6 +749,9 @@ void EP3_ELF_Loader_MainRegister(void) {
 	//   hot def reloads are picked up) + search paths.
 	EP3_SO_Init(EP3_Def_Library, &EP3_Def_Cnt, config.libpaths, config.libpath_cnt);
 
+	// EXL, 01-Nov-2026: Init the shared environment variables (all images see one table).
+	EP3_Env_Init(config.env_max, config.env_name_max, config.env_value_max);
+
 	// EXL, 31-Oct-2026: Expose the loader API to ELFs through the DEF library table, so
 	//   they call dlopen/dlsym/dlclose/dlerror and the def hot reload like any other
 	//   firmware function.
@@ -764,6 +767,11 @@ void EP3_ELF_Loader_MainRegister(void) {
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_CFG_TXT_ReadOption"), (UINTPTR) EP3_API_CFG_TXT_ReadOption);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_CFG_BIN_Save"), (UINTPTR) EP3_API_CFG_BIN_Save);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_CFG_BIN_Read"), (UINTPTR) EP3_API_CFG_BIN_Read);
+
+	// EXL, 01-Nov-2026: The shared environment variables are reachable from images too.
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("setenv"), (UINTPTR) EP3_API_setenv);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("getenv"), (UINTPTR) EP3_API_getenv);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("unsetenv"), (UINTPTR) EP3_API_unsetenv);
 
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.

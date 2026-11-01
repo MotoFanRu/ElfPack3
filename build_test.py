@@ -36,6 +36,9 @@ def build_ep3_so_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		'0x00000012 T EP3_API_CFG_TXT_ReadOption',
 		'0x00000014 T EP3_API_CFG_BIN_Save',
 		'0x00000016 T EP3_API_CFG_BIN_Read',
+		'0x00000018 T setenv',
+		'0x0000001A T getenv',
+		'0x0000001C T unsetenv',
 	]
 	for fake in def_fake:
 		sym_name = fake.split()[2]

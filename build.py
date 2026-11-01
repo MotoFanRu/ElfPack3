@@ -102,6 +102,7 @@ def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',      a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Config.c',           a.consts.P2K_SDK_BUILD / 'P2K_EP3_Config.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Manager.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Manager.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Environment.c',      a.consts.P2K_SDK_BUILD / 'P2K_EP3_Environment.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_SO_Loader.c',        a.consts.P2K_SDK_BUILD / 'P2K_EP3_SO_Loader.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',       a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.o'),
 	]

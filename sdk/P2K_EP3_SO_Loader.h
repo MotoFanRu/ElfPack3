@@ -2,6 +2,7 @@
 #define P2K_EP3_SO_LOADER_H
 
 #include "P2K_SDK_Base.h"
+#include "P2K_DL_File_System.h"
 #include "P2K_EP3_ELF.h"
 #include "P2K_EP3_DEF_Library.h"
 #include "P2K_EP3_Image_Manager.h"

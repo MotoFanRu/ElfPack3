@@ -158,6 +158,23 @@ static void smoke_test(void) {
 
 	res = EP3_API_CFG_BIN_Read(NULL, L"elf.dat", &test2, sizeof(TEST_T));
 	D("[AAAAAAAAAA]: Log 9: %d %d %s\n", res, test2.int_val, test2.char_val);
+
+	extern void setenv(const char *name, const char *value);
+	extern const char *getenv(const char *name);
+
+	const char *nick = getenv("USERNAME");          // → "moto"
+	if (nick) {
+		D("[BBBBBBB]: 1 %s %s\n", "Hmm. Why not NULL?", nick);
+	} else {
+		D("[BBBBBBB]: 2 %s\n", "Nice, it's NULL!");
+	}
+	setenv("USERNAME", "MotoFan");                    // another ELF later:
+	const char *nickname = getenv("USERNAME");
+	if (nickname) {
+		D("[BBBBBBB]: 3 %s %s\n", "Nice, not NULL!", nickname);
+	} else {
+		D("[BBBBBBB]: 4 %s\n", "Hmm, it's NULL!");
+	}
 }
 
 static SYN_RETURN_STATUS_T AppStart(

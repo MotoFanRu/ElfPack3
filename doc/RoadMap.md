@@ -8,6 +8,11 @@
 * 🟥 — Failed
 * 🟦 — Out of interest
 
+## Nov, 2026
+
+* ✅ Environment variables.
+* 🟨 Entry point research.
+
 ## Aug, 2026
 
 * 🟨 Log refactoring.
