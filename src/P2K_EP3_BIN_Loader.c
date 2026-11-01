@@ -1,4 +1,5 @@
 #include <P2K_SDK_Base.h>
+#include <P2K_C_Lib.h>
 #include <P2K_Logger.h>
 #include <P2K_DL_File_System.h>
 #include <P2K_UIS_Ustring.h>
@@ -34,6 +35,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 #if defined(FTR_BIN_LDR)
 	UNUSED(free_it);
 #endif
+	UNUSED(args);
 
 	if ((file_path == NULL) || (file_path[0] == UNICODE_NULL)) {
 		D("[EP3 BIN]: %s\n", "Argument file_path is NULL or empty.");
@@ -164,16 +166,36 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 
 	/* Execute the loaded binary. */
 	L("[EP3 BIN]: Jump to '0x%08X' memory address.\n", load_addr);
+
+	// EXL, 02-Nov-2026: Build the unified EP3_ImageArgs_T block (BINs get argv=NULL:
+	//   the legacy "args" pointer array has no text form). Heap-owned, freed on
+	//   unregister, so a resident binary keeps valid pointers. The NOR loader has no
+	//   image database instance, so its boot-time block is simply left allocated.
+	EP3_ImageArgs_T img_args_fallback;
+	memset(&img_args_fallback, 0, sizeof(EP3_ImageArgs_T));
+	EP3_ImageArgs_T *img_args = EP3_ImageArgs_Build(file_path, NULL, 0);
+	if (img_args == NULL) {
+		L("[EP3 BIN]: %s\n", "Failed to build the image arguments.");
+		img_args = &img_args_fallback;
+	}
+
+#if !defined(FTR_BIN_LDR)
+	if (image != NULL) {
+		image->args_block = img_args;
+	}
+#endif
+
 	EP3_ELF_LDR_ENTRY_POINT_T entry_point = (EP3_ELF_LDR_ENTRY_POINT_T) ((UINTPTR) load_addr);
-	STATUS result = entry_point(args);
+	STATUS result = entry_point(img_args);
 	D("[EP3 BIN]: Returned status: %d\n", result);
 
 	/* Disable on BIN_LDR in NOR. */
 #if !defined(FTR_BIN_LDR)
-	// EXL, 01-Nov-2026: Tear the image down only when "free_it" is set. Resident
-	//   binaries stay registered: their registered apps keep working, the saved block
-	//   (if any) is restored later by EP3_Image_Unload(addr).
-	if (!resident) {
+	// EXL, 02-Nov-2026: Tear the image down when "free_it" is set OR the entry failed
+	//   (failed start). Resident binaries with a successful start stay registered:
+	//   their registered apps keep working, the saved block (if any) is restored later
+	//   by EP3_Image_Unload(addr).
+	if (!resident || (result != (STATUS) RESULT_OK)) {
 		if (image != NULL) {
 			EP3_Image_Unregister(image);
 		} else if (saved_block != NULL) {

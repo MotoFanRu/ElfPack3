@@ -6,6 +6,8 @@
 #include <P2K_UIS.h>
 #include <P2K_Logger.h>
 
+#include <P2K_EP3_Image_Args.h>
+
 typedef enum {
 	APP_STATE_ANY = 0x0,
 	APP_STATE_VIEW,
@@ -47,7 +49,8 @@ static const AFW_EVENT_CODE_T app_event_reg_table[] = {
 
 static const char app_name_string[APP_NAME_SIZE + 1] = "HelloUI";
 
-void Register(void) {
+UINT32 EP3_Main(EP3_ImageArgs_T *args) {
+	UNUSED(args);
 	D("[HelloUI]: %s\n", "Enter!");
 
 	SYN_RETURN_STATUS_T status = APP_Register(
@@ -69,6 +72,9 @@ void Register(void) {
 	);
 
 	D("[HelloUI]: %s\n", "Exit!");
+	// EXL, 02-Nov-2026: RESULT_OK keeps the image loaded.
+	return RESULT_OK;
+
 }
 
 static SYN_RETURN_STATUS_T AppStart(

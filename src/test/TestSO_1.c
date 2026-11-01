@@ -6,6 +6,8 @@
 #include <P2K_UIS.h>
 #include <P2K_Logger.h>
 
+#include <P2K_EP3_Image_Args.h>
+
 // EXL, 31-Oct-2026: Test ELF for the .so loader. Built with --export-dynamic (exports
 //   ui_notify for the SO -> ELF call) and linked against mylib.so (DT_NEEDED auto-load).
 //   Also loads mylib.so via dlopen/dlsym to test the explicit dl API.
@@ -74,7 +76,8 @@ static const char *dl_err_or_empty(void) {
 	return (err != NULL) ? err : "";
 }
 
-void Register(void) {
+UINT32 EP3_Main(EP3_ImageArgs_T *args) {
+	UNUSED(args);
 	D("[TestSO]: %s\n", "Enter!");
 
 	// EXL, 31-Oct-2026: 1. Direct call via DT_NEEDED (mylib.so auto-loaded at ELF load).
@@ -122,6 +125,9 @@ void Register(void) {
 	);
 
 	D("[TestSO]: %s\n", "Exit!");
+	// EXL, 02-Nov-2026: RESULT_OK keeps the image loaded.
+	return RESULT_OK;
+
 }
 
 static SYN_RETURN_STATUS_T AppStart(
@@ -206,7 +212,6 @@ static SYN_RETURN_STATUS_T AppView(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T
 		appd->apd.dialog_hdl = UIS_CreateViewer(&app_env, &content, SYN_NULL);
 		status |= (appd->apd.dialog_hdl == UIS_NULL_HANDLE);
 	}
-
 	D("[TestSO]: %s, p_evg=0x%08X, p_apd=0x%08X, ret=%d\n", "Exit!", p_evg, p_apd, status);
 
 	return status;

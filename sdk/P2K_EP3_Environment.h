@@ -34,6 +34,20 @@ extern const char *EP3_API_getenv(const char *name);
 extern STATUS EP3_API_unsetenv(const char *name);
 extern UINT32 EP3_Env_Count(void);
 
+// EXL, 02-Nov-2026: Enumerate USED variables by position (0..EP3_Env_Count()-1).
+extern STATUS EP3_Env_Get_At(UINT32 index, const char **name, const char **value);
+
+// EXL, 02-Nov-2026: ElfPack API dispatch table, exposed to images through
+//   EP3_ImageArgs_T.api — an alternative way to call loader functions without
+//   going through the DEF library. Extensible: append new pointers at the end.
+typedef struct tagEP3_Loader_Api {
+	STATUS (*setenv)(const char *name, const char *value);
+	const char *(*getenv)(const char *name);
+	STATUS (*unsetenv)(const char *name);
+} EP3_Loader_Api_T;
+
+extern const EP3_Loader_Api_T EP3_Loader_Api;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

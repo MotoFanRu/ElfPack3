@@ -3,13 +3,15 @@
 
 #include "P2K_SDK_Base.h"
 #include "P2K_EP3_DEF_Library.h"
+#include "P2K_EP3_Image_Args.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-// EXL, 30-Oct-2026: ELF entry point, "start" stub which calls "Register" ELF entry point.
-typedef UINT32 (*EP3_ELF_Entry_T)(const char *file_uri, char *params, UINT32 reserve);
+// EXL, 02-Nov-2026: The image entry point is "EP3_Main" (see P2K_EP3_Image_Args.h):
+//   UINT32 EP3_Main(EP3_ImageArgs_T *args) — RESULT_OK keeps the image, any other
+//   result makes the loader unload it immediately.
 
 // EXL, 30-Oct-2026: Load GCC (ET_DYN) ELF, resolve symbols via the DEF library (ep3.def)
 //   and loaded .so providers, apply relocations, register the image and start it from "e_entry".

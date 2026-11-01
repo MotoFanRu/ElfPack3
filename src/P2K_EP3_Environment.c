@@ -214,3 +214,36 @@ UINT32 EP3_Env_Count(void) {
 
 	return count;
 }
+
+STATUS EP3_Env_Get_At(UINT32 index, const char **name, const char **value) {
+	if (EP3_Env_Table == NULL) {
+		return RESULT_FAIL;
+	}
+
+	UINT32 used = 0;
+	for (UINT32 i = 0; i < EP3_Env_Table_Size; ++i) {
+		if (!EP3_Env_Table[i].used) {
+			continue;
+		}
+		if (used == index) {
+			if (name != NULL) {
+				*name = EP3_Env_Table[i].name;
+			}
+			if (value != NULL) {
+				*value = EP3_Env_Table[i].value;
+			}
+			return RESULT_OK;
+		}
+		used++;
+	}
+
+	return RESULT_FAIL;
+}
+
+// EXL, 02-Nov-2026: The dispatch table exposed through EP3_ImageArgs_T.api.
+//   Extend with new loader API pointers at the END only (ABI stability for images).
+const EP3_Loader_Api_T EP3_Loader_Api = {
+	EP3_API_setenv,
+	EP3_API_getenv,
+	EP3_API_unsetenv
+};

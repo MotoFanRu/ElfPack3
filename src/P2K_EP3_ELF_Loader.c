@@ -601,13 +601,45 @@ static STATUS EP3_ELF_EP3_Load(
 
 	// EXL, 31-Oct-2026: Start ELF from the "e_entry" address, "start" stub which calls
 	//   "Register" ELF entry point. The event is passed through to the "reserve" slot.
+	// EXL, 02-Nov-2026: Build the EP3_ImageArgs_T block (path, argv/envp, event, dir,
+	//   img_man + api dispatch tables). Owned by the image record, freed on unregister.
+	EP3_ImageArgs_T *img_args = EP3_ImageArgs_Build(file_path, params, event);
+	if (img_args == NULL) {
+		L("[EP3 ELF]: %s\n", "Failed to build the image arguments.");
+		EP3_SO_Unregister_ELF(dyn_ctx.mem_base);
+		if (dyn_ctx.fixed_load) {
+			if (dyn_ctx.saved_copy != NULL) {
+				UINT8 *save = (UINT8 *) dyn_ctx.saved_copy;
+				UINT8 *orig = (UINT8 *) dyn_ctx.mem_base;
+				for (UINT32 i = 0; i < dyn_ctx.mem_size; ++i) {
+					orig[i] = save[i];
+				}
+				EP3_Memory_Free(dyn_ctx.saved_copy);
+			}
+		} else {
+			EP3_Memory_Free(dyn_ctx.mem_base);
+		}
+		return RESULT_FAIL;
+	}
+	image->args_block = img_args;
+
+	// EXL, 02-Nov-2026: Start ELF from the "e_entry" address ("EP3_Main"). RESULT_OK
+	//   keeps the image; any other result unloads it immediately (failed start).
 	D("[EP3 ELF]: Starting ELF at 0x%08X\n", dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base);
 
-	((EP3_ELF_Entry_T) (dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base))((const char *) NULL, (char *) params, event);
+	UINT32 entry_result = ((EP3_Image_Entry_T) (dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base))(img_args);
 
 	D("[EP3 ELF]: %s\n", "ELF returned");
 
 	*out_mem_base = dyn_ctx.mem_base;
+
+	// EXL, 02-Nov-2026: A non-OK result means failed start: unload the image now.
+	if (entry_result != (UINT32) RESULT_OK) {
+		L("[EP3 ELF]: Entry returned %d, unloading the image.\n", entry_result);
+		*out_mem_base = NULL;
+		EP3_ELF_Unload(dyn_ctx.mem_base);
+		return RESULT_FAIL;
+	}
 
 	return RESULT_OK;
 }

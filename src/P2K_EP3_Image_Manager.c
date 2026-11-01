@@ -132,6 +132,10 @@ STATUS EP3_Image_Unregister(EP3_Image *image) {
 	if (image->uri != NULL) {
 		EP3_Memory_Free(image->uri);
 	}
+	if (image->args_block != NULL) {
+		// EXL, 02-Nov-2026: The EP3_ImageArgs_T block (struct + argv/envp + strings).
+		EP3_Memory_Free(image->args_block);
+	}
 
 	memset(image, 0, sizeof(EP3_Image));
 
@@ -217,3 +221,13 @@ EP3_Image *EP3_Image_At(UINT32 index) {
 
 	return &EP3_Images[index];
 }
+
+// EXL, 02-Nov-2026: Dispatch table exposed to images through EP3_ImageArgs_T.img_man.
+const EP3_Image_Manager_T EP3_Image_Manager = {
+	EP3_Image_Capacity,
+	EP3_Image_Count,
+	EP3_Image_At,
+	EP3_Image_Find,
+	EP3_Image_Find_By_Uri,
+	EP3_Image_Unload
+};

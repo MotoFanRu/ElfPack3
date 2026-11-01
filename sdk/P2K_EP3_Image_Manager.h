@@ -46,7 +46,21 @@ typedef struct tagEP3_Image {
 	UINT32 flags;
 	void *saved_copy;                     // Heap copy of the original block at a fixed
 	                                      //   load_address (IRAM), restored on unregister.
+	void *args_block;                     // EP3_ImageArgs_T heap block, freed on unregister.
 } EP3_Image;
+
+// EXL, 02-Nov-2026: Dispatch table into the Image Manager, exposed to images through
+//   EP3_ImageArgs_T.img_man — the building block for a user-space Process Manager.
+typedef struct tagEP3_Image_Manager {
+	UINT32 (*capacity)(void);
+	UINT32 (*count)(void);
+	EP3_Image *(*at)(UINT32 index);
+	EP3_Image *(*find)(void *addr);
+	EP3_Image *(*find_by_uri)(const WCHAR *uri, EP3_Image_Type_T type);
+	STATUS (*unload)(void *addr);
+} EP3_Image_Manager_T;
+
+extern const EP3_Image_Manager_T EP3_Image_Manager;
 
 // EXL, 31-Oct-2026: Allocate the image registry from the heap with "max_slots" entries
 //   (clamped to EP3_IMG_MAX_SLOTS). Must be called once from the RAM-resident owner

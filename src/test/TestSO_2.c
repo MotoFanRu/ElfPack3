@@ -7,6 +7,8 @@
 #include <P2K_UIS_Ustring_Portable.h>
 #include <P2K_Logger.h>
 
+#include <P2K_EP3_Image_Args.h>
+
 #include <P2K_EP3_Config.h>
 #include <P2K_EP3_DEF_Library.h>
 
@@ -71,7 +73,8 @@ void ui_notify(int value) {
 	EP3_Logger("[TestSO2]: ui_notify called from .so library, value=%d\n", value);
 }
 
-void Register(void) {
+UINT32 EP3_Main(EP3_ImageArgs_T *args) {
+	UNUSED(args);
 	D("[TestSO2]: %s\n", "Enter!");
 
 	EP3_API_Def_Reload();
@@ -107,7 +110,18 @@ void Register(void) {
 	// 	NULL
 	// );
 
+	char path[200];
+	PORTABLE_u_utoa(args->path, path);
+
+	char dir[200];
+	PORTABLE_u_utoa(args->dir, dir);
+
+	D("[WWWWWWWWWWWWWWWWWWWWWWWWWW]: %s %s\n", dir, path);
+	D("[WWWWWWWWWWWWWWWWWWWWWWWWWW]: %d %d\n", args->argc, args->event);
+
 	D("[TestSO2]: %s\n", "Exit!");
+	// EXL, 02-Nov-2026: RESULT_OK keeps the image loaded.
+	return RESULT_OK;
 }
 
 static void smoke_test(void) {
@@ -270,7 +284,6 @@ static SYN_RETURN_STATUS_T AppView(AFW_EVENT_GROUP_T *p_evg, APP_INSTANCE_DATA_T
 		appd->apd.dialog_hdl = UIS_CreateViewer(&app_env, &content, SYN_NULL);
 		status |= (appd->apd.dialog_hdl == UIS_NULL_HANDLE);
 	}
-
 	D("[TestSO2]: %s, p_evg=0x%08X, p_apd=0x%08X, ret=%d\n", "Exit!", p_evg, p_apd, status);
 
 	return status;
