@@ -84,18 +84,23 @@ UINT32 EP3_API_Init_Event_Handlers_Tbl(APP_EV_HANDLER_ENTRY_T *tbl, UINT32 base)
 	for (UINT32 i = 0; tbl[i].ev_code != (AFW_EVENT_CODE_T) APP_END_EV_TABLE; ++i) {
 		if ((UINT32) tbl[i].ev_code == EP3_EV_RESERVED) {
 			tbl[i].ev_code = (AFW_EVENT_CODE_T) base++;
+			D("New reserved event 0x%08X.\n", tbl[i].ev_code);
 		} else if ((UINT32) tbl[i].ev_code == EP3_EV_PM_API_EXIT) {
 			tbl[i].ev_code = (AFW_EVENT_CODE_T) EP3_EVENT_PM_API_EXIT;
 		} else if ((tbl[i].ev_code & ~((AFW_EVENT_CODE_T) DEF_LIB_CONST_TAG_MASK)) == (AFW_EVENT_CODE_T) DEF_LIB_CONST_TAG_PREFIX) {
 			UINT32 value = 0;
-			if (EP3_DEF_Library_Get_Const_By_Hash((UINT32) tbl[i].ev_code & DEF_LIB_CONST_TAG_MASK, &value) == RESULT_OK) {
+			if (EP3_DEF_Library_Get_Const_By_Hash((UINT32) tbl[i].ev_code, &value) == RESULT_OK) {
 				tbl[i].ev_code = (AFW_EVENT_CODE_T) value;
+				D("Constant event added 0x%08X.\n", tbl[i].ev_code);
+			} else {
+				D("I think it 0xC0000000 but not int the constant lib? 0x%08X 0x%08X.\n", tbl[i].ev_code, value);
 			}
 			// EXL, 02-Nov-2026: Unresolvable tags are left for EP3_API_Const_Fix_Table /
 			//   a later def reload; the firmware treats unknown codes as no-op slots.
-			} else {
+		} else {
 			// EXL, 02-Nov-2026: Plain codes pass through untouched.
-			}
+			D("Skip 0x%08X.\n", tbl[i].ev_code);
+		}
 	}
 
 	return base;

@@ -11,6 +11,7 @@
 
 #include <P2K_EP3_Config.h>
 #include <P2K_EP3_DEF_Library.h>
+#include <P2K_SDK_Constants.h>
 
 // EXL, 31-Oct-2026: Complex .so test ELF: depends on lib1.so (MyLib clone),
 //   lib2.so (constructor + firmware data symbol GLOBAL_VARIABLE) and lib3.so
@@ -49,11 +50,13 @@ static const APP_EV_HANDLER_ENTRY_T app_state_any_ev_table[] = {
 	{ APP_END_EV_TABLE, APP_INVALID_FUNCTION_PTR }
 };
 
-static const APP_EV_HANDLER_ENTRY_T app_state_view_ev_table[] = {
+static APP_EV_HANDLER_ENTRY_T app_state_view_ev_table[] = {
 	{ AFW_EV_GRANT_TOKEN, APP_HandleUITokenGranted },
 	{ AFW_EV_GAIN_FOCUS, AppView },
 	{ UIS_EV_DIALOG_DONE, APP_HandleConsumeEvAndExit },
 	{ UIS_EV_DONE, APP_HandleConsumeEvAndExit },
+	{ 0xC0000040, APP_HandleConsumeEvAndExit },
+	{ UIS_MY_SUPER_CONST, APP_HandleConsumeEvAndExit },
 	{ APP_END_EV_TABLE, APP_INVALID_FUNCTION_PTR }
 };
 
@@ -78,6 +81,12 @@ UINT32 EP3_Main(EP3_ImageArgs_T *args) {
 	D("[TestSO2]: %s\n", "Enter!");
 
 	EP3_API_Def_Reload();
+
+	D("[TestSO2]: %s\n", "Constants Enter!");
+
+	EP3_API_Init_Event_Handlers_Tbl(app_state_view_ev_table, args->event);
+
+	D("[TestSO2]: %s\n", "Constants Exit!");
 
 	// EXL, 31-Oct-2026: 1. lib1.so direct call (DT_NEEDED), also triggers ui_notify.
 	int result = mylib_add(2, 3);

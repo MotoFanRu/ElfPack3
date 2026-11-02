@@ -843,6 +843,7 @@ void EP3_ELF_Loader_MainRegister(void) {
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Request_Event_Base"), (UINTPTR) EP3_API_Request_Event_Base);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Const_Fix_Table"), (UINTPTR) EP3_API_Const_Fix_Table);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Const_Get"), (UINTPTR) EP3_API_Const_Get);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Init_Event_Handlers_Tbl"), (UINTPTR) EP3_API_Init_Event_Handlers_Tbl);
 
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.

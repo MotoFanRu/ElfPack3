@@ -167,7 +167,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 
 	/* Execute the loaded binary. */
 	L("[EP3 BIN]: Jump to '0x%08X' memory address.\n", load_addr);
-
+#if !defined(FTR_BIN_LDR)
 	// EXL, 02-Nov-2026: Build the unified EP3_ImageArgs_T block (BINs get argv=NULL:
 	//   the legacy "args" pointer array has no text form). Heap-owned, freed on
 	//   unregister, so a resident binary keeps valid pointers. The NOR loader has no
@@ -183,10 +183,11 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 		img_args = &img_args_fallback;
 	}
 
-#if !defined(FTR_BIN_LDR)
 	if (image != NULL) {
 		image->args_block = img_args;
 	}
+#else
+	EP3_ImageArgs_T *img_args = NULL;
 #endif
 
 	EP3_ELF_LDR_ENTRY_POINT_T entry_point = (EP3_ELF_LDR_ENTRY_POINT_T) ((UINTPTR) load_addr);

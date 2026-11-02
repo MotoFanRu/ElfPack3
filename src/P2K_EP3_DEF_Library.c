@@ -176,6 +176,9 @@ static STATUS Check_Content(const char *p, DEF_LIB_Symbol *symbols, UINT32 i) {
 	PORTABLE_strncpy(sym_str, p + DEF_LIB_PARSER_CONTENT_NAME, sym_len);
 
 	symbols[i].hash = FNV1A32(sym_str);
+	if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == 'C') {
+		symbols[i].hash = (symbols[i].hash & DEF_LIB_CONST_TAG_MASK) | DEF_LIB_CONST_TAG_PREFIX;
+	}
 	symbols[i].addr = hex2addr(p + DEF_LIB_PARSER_CONTENT_ADDR);
 	if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == 'T') {
 		symbols[i].addr = symbols[i].addr | 1;
