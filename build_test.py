@@ -43,6 +43,8 @@ def build_ep3_so_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		'0x00000020 T EP3_API_Send_Event_To_App',
 		'0x00000022 T EP3_API_Send_Event_To_App_Empty',
 		'0x00000024 T EP3_API_Request_Event_Base',
+		'0x00000026 T EP3_API_Const_Fix_Table',
+		'0x00000028 T EP3_API_Const_Get',
 	]
 	for fake in def_fake:
 		sym_name = fake.split()[2]

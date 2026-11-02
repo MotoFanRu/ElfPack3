@@ -754,6 +754,8 @@ STATUS EP3_ELF_Unload(void *elf_ptr) {
 static DEF_LIB_Symbol *EP3_Def_Library = NULL;
 static UINT32 EP3_Def_Cnt = 0;
 static UINT32 EP3_Def_Capacity = 0;
+static DEF_LIB_Symbol *EP3_Def_Consts = NULL;      // C lines, separate namespace.
+static UINT32 EP3_Def_Const_Cnt = 0;
 
 // EXL, 31-Oct-2026: Hot reload of the DEF library, callable from anywhere (registered
 //   into the DEF library table itself). Merge semantics: new symbols inserted, address/
@@ -765,6 +767,14 @@ void EP3_API_Def_Reload(void) {
 	}
 
 	EP3_DEF_Library_Reload(EP3_Def_Library, &EP3_Def_Cnt, EP3_Def_Capacity);
+
+	// EXL, 02-Nov-2026: Reload the constants namespace too (full reparse into the
+	//   live table; new entries appear, stale ones are overwritten in place).
+	if (EP3_Def_Consts != NULL) {
+		EP3_Def_Const_Cnt = EP3_DEF_Library_Load_Consts(EP3_Def_Consts, EP3_Def_Capacity);
+		EP3_DEF_Library_Set_Consts(EP3_Def_Consts, EP3_Def_Const_Cnt);
+		L("[EP3 DEF]: Constants reloaded: %d entries.\n", EP3_Def_Const_Cnt);
+	}
 }
 
 __attribute__((used, section(".text.bin.entry_point")))
@@ -791,6 +801,14 @@ void EP3_ELF_Loader_MainRegister(void) {
 	EP3_Def_Cnt = EP3_DEF_Library_Load(EP3_Def_Library, EP3_Def_Capacity);
 	// EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
 	L("[EP3 ELF]: Symbols: %d\n", EP3_Def_Cnt);
+
+	// EXL, 02-Nov-2026: Load the constants namespace ("C" def lines) into its own
+	//   table (same capacity as the function table) and expose it to the fixup API.
+	EP3_Def_Consts = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * EP3_Def_Capacity);
+	if (EP3_Def_Consts != NULL) {
+		EP3_Def_Const_Cnt = EP3_DEF_Library_Load_Consts(EP3_Def_Consts, EP3_Def_Capacity);
+		EP3_DEF_Library_Set_Consts(EP3_Def_Consts, EP3_Def_Const_Cnt);
+	}
 
 	// EXL, 31-Oct-2026: Init the .so subsystem: resolver context (DEF lib, by pointer so
 	//   hot def reloads are picked up) + search paths.
@@ -823,6 +841,8 @@ void EP3_ELF_Loader_MainRegister(void) {
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Send_Event_To_App"), (UINTPTR) EP3_API_Send_Event_To_App);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Send_Event_To_App_Empty"), (UINTPTR) EP3_API_Send_Event_To_App_Empty);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Request_Event_Base"), (UINTPTR) EP3_API_Request_Event_Base);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Const_Fix_Table"), (UINTPTR) EP3_API_Const_Fix_Table);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Const_Get"), (UINTPTR) EP3_API_Const_Get);
 
 	// EXL, 31-Oct-2026: Smoke test load kept from the previous iteration, runs only
 	//   when there is no autorun list to execute.

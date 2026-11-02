@@ -251,5 +251,7 @@ const EP3_Loader_Api_T EP3_Loader_Api = {
 	EP3_API_Release_Event_Base,
 	EP3_API_Send_Event,
 	EP3_API_Send_Event_To_App,
-	EP3_API_Send_Event_To_App_Empty
+	EP3_API_Send_Event_To_App_Empty,
+	EP3_API_Const_Fix_Table,
+	EP3_API_Const_Get
 };

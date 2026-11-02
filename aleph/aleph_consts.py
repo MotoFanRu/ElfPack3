@@ -16,8 +16,11 @@ class AlephConsts:
 	P2K_SDK_RELEASE: Path = P2K_SDK_ROOT / 'release'
 
 	EP3_BIN_LDR: Path = Path('ep3.bin')
-	EP3_BIN_FPA: Path = Path('ep3.fpa')
 	EP3_ELF_LDR: Path = Path('ep3.ldr')
 	EP3_ELF_LDR_LIB: Path = Path('ep3.so')
-	EP3_ELF_LDR_CFG: Path = Path('ep3.ini')
+	EP3_ELF_LDR_CFG: Path = Path('ep3.cfg')
 	EP3_ELF_LDR_LOG: Path = Path('ep3.log')
+	# TODO: Is it really needed?
+	EP3_BIN_FPA: Path = Path('ep3.fpa')
+
+	P2K_SDK_CONSTS_HEADER: Path = P2K_SDK_INC / 'P2K_SDK_Constants.h'

@@ -233,11 +233,14 @@ static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols,
 		} else if (Is_Line_CPU(p) == RESULT_OK) {
 			is_cpu_okay = Check_CPU(p);
 		} else if (Is_Line_Content(p) == RESULT_OK) {
-			if (Check_Content(p, def_symbols, i) != RESULT_OK) {
-				L("[EP3 DEF]: Bad content line at symbol: %d\n", i);
-				return 0;
+			// EXL, 02-Nov-2026: Constants ("C" lines) live in a separate namespace.
+			if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) != DEF_LIB_TYPE_CONST) {
+				if (Check_Content(p, def_symbols, i) != RESULT_OK) {
+					L("[EP3 DEF]: Bad content line at symbol: %d\n", i);
+					return 0;
+				}
+				i++;
 			}
-			i++;
 		}
 
 		Skip_To_Next_Line(&p);
@@ -264,33 +267,25 @@ static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols,
 	return 0;
 }
 
-UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
-	if (!def_symbols) {
-		L("[EP3 DEF]: %s\n", "Pointer to DEF Library is NULL!\n");
-		return 0;
-	}
-	if (max_count == 0) {
-		max_count = DEF_LIB_MAX_SYM_COUNT;
-	}
-	memset(def_symbols, 0, sizeof(DEF_LIB_Symbol) * max_count);
-
+// EXL, 02-Nov-2026: Read a def-format system file to a heap buffer (caller frees).
+static STATUS DEF_Library_Read_File(const char *file_name, char **out_buffer, UINT32 *out_size) {
 	WCHAR file_path[PATH_MAX_SHORT];
-	if (!EP3_Find_Internal_System_Component(EP3_ELF_LDR_DEF_NAME, file_path)) {
-		L("[EP3 DEF]: Failed to find '%s' system component.\n", EP3_ELF_LDR_DEF_NAME);
-		return 0;
+	if (!EP3_Find_Internal_System_Component(file_name, file_path)) {
+		L("[EP3 DEF]: Failed to find '%s' system component.\n", file_name);
+		return RESULT_FAIL;
 	}
 
 	/* Use `DL_FsSGetFileSize()` instead `DL_FsGetFileSize()` to reduce the number of functions. */
 	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(file_path, DL_FS_OWNER_RESERVED);
 	if (file_size < DEF_LIB_TOO_SMALL) {
-		L("[EP3 DEF]: File '%s' too small (%d bytes).\n", EP3_ELF_LDR_DEF_NAME, file_size);
-		return 0;
+		L("[EP3 DEF]: File '%s' too small (%d bytes).\n", file_name, file_size);
+		return RESULT_FAIL;
 	}
 
 	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(file_path, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
 	if (file_handle == DL_FS_HANDLE_INVALID) {
-		L("[EP3 DEF]: Failed to open '%s' file.\n", EP3_ELF_LDR_DEF_NAME);
-		return 0;
+		L("[EP3 DEF]: Failed to open '%s' file.\n", file_name);
+		return RESULT_FAIL;
 	}
 
 	/* Add additional 4 bytes to add line ending characters. */
@@ -298,21 +293,21 @@ UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
 	if (load_addr == NULL) {
 		L("[EP3 DEF]: Failed to allocate %d bytes of memory.\n", file_size + 4);
 		DL_FsCloseFile(file_handle);
-		return 0;
+		return RESULT_FAIL;
 	}
 
 	memset(load_addr, 0, file_size + 4);
 
 	DL_FS_COUNT_T elements_read;
 	if (DL_FsReadFile(load_addr, file_size, 1, file_handle, &elements_read) != DL_FS_RESULT_SUCCESS) {
-		L("[EP3 DEF]: Failed to read '%s' into memory at '0x%08X' address.\n", EP3_ELF_LDR_DEF_NAME, load_addr);
+		L("[EP3 DEF]: Failed to read '%s' into memory at '0x%08X' address.\n", file_name, load_addr);
 		DL_FsCloseFile(file_handle);
-		return 0;
+		return RESULT_FAIL;
 	}
 	if (elements_read != 1) {
 		L("[EP3 DEF]: elements_read=%d, should be 1.\n", elements_read);
 		DL_FsCloseFile(file_handle);
-		return 0;
+		return RESULT_FAIL;
 	}
 	L("[EP3 DEF]: Loaded %d bytes to '0x%08X' memory address.\n", file_size, load_addr);
 
@@ -324,11 +319,10 @@ UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
 		load_addr[file_size + 1] = '\n';
 	}
 
-	UINT32 symbols_count = DEF_Library_Parse(load_addr, def_symbols, max_count);
+	*out_buffer = load_addr;
+	*out_size = file_size;
 
-	EP3_Memory_Free(load_addr);
-
-	return symbols_count;
+	return RESULT_OK;
 }
 
 static int DEF_Library_Get_Index(const DEF_LIB_Symbol *def_lib, UINT32 def_cnt, UINT32 hash) {
@@ -479,4 +473,163 @@ STATUS EP3_DEF_Library_Reload(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32
 	);
 
 	return RESULT_OK;
+}
+
+// EXL, 02-Nov-2026: Constants ("C" lines) form a separate hash namespace, so a
+//   constant and a function may share a name without collision, and the resolver
+//   never confuses a raw value with a code address.
+
+UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
+	if (!def_symbols) {
+		L("[EP3 DEF]: %s\n", "Pointer to DEF Library is NULL!\n");
+		return 0;
+	}
+	if (max_count == 0) {
+		max_count = DEF_LIB_MAX_SYM_COUNT;
+	}
+	memset(def_symbols, 0, sizeof(DEF_LIB_Symbol) * max_count);
+
+	char *load_addr = NULL;
+	UINT32 load_size = 0;
+	if (DEF_Library_Read_File(EP3_ELF_LDR_DEF_NAME, &load_addr, &load_size) != RESULT_OK) {
+		return 0;
+	}
+
+	UINT32 symbols_count = DEF_Library_Parse(load_addr, def_symbols, max_count);
+
+	EP3_Memory_Free(load_addr);
+
+	return symbols_count;
+}
+
+// EXL, 02-Nov-2026: Parse ONLY the constants ("C" lines) into their own table.
+static UINT32 DEF_Library_Parse_Consts(const char *buffer, DEF_LIB_Symbol *const_symbols, UINT32 max_count) {
+	STATUS is_pfw_okay = RESULT_FAIL;
+	STATUS is_ver_okay = RESULT_FAIL;
+	STATUS is_cpu_okay = RESULT_FAIL;
+
+	const char *p = buffer;
+	UINT32 i = 0;
+
+	while (*p && i < max_count) {
+		if (Is_Line_PFW(p) == RESULT_OK) {
+			is_pfw_okay = Check_PFW(p);
+		} else if (Is_Line_VER(p) == RESULT_OK) {
+			is_ver_okay = Check_VER(p);
+		} else if (Is_Line_CPU(p) == RESULT_OK) {
+			is_cpu_okay = Check_CPU(p);
+		} else if (Is_Line_Content(p) == RESULT_OK) {
+			if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == DEF_LIB_TYPE_CONST) {
+				if (Check_Content(p, const_symbols, i) != RESULT_OK) {
+					L("[EP3 DEF]: Bad content line at constant: %d\n", i);
+					return 0;
+				}
+				i++;
+			}
+		}
+
+		Skip_To_Next_Line(&p);
+	}
+
+	if ((is_pfw_okay != RESULT_OK) || (is_ver_okay != RESULT_OK) || (is_cpu_okay != RESULT_OK)) {
+		L("[EP3 DEF]: %s\n", "Cannot parse the constants header.");
+		return 0;
+	}
+
+	DEF_Library_Sort_Symbols(const_symbols, i);
+	L("[EP3 DEF]: Constants parsed successfully, entries: %d\n", i);
+
+	return i;
+}
+
+UINT32 EP3_DEF_Library_Load_Consts(DEF_LIB_Symbol *const_symbols, UINT32 max_count) {
+	if (!const_symbols) {
+		L("[EP3 DEF]: %s\n", "Pointer to the DEF constants is NULL!");
+		return 0;
+	}
+	if (max_count == 0) {
+		max_count = DEF_LIB_MAX_SYM_COUNT;
+	}
+	memset(const_symbols, 0, sizeof(DEF_LIB_Symbol) * max_count);
+
+	char *buffer = NULL;
+	UINT32 buffer_size = 0;
+	if (DEF_Library_Read_File(EP3_ELF_LDR_DEF_NAME, &buffer, &buffer_size) != RESULT_OK) {
+		return 0;
+	}
+
+	UINT32 const_cnt = DEF_Library_Parse_Consts(buffer, const_symbols, max_count);
+
+	EP3_Memory_Free(buffer);
+
+	return const_cnt;
+}
+
+// EXL, 02-Nov-2026: Live const-table context for the fixup API (set by the loader).
+static DEF_LIB_Symbol *EP3_Def_Consts = NULL;
+static UINT32 EP3_Def_Const_Cnt = 0;
+
+void EP3_DEF_Library_Set_Consts(DEF_LIB_Symbol *const_symbols, UINT32 const_cnt) {
+	EP3_Def_Consts = const_symbols;
+	EP3_Def_Const_Cnt = const_cnt;
+}
+
+STATUS EP3_DEF_Library_Get_Const_By_Hash(UINT32 hash, UINT32 *out_value) {
+	if ((EP3_Def_Consts == NULL) || (out_value == NULL)) {
+		return RESULT_FAIL;
+	}
+
+	int idx = DEF_Library_Get_Index(EP3_Def_Consts, EP3_Def_Const_Cnt, hash);
+	if (idx < 0) {
+		return RESULT_FAIL;
+	}
+
+	*out_value = EP3_Def_Consts[idx].addr;
+
+	return RESULT_OK;
+}
+
+// EXL, 02-Nov-2026: Runtime constant resolution + static table fixup (Option A):
+//   images bake DEF_LIB_CONST_TAG_PREFIX-tagged FNV hashes into their const tables
+//   (the values are computed by the consts tool, since C99 cannot hash at compile
+//   time); EP3_API_Const_Fix_Table rewrites the tagged words with real values.
+
+STATUS EP3_API_Const_Get(const char *name, UINT32 *out_value) {
+	if ((name == NULL) || (name[0] == ASCII_NULL) || (out_value == NULL)) {
+		return RESULT_FAIL;
+	}
+
+	return EP3_DEF_Library_Get_Const_By_Hash(FNV1A32(name) & DEF_LIB_CONST_TAG_MASK, out_value);
+}
+
+STATUS EP3_API_Const_Fix_Table(void *mem, UINT32 size) {
+	if ((mem == NULL) || (size < sizeof(UINT32))) {
+		L("[EP3 DEF]: %s\n", "Const_Fix_Table: invalid arguments.");
+		return RESULT_FAIL;
+	}
+
+	UINT32 *word = (UINT32 *) mem;
+	UINT32 count = size / sizeof(UINT32);
+	UINT32 fixed = 0;
+	UINT32 missed = 0;
+
+	for (UINT32 i = 0; i < count; ++i) {
+		if ((word[i] & ~DEF_LIB_CONST_TAG_MASK) != DEF_LIB_CONST_TAG_PREFIX) {
+			continue;
+		}
+
+		UINT32 value = 0;
+		if (EP3_DEF_Library_Get_Const_By_Hash(word[i] & DEF_LIB_CONST_TAG_MASK, &value) == RESULT_OK) {
+			D("[EP3 DEF]: Const 0x%08X => %d\n", word[i], value);
+			word[i] = value;
+			fixed++;
+		} else {
+			D("[EP3 DEF]: WARNING! Const 0x%08X not found in the def library.\n", word[i]);
+			missed++;
+		}
+	}
+
+	L("[EP3 DEF]: Const_Fix_Table 0x%08X (%d bytes): %d fixed, %d missed.\n", mem, size, fixed, missed);
+
+	return (missed == 0) ? RESULT_OK : RESULT_FAIL;
 }

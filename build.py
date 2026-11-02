@@ -55,6 +55,7 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Manager.c',  a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Manager.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Environment.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Environment.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Args.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Args.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Events.c',          a.consts.P2K_SDK_BUILD / 'P2K_EP3_Events.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),

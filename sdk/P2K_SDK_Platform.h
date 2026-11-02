@@ -19,7 +19,6 @@ extern "C" {
  * Check APP_PHBK_MainCommonNoticeEnter() function.
  */
 
-
 #if defined(FTR_C330)
 	#define P2K_UIS_EV_DATA_UNION_SIZE                     (0xAC)
 	#define P2K_UIS_MAX_NUM_VALUES                         (10)

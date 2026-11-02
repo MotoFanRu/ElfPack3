@@ -51,6 +51,9 @@ typedef struct tagEP3_Loader_Api {
 	STATUS (*send_event)(UINT32 evcode);
 	STATUS (*send_event_to_app)(AFW_APP_REGISTRY_ID_T reg_id, UINT32 evcode, void *attachment, UINT32 att_size, AFW_EV_BUF_FLAG_T flag);
 	STATUS (*send_event_to_app_empty)(AFW_APP_REGISTRY_ID_T reg_id, UINT32 evcode);
+	// EXL, 02-Nov-2026: Constants namespace (appended at the end — ABI stability).
+	STATUS (*const_fix_table)(void *mem, UINT32 size);
+	STATUS (*const_get)(const char *name, UINT32 *out_value);
 } EP3_Loader_Api_T;
 
 extern const EP3_Loader_Api_T EP3_Loader_Api;
