@@ -12,6 +12,7 @@
 
 * ✅ Environment variables.
 * ✅ Entry point research.
+* 🟨 Cache ARM invalidation research.
 
 ## Aug, 2026
 
