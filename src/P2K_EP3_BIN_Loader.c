@@ -145,6 +145,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 
 	/* Disable on BIN_LDR in NOR. */
 #if !defined(FTR_BIN_LDR)
+	UINT32 event = EP3_API_Request_Event_Base();
 	// EXL, 01-Nov-2026: Register the image BEFORE the jump so it is tracked from the
 	//   first instruction. EP3_IMG_FLAG_FREE_MEM marks heap-allocated images (freed on
 	//   unregister); saved_block rides on the record and is restored when the entry is
@@ -173,7 +174,7 @@ STATUS EP3_API_BIN_Load(const WCHAR *file_path, const UINTPTR *args, UINTPTR add
 	//   unregister, so a resident binary keeps valid pointers. The NOR loader has no
 	//   image database instance, so its boot-time block is simply left allocated.
 	// EXL, 02-Nov-2026: Auto-assign the event base (BINs have no explicit cfg event).
-	UINT32 event = EP3_API_Request_Event_Base();
+	event = EP3_API_Request_Event_Base();
 
 	EP3_ImageArgs_T img_args_fallback;
 	memset(&img_args_fallback, 0, sizeof(EP3_ImageArgs_T));

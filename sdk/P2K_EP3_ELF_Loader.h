@@ -22,6 +22,8 @@ extern STATUS EP3_ELF_Load(const WCHAR *file_path, const char *params, UINT32 ev
 // EXL, 30-Oct-2026: Unload previously loaded ELF, freeing its image memory.
 extern STATUS EP3_ELF_Unload(void *elf_ptr);
 
+void EP3_ELF_Loader_MainRegister(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
