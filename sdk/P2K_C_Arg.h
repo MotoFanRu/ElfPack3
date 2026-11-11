@@ -5,6 +5,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if defined(FTR_DONT_DEFINE_VA_ARGS)
+	#include <stdarg.h>
+#else
 /* TODO: RECHECK THIS!!! */
 #if defined(FTR_ARM7) || defined(FTR_NEPTUNE)
 	typedef __builtin_va_list          va_list[1];
@@ -21,6 +24,8 @@ extern "C" {
 	#define va_arg(v, l)               __builtin_va_arg(v, l)
 	#define va_copy(d, s)              __builtin_va_copy(d, s)
 #endif
+
+#endif /* FTR_DONT_DEFINE_VA_ARGS */
 
 #ifdef __cplusplus
 }

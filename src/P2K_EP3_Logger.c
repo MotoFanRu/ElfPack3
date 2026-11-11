@@ -37,6 +37,12 @@ void EP3_Logger(const char *format, ...) {
 
 	va_end(args);
 
+#if defined(FTR_LOGGER_HOST)
+	{
+		fprintf(stderr, "%s", buffer);
+	}
+#endif
+
 #if defined(FTR_LOGGER_JAL)
 	{
 		PFprintf("%s", buffer);

@@ -49,6 +49,9 @@ extern "C" {
 
 	typedef float                      float32_t;  /* IEEE 754 single. */
 	typedef double                     float64_t;  /* IEEE 754 double. */
+#else
+	#include <stdint.h>
+	#include <stddef.h>
 #endif /* !FTR_DONT_DEFINE_SDK_CLIKE_TYPES */
 
 /* Rust-like Types (modern embedded style). */

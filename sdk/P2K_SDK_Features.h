@@ -22,6 +22,8 @@ extern "C" {
 	#define FTR_DONT_DEFINE_DEPRECATED_MACROS              (0)
 	#define FTR_WARN_ON_RAW_DATA_ACCESS                    (0)
 	#define FTR_DONT_DEFINE_ACCESS_MACROS                  (0)
+	#define FTR_DONT_DEFINE_VA_ARGS                        (0)
+	#define FTR_DONT_DEFINE_STDLIB_FUNCTIONS               (0)
 #endif
 
 /* EP3 Project */
@@ -66,6 +68,7 @@ extern "C" {
 	#define FTR_DEBUG                                      (0)
 	#define FTR_LOGGER                                     (0)
 	#define FTR_LOGGER_NULL                                (0)
+	#define FTR_LOGGER_HOST                                (0)
 	#define FTR_LOGGER_JAL                                 (0)
 	#define FTR_LOGGER_SUAPI                               (0)
 	#define FTR_LOGGER_FILE                                (0)
