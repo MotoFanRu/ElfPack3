@@ -36,6 +36,9 @@ extern "C" {
 	#define FTR_ALLOC_J2ME                                 (0)
 	#define FTR_NO_VSNPRINTF                               (0)
 	#define FTR_LOAD_TO_ADDR                               (0x00000000)
+	#define FTR_EP3_PHONE                                  "E1"
+	#define FTR_EP3_FIRMWARE                               "R373_G_0E.30.49R"
+	#define FTR_EP3_VERSION                                "v1.0 10-Nov-2025"
 #endif
 
 /* Compiler & CPU Settings */

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from datetime import timedelta
 
 class AlephDateTime:
@@ -11,5 +11,5 @@ class AlephDateTime:
 		return f'{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}'
 
 	@staticmethod
-	def date_format(dt: datetime) -> str:
-		return dt.strftime("%d-%b-%Y")
+	def date_today() -> str:
+		return date.today().strftime("%d-%b-%Y")

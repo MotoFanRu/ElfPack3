@@ -44,9 +44,12 @@ def build_ep3_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	a.log.I(f' Build BIN Loader:')
 
+	version = 'v1.0' + ' ' + a.dt.date_today()
+	phone, firmware = recipe_name.split('_', 1)
 	cflags = [
 		*recipe.soc.opt, *recipe.toolchain.cflags_bin_ldr, *recipe.flags.build, *recipe.flags.bin_ldr,
 		f'-DFTR_LOAD_TO_ADDR={a.hex.u32s(recipe.addresses.loader)}',
+		f'-DFTR_EP3_PHONE="{phone}"', f'-DFTR_EP3_FIRMWARE="{firmware}"', f'-DFTR_EP3_VERSION="{version}"',
 	]
 	src_obj = [
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
@@ -96,9 +99,12 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	a.log.I(f' Build ELF Loader:')
 
+	version = 'v1.0' + ' ' + a.dt.date_today()
+	phone, firmware = recipe_name.split('_', 1)
 	cflags = [
 		*recipe.soc.opt, *recipe.toolchain.cflags_elf_ldr, *recipe.flags.build, *recipe.flags.elf_ldr,
 		f'-DFTR_LOAD_TO_ADDR={a.hex.u32s(recipe.addresses.loader)}',
+		f'-DFTR_EP3_PHONE="{phone}"', f'-DFTR_EP3_FIRMWARE="{firmware}"', f'-DFTR_EP3_VERSION="{version}"',
 	]
 	src_obj = [
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',      a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),

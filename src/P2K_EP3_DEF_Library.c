@@ -10,6 +10,7 @@
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_DEF_Library.h>
 #include <P2K_EP3_Text.h>
+#include <P2K_EP3_PFW_Version.h>
 
 static STATUS Is_Line_PFW(const char *line) {
 	if (line == NULL || line[0] == ASCII_NULL) {
@@ -82,19 +83,17 @@ static STATUS Check_PFW(const char *p) {
 	}
 	pfw_str[separator_offset] = ASCII_NULL;
 
-#if 0
-	const char *EP3_phone_str = (const char *) GET_DATA_ADDR(EP3_phone);
+	const char *EP3_phone_str = EP3_API_Get_Phone();
 	if (PORTABLE_strncmp(pfw_str, EP3_phone_str, separator_offset) != 0) {
 		L("[EP3 DEF]: Wrong phone: '%s' != '%s'\n", pfw_str, EP3_phone_str);
-		return RESULT_FAIL;
+		// return RESULT_FAIL;
 	}
 
-	const char *EP3_firmware_str = (const char *) GET_DATA_ADDR(EP3_firmware);
+	const char *EP3_firmware_str = EP3_API_Get_Firmware();
 	if (PORTABLE_strncmp(pfw_str + (separator_offset + 1), EP3_firmware_str, pfw_len - (separator_offset + 1)) != 0) {
 		L("[EP3 DEF]: Wrong firmware: '%s' != '%s'\n", pfw_str + (separator_offset + 1), EP3_firmware_str);
-		return RESULT_FAIL;
+		// return RESULT_FAIL;
 	}
-#endif
 
 	return RESULT_OK;
 }

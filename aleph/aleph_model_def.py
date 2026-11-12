@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 
 from .aleph_logger import AlephLogger
 from .aleph_checker import AlephChecker, CheckerMode
@@ -217,7 +216,7 @@ class AlephModelDef:
 
 	@staticmethod
 	def gen_ver() -> str:
-		return 'EP3_' + AlephDateTime.date_format(datetime.now())
+		return 'EP3_' + AlephDateTime.date_today()
 
 	@staticmethod
 	def gen_header() -> HeaderDef:
