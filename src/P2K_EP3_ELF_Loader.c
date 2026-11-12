@@ -789,14 +789,18 @@ void EP3_API_Def_Reload(void) {
 		return;
 	}
 
-	EP3_DEF_Library_Reload(EP3_Def_Library, &EP3_Def_Cnt, EP3_Def_Capacity);
-
-	// EXL, 02-Nov-2026: Reload the constants namespace too (full reparse into the
-	//   live table; new entries appear, stale ones are overwritten in place).
 	if (EP3_Def_Consts != NULL) {
-		EP3_Def_Const_Cnt = EP3_DEF_Library_Load_Consts(EP3_Def_Consts, EP3_Def_Capacity);
+		if (EP3_DEF_Library_Reload_All(
+			EP3_Def_Library, &EP3_Def_Cnt,
+			EP3_Def_Consts, &EP3_Def_Const_Cnt,
+			EP3_Def_Capacity
+		) != RESULT_OK) {
+			EP3_DEF_Library_Reload(EP3_Def_Library, &EP3_Def_Cnt, EP3_Def_Capacity);
+			EP3_Def_Const_Cnt = EP3_DEF_Library_Load_Consts(EP3_Def_Consts, EP3_Def_Capacity);
+		}
 		EP3_DEF_Library_Set_Consts(EP3_Def_Consts, EP3_Def_Const_Cnt);
-		L("[EP3 DEF]: Constants reloaded: %d entries.\n", EP3_Def_Const_Cnt);
+	} else {
+		EP3_DEF_Library_Reload(EP3_Def_Library, &EP3_Def_Cnt, EP3_Def_Capacity);
 	}
 }
 
@@ -821,17 +825,24 @@ void EP3_ELF_Loader_MainRegister(void) {
 	}
 	EP3_Def_Capacity = config.lib_capacity;
 
-	EP3_Def_Cnt = EP3_DEF_Library_Load(EP3_Def_Library, EP3_Def_Capacity);
-	// EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
-	L("[EP3 ELF]: Symbols: %d\n", EP3_Def_Cnt);
-
 	// EXL, 02-Nov-2026: Load the constants namespace ("C" def lines) into its own
 	//   table (same capacity as the function table) and expose it to the fixup API.
 	EP3_Def_Consts = (DEF_LIB_Symbol *) EP3_Memory_Alloc(sizeof(DEF_LIB_Symbol) * EP3_Def_Capacity);
 	if (EP3_Def_Consts != NULL) {
-		EP3_Def_Const_Cnt = EP3_DEF_Library_Load_Consts(EP3_Def_Consts, EP3_Def_Capacity);
+		if (EP3_DEF_Library_Load_All(
+			EP3_Def_Library, EP3_Def_Consts, EP3_Def_Capacity,
+			&EP3_Def_Cnt, &EP3_Def_Const_Cnt
+		) != RESULT_OK) {
+			// Preserve the separate-load behavior if either table cannot be parsed.
+			EP3_Def_Cnt = EP3_DEF_Library_Load(EP3_Def_Library, EP3_Def_Capacity);
+			EP3_Def_Const_Cnt = EP3_DEF_Library_Load_Consts(EP3_Def_Consts, EP3_Def_Capacity);
+		}
 		EP3_DEF_Library_Set_Consts(EP3_Def_Consts, EP3_Def_Const_Cnt);
+	} else {
+		EP3_Def_Cnt = EP3_DEF_Library_Load(EP3_Def_Library, EP3_Def_Capacity);
 	}
+	// EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Viewer"), (UINTPTR) EP3_APP_View);
+	L("[EP3 ELF]: Symbols: %d\n", EP3_Def_Cnt);
 
 	// EXL, 31-Oct-2026: Init the .so subsystem: resolver context (DEF lib, by pointer so
 	//   hot def reloads are picked up) + search paths.

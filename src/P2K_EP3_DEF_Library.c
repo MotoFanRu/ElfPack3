@@ -197,15 +197,24 @@ static STATUS DEF_Library_Check_Hash_Collisions(const DEF_LIB_Symbol *def_lib, U
 	return RESULT_OK;
 }
 
-static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *symbols, UINT32 max_count, STATUS parse_consts) {
+static STATUS DEF_Library_Parse(
+	const char *buffer,
+	DEF_LIB_Symbol *symbols,
+	UINT32 max_symbol_count,
+	UINT32 *out_symbol_count,
+	DEF_LIB_Symbol *const_symbols,
+	UINT32 max_const_count,
+	UINT32 *out_const_count
+) {
 	STATUS is_pfw_okay = RESULT_FAIL;
 	STATUS is_ver_okay = RESULT_FAIL;
 	STATUS is_cpu_okay = RESULT_FAIL;
 
 	const char *p = buffer;
-	UINT32 i = 0;
+	UINT32 symbol_count = 0;
+	UINT32 const_count = 0;
 
-	while (*p && i < max_count) {
+	while (*p) {
 		if (Is_Line_PFW(p) == RESULT_OK) {
 			is_pfw_okay = Check_PFW(p);
 		} else if (Is_Line_VER(p) == RESULT_OK) {
@@ -213,49 +222,62 @@ static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *symbols, UIN
 		} else if (Is_Line_CPU(p) == RESULT_OK) {
 			is_cpu_okay = Check_CPU(p);
 		} else if (Is_Line_Content(p) == RESULT_OK) {
-			STATUS is_const = (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == DEF_LIB_TYPE_CONST) ? RESULT_OK : RESULT_FAIL;
-			if (is_const == parse_consts) {
-				if (Check_Content(p, symbols, i) != RESULT_OK) {
-					L("[EP3 DEF]: Bad content line at %s: %d\n", parse_consts == RESULT_OK ? "constant" : "symbol", i);
-					return 0;
+			if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == DEF_LIB_TYPE_CONST) {
+				if (const_symbols != NULL) {
+					if (const_count >= max_const_count) {
+						L("[EP3 DEF]: Constants exceed capacity: %d\n", max_const_count);
+						return RESULT_FAIL;
+					}
+					if (Check_Content(p, const_symbols, const_count) != RESULT_OK) {
+						L("[EP3 DEF]: Bad constant content line at %d\n", const_count);
+						return RESULT_FAIL;
+					}
+					const_count++;
 				}
-				i++;
+			} else if (symbols != NULL) {
+				if (symbol_count >= max_symbol_count) {
+					L("[EP3 DEF]: Symbols exceed capacity: %d\n", max_symbol_count);
+					return RESULT_FAIL;
+				}
+				if (Check_Content(p, symbols, symbol_count) != RESULT_OK) {
+					L("[EP3 DEF]: Bad symbol content line at %d\n", symbol_count);
+					return RESULT_FAIL;
+				}
+				symbol_count++;
 			}
 		}
 
 		EP3_Text_Skip_To_Next_Line(&p);
 	}
 
-	if (parse_consts == RESULT_OK) {
-		if ((is_pfw_okay != RESULT_OK) || (is_ver_okay != RESULT_OK) || (is_cpu_okay != RESULT_OK)) {
-			L("[EP3 DEF]: %s\n", "Cannot parse the constants header.");
-			return 0;
-		}
-	} else {
-		if (is_pfw_okay != RESULT_OK) {
-			L("[EP3 DEF]: %s\n", "Cannot parse PFW from header.");
-			return 0;
-		}
-		if (is_ver_okay != RESULT_OK) {
-			L("[EP3 DEF]: %s\n", "Cannot parse VER from header.");
-			return 0;
-		}
-		if (is_cpu_okay != RESULT_OK) {
-			L("[EP3 DEF]: %s\n", "Cannot parse CPU from header.");
-			return 0;
-		}
+	if (is_pfw_okay != RESULT_OK) {
+		L("[EP3 DEF]: %s\n", "Cannot parse PFW from header.");
+		return RESULT_FAIL;
+	}
+	if (is_ver_okay != RESULT_OK) {
+		L("[EP3 DEF]: %s\n", "Cannot parse VER from header.");
+		return RESULT_FAIL;
+	}
+	if (is_cpu_okay != RESULT_OK) {
+		L("[EP3 DEF]: %s\n", "Cannot parse CPU from header.");
+		return RESULT_FAIL;
 	}
 
-	DEF_Library_Sort_Symbols(symbols, i);
-	if ((parse_consts == RESULT_OK) || (DEF_Library_Check_Hash_Collisions(symbols, i) == RESULT_OK)) {
-		L("[EP3 DEF]: %s parsed successfully, %s: %d\n",
-			parse_consts == RESULT_OK ? "Constants" : "Library",
-			parse_consts == RESULT_OK ? "entries" : "symbols",
-			i
-		);
-		return i;
+	if (symbols != NULL) {
+		DEF_Library_Sort_Symbols(symbols, symbol_count);
+		if (DEF_Library_Check_Hash_Collisions(symbols, symbol_count) != RESULT_OK) {
+			return RESULT_FAIL;
+		}
+		*out_symbol_count = symbol_count;
+		L("[EP3 DEF]: Library parsed successfully, symbols: %d\n", symbol_count);
 	}
-	return 0;
+	if (const_symbols != NULL) {
+		DEF_Library_Sort_Symbols(const_symbols, const_count);
+		*out_const_count = const_count;
+		L("[EP3 DEF]: Constants parsed successfully, entries: %d\n", const_count);
+	}
+
+	return RESULT_OK;
 }
 
 // EXL, 02-Nov-2026: Read a def-format system file to a heap buffer (caller frees).
@@ -407,13 +429,44 @@ STATUS EP3_DEF_Library_Delete(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32
 	return RESULT_OK;
 }
 
+static void DEF_Library_Merge(
+	DEF_LIB_Symbol *def_lib,
+	UINT32 *p_def_cnt,
+	const DEF_LIB_Symbol *fresh,
+	UINT32 fresh_cnt
+) {
+	UINT32 def_cnt = *p_def_cnt;
+	UINT32 inserted = 0;
+	UINT32 updated = 0;
+	UINT32 unchanged = 0;
+
+	for (UINT32 i = 0; i < fresh_cnt; ++i) {
+		int idx = DEF_Library_Get_Index(def_lib, def_cnt, fresh[i].hash);
+
+		if (idx >= 0) {
+			if (def_lib[idx].addr != fresh[i].addr) {
+				L("[EP3 DEF]: Reload: updated 0x%08X: 0x%08X => 0x%08X\n", fresh[i].hash, def_lib[idx].addr, fresh[i].addr);
+				def_lib[idx].addr = fresh[i].addr;
+				updated++;
+			} else {
+				unchanged++;
+			}
+		} else if (EP3_DEF_Library_Insert(def_lib, &def_cnt, fresh[i].hash, fresh[i].addr) == RESULT_OK) {
+			inserted++;
+		}
+	}
+
+	*p_def_cnt = def_cnt;
+	L("[EP3 DEF]: Reload done: +%d new, ~%d updated, =%d unchanged, total %d (removed are kept).\n",
+		inserted, updated, unchanged, def_cnt
+	);
+}
+
 STATUS EP3_DEF_Library_Reload(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32 max_count) {
 	if ((def_lib == NULL) || (p_def_cnt == NULL) || (max_count == 0)) {
 		L("[EP3 DEF]: %s\n", "Reload: invalid arguments.");
 		return RESULT_FAIL;
 	}
-
-	UINT32 def_cnt = *p_def_cnt;
 
 	// EXL, 31-Oct-2026: Parse the fresh ep3.def into a scratch table, then merge it
 	//   into the live one. The live table is never wiped: runtime-registered entries
@@ -431,37 +484,9 @@ STATUS EP3_DEF_Library_Reload(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32
 		return RESULT_FAIL;
 	}
 
-	UINT32 inserted = 0;
-	UINT32 updated = 0;
-	UINT32 unchanged = 0;
-
-	for (UINT32 i = 0; i < fresh_cnt; ++i) {
-		int idx = DEF_Library_Get_Index(def_lib, def_cnt, fresh[i].hash);
-
-		if (idx >= 0) {
-			// EXL, 31-Oct-2026: Known symbol: apply address/type fixes in place.
-			if (def_lib[idx].addr != fresh[i].addr) {
-				L("[EP3 DEF]: Reload: updated 0x%08X: 0x%08X => 0x%08X\n", fresh[i].hash, def_lib[idx].addr, fresh[i].addr);
-				def_lib[idx].addr = fresh[i].addr;
-				updated++;
-			} else {
-				unchanged++;
-			}
-		} else {
-			// EXL, 31-Oct-2026: New symbol: sorted insert.
-			if (EP3_DEF_Library_Insert(def_lib, &def_cnt, fresh[i].hash, fresh[i].addr) == RESULT_OK) {
-				inserted++;
-			}
-		}
-	}
+	DEF_Library_Merge(def_lib, p_def_cnt, fresh, fresh_cnt);
 
 	EP3_Memory_Free(fresh);
-
-	*p_def_cnt = def_cnt;
-
-	L("[EP3 DEF]: Reload done: +%d new, ~%d updated, =%d unchanged, total %d (removed are kept).\n",
-		inserted, updated, unchanged, def_cnt
-	);
 
 	return RESULT_OK;
 }
@@ -469,6 +494,72 @@ STATUS EP3_DEF_Library_Reload(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32
 // EXL, 02-Nov-2026: Constants ("C" lines) form a separate hash namespace, so a
 //   constant and a function may share a name without collision, and the resolver
 //   never confuses a raw value with a code address.
+
+static STATUS DEF_Library_Load_Tables(
+	DEF_LIB_Symbol *symbols,
+	UINT32 max_symbol_count,
+	UINT32 *out_symbol_count,
+	DEF_LIB_Symbol *const_symbols,
+	UINT32 max_const_count,
+	UINT32 *out_const_count
+) {
+	if (((symbols != NULL) && (out_symbol_count == NULL || max_symbol_count == 0))
+		|| ((const_symbols != NULL) && (out_const_count == NULL || max_const_count == 0))
+		|| ((symbols == NULL) && (const_symbols == NULL))) {
+		L("[EP3 DEF]: %s\n", "Load: invalid table arguments.");
+		return RESULT_FAIL;
+	}
+
+	if (out_symbol_count != NULL) {
+		*out_symbol_count = 0;
+	}
+	if (out_const_count != NULL) {
+		*out_const_count = 0;
+	}
+	if (symbols != NULL) {
+		memset(symbols, 0, sizeof(DEF_LIB_Symbol) * max_symbol_count);
+	}
+	if (const_symbols != NULL) {
+		memset(const_symbols, 0, sizeof(DEF_LIB_Symbol) * max_const_count);
+	}
+
+	char *buffer = NULL;
+	UINT32 buffer_size = 0;
+	if (DEF_Library_Read_File(EP3_ELF_LDR_DEF_NAME, &buffer, &buffer_size) != RESULT_OK) {
+		return RESULT_FAIL;
+	}
+
+	STATUS result = DEF_Library_Parse(
+		buffer,
+		symbols, max_symbol_count, out_symbol_count,
+		const_symbols, max_const_count, out_const_count
+	);
+	EP3_Memory_Free(buffer);
+
+	return result;
+}
+
+STATUS EP3_DEF_Library_Load_All(
+	DEF_LIB_Symbol *def_symbols,
+	DEF_LIB_Symbol *const_symbols,
+	UINT32 max_count,
+	UINT32 *out_symbol_count,
+	UINT32 *out_const_count
+) {
+	if ((def_symbols == NULL) || (const_symbols == NULL)
+		|| (out_symbol_count == NULL) || (out_const_count == NULL)) {
+		L("[EP3 DEF]: %s\n", "Load_All: invalid arguments.");
+		return RESULT_FAIL;
+	}
+	if (max_count == 0) {
+		max_count = DEF_LIB_MAX_SYM_COUNT;
+	}
+
+	return DEF_Library_Load_Tables(
+		def_symbols, max_count, out_symbol_count,
+		const_symbols, max_count, out_const_count
+	);
+}
 
 UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
 	if (!def_symbols) {
@@ -478,18 +569,11 @@ UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
 	if (max_count == 0) {
 		max_count = DEF_LIB_MAX_SYM_COUNT;
 	}
-	memset(def_symbols, 0, sizeof(DEF_LIB_Symbol) * max_count);
 
-	char *load_addr = NULL;
-	UINT32 load_size = 0;
-	if (DEF_Library_Read_File(EP3_ELF_LDR_DEF_NAME, &load_addr, &load_size) != RESULT_OK) {
+	UINT32 symbols_count = 0;
+	if (DEF_Library_Load_Tables(def_symbols, max_count, &symbols_count, NULL, 0, NULL) != RESULT_OK) {
 		return 0;
 	}
-
-	UINT32 symbols_count = DEF_Library_Parse(load_addr, def_symbols, max_count, RESULT_FAIL);
-
-	EP3_Memory_Free(load_addr);
-
 	return symbols_count;
 }
 
@@ -501,19 +585,61 @@ UINT32 EP3_DEF_Library_Load_Consts(DEF_LIB_Symbol *const_symbols, UINT32 max_cou
 	if (max_count == 0) {
 		max_count = DEF_LIB_MAX_SYM_COUNT;
 	}
-	memset(const_symbols, 0, sizeof(DEF_LIB_Symbol) * max_count);
 
-	char *buffer = NULL;
-	UINT32 buffer_size = 0;
-	if (DEF_Library_Read_File(EP3_ELF_LDR_DEF_NAME, &buffer, &buffer_size) != RESULT_OK) {
+	UINT32 const_cnt = 0;
+	if (DEF_Library_Load_Tables(NULL, 0, NULL, const_symbols, max_count, &const_cnt) != RESULT_OK) {
 		return 0;
 	}
-
-	UINT32 const_cnt = DEF_Library_Parse(buffer, const_symbols, max_count, RESULT_OK);
-
-	EP3_Memory_Free(buffer);
-
 	return const_cnt;
+}
+
+STATUS EP3_DEF_Library_Reload_All(
+	DEF_LIB_Symbol *def_lib,
+	UINT32 *p_def_cnt,
+	DEF_LIB_Symbol *const_symbols,
+	UINT32 *p_const_cnt,
+	UINT32 max_count
+) {
+	if ((def_lib == NULL) || (p_def_cnt == NULL) || (const_symbols == NULL)
+		|| (p_const_cnt == NULL) || (max_count == 0)) {
+		L("[EP3 DEF]: %s\n", "Reload_All: invalid arguments.");
+		return RESULT_FAIL;
+	}
+
+	UINT32 scratch_size = sizeof(DEF_LIB_Symbol) * max_count * 2;
+	DEF_LIB_Symbol *fresh = (DEF_LIB_Symbol *) EP3_Memory_Alloc(scratch_size);
+	if (fresh == NULL) {
+		L("[EP3 DEF]: Reload_All: failed to allocate %d bytes for scratch tables.\n", scratch_size);
+		return RESULT_FAIL;
+	}
+
+	DEF_LIB_Symbol *fresh_consts = fresh + max_count;
+	UINT32 fresh_cnt = 0;
+	UINT32 fresh_const_cnt = 0;
+	if (DEF_Library_Load_Tables(
+		fresh, max_count, &fresh_cnt,
+		fresh_consts, max_count, &fresh_const_cnt
+	) != RESULT_OK) {
+		EP3_Memory_Free(fresh);
+		return RESULT_FAIL;
+	}
+	if (fresh_cnt == 0) {
+		L("[EP3 DEF]: %s\n", "Reload_All: no symbols to merge, live tables are kept as is.");
+		EP3_Memory_Free(fresh);
+		return RESULT_FAIL;
+	}
+
+	DEF_Library_Merge(def_lib, p_def_cnt, fresh, fresh_cnt);
+	memset(const_symbols, 0, sizeof(DEF_LIB_Symbol) * max_count);
+	for (UINT32 i = 0; i < fresh_const_cnt; ++i) {
+		const_symbols[i] = fresh_consts[i];
+	}
+	*p_const_cnt = fresh_const_cnt;
+
+	EP3_Memory_Free(fresh);
+
+	L("[EP3 DEF]: Constants reloaded: %d entries.\n", fresh_const_cnt);
+	return RESULT_OK;
 }
 
 // EXL, 02-Nov-2026: Live const-table context for the fixup API (set by the loader).
@@ -530,6 +656,7 @@ STATUS EP3_DEF_Library_Get_Const_By_Hash(UINT32 hash, UINT32 *out_value) {
 		return RESULT_FAIL;
 	}
 
+	hash = (hash & DEF_LIB_CONST_TAG_MASK) | DEF_LIB_CONST_TAG_PREFIX;
 	int idx = DEF_Library_Get_Index(EP3_Def_Consts, EP3_Def_Const_Cnt, hash);
 	if (idx < 0) {
 		return RESULT_FAIL;

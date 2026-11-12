@@ -51,6 +51,14 @@ extern RAW_DATA UINT32 EP3_firmware;
 extern RAW_DATA UINT32 EP3_version;
 
 extern UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count);
+// EXL, 13-Nov-2026: Read and parse both namespaces in a single file pass.
+extern STATUS EP3_DEF_Library_Load_All(
+	DEF_LIB_Symbol *def_symbols,
+	DEF_LIB_Symbol *const_symbols,
+	UINT32 max_count,
+	UINT32 *out_symbol_count,
+	UINT32 *out_const_count
+);
 
 // EXL, 31-Oct-2026: Hot reload: re-read ep3.def from the file system and MERGE it into
 //   the live table — new symbols are inserted, changed addresses/types are applied in
@@ -58,6 +66,14 @@ extern UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count
 //   like dlopen and functions already resolved by loaded modules). Non-destructive:
 //   a failed re-read leaves the table untouched.
 extern STATUS EP3_DEF_Library_Reload(DEF_LIB_Symbol *def_lib, UINT32 *p_def_cnt, UINT32 max_count);
+// EXL, 13-Nov-2026: Reload both namespaces from one read; constants are replaced.
+extern STATUS EP3_DEF_Library_Reload_All(
+	DEF_LIB_Symbol *def_lib,
+	UINT32 *p_def_cnt,
+	DEF_LIB_Symbol *const_symbols,
+	UINT32 *p_const_cnt,
+	UINT32 max_count
+);
 
 // EXL, 01-Nov-2026: Zero-argument hot reload of the live DEF library, callable from
 //   any ELF (registered into the DEF library table by the loader, resolved like a
