@@ -4,6 +4,7 @@
 #include <P2K_AFW_Event.h>
 #include <P2K_DL_File_System.h>
 #include <P2K_UIS_Ustring_Portable.h>
+#include <P2K_Logger.h>
 
 #include <P2K_EP3_APP_Entry_Main.h>
 #include <P2K_EP3_APP_Viewer.h>
@@ -83,7 +84,7 @@ void suFreeMem(void *buffer_ptr) {
 #define MAX_GLOBAL_FILES               (64)
 
 static FILE *g_files[MAX_GLOBAL_FILES];
-static DL_FS_HANDLE_T g_files_cursor = 0x0001;
+static DL_FS_HANDLE_T g_files_cursor = 0x0000;
 
 DL_FS_SIZE_T DL_FsSGetFileSize(const WCHAR *file_uri, DL_FS_OWNER_T owner_id) {
 	UNUSED(owner_id);
@@ -144,11 +145,12 @@ DL_FS_HANDLE_T DL_FsOpenFile(
 		return DL_FS_HANDLE_INVALID;
 	}
 
-	g_files[g_files_cursor] = fp;
 	g_files_cursor++;
 	if (g_files_cursor >= MAX_GLOBAL_FILES) {
-		g_files_cursor = 0x0001;
+		g_files_cursor = 0x0000;
 	}
+
+	g_files[g_files_cursor] = fp;
 
 	return g_files_cursor;
 }
@@ -172,6 +174,7 @@ DL_FS_RESULT_T DL_FsReadFile(
 ) {
 	const size_t elements = fread(buffer, element_size, count, g_files[file_handle]);
 	if (elements != count) {
+		*elements_read = 0x00000000;
 		return DL_FS_RESULT_FAIL;
 	}
 

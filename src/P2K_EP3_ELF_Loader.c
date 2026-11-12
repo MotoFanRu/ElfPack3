@@ -498,22 +498,28 @@ STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 // EXL, 31-Oct-2026: DT_INIT + DT_INIT_ARRAY constructors of a module.
 void EP3_ELF_Run_Init(const EP3_DYN_Context *ctx) {
 	if (ctx->dyn_tags[DT_INIT] != 0) {
+#if !defined(FTR_HOST)
 		((void (*)(void)) (ctx->phys_base + ctx->dyn_tags[DT_INIT] - ctx->virtual_base))();
+#endif
 	}
 	if ((ctx->dyn_tags[DT_INIT_ARRAY] != 0) && (ctx->dyn_tags[DT_INIT_ARRAYSZ] != 0)) {
+#if !defined(FTR_HOST)
 		void (**init_array)(void) = (void (**)(void)) (
 			ctx->phys_base + ctx->dyn_tags[DT_INIT_ARRAY] - ctx->virtual_base
 		);
 		UINT32 init_cnt = ctx->dyn_tags[DT_INIT_ARRAYSZ] / sizeof(void *);
 		for (UINT32 i = 0; i < init_cnt; ++i) {
 			init_array[i]();
+
 		}
+#endif
 	}
 }
 
 // EXL, 31-Oct-2026: DT_FINI_ARRAY (reverse order) + DT_FINI destructors of a module.
 void EP3_ELF_Run_Fini(const EP3_DYN_Context *ctx) {
 	if ((ctx->dyn_tags[DT_FINI_ARRAY] != 0) && (ctx->dyn_tags[DT_FINI_ARRAYSZ] != 0)) {
+#if !defined(FTR_HOST)
 		void (**fini_array)(void) = (void (**)(void)) (
 			ctx->phys_base + ctx->dyn_tags[DT_FINI_ARRAY] - ctx->virtual_base
 		);
@@ -521,9 +527,12 @@ void EP3_ELF_Run_Fini(const EP3_DYN_Context *ctx) {
 		for (UINT32 i = fini_cnt; i > 0; --i) {
 			fini_array[i - 1]();
 		}
+#endif
 	}
 	if (ctx->dyn_tags[DT_FINI] != 0) {
+#if !defined(FTR_HOST)
 		((void (*)(void)) (ctx->phys_base + ctx->dyn_tags[DT_FINI] - ctx->virtual_base))();
+#endif
 	}
 }
 
@@ -638,8 +647,11 @@ static STATUS EP3_ELF_EP3_Load(
 	//   keeps the image; any other result unloads it immediately (failed start).
 	D("[EP3 ELF]: Starting ELF at 0x%08X\n", dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base);
 
+#if !defined(FTR_HOST)
 	UINT32 entry_result = ((EP3_Image_Entry_T) (dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base))(img_args);
-
+#else
+	UINT32 entry_result = 0;
+#endif
 	D("[EP3 ELF]: %s\n", "ELF returned");
 
 	*out_mem_base = dyn_ctx.mem_base;

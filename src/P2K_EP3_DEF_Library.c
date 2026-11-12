@@ -107,6 +107,7 @@ static STATUS Check_PFW(const char *p) {
 	}
 	pfw_str[separator_offset] = ASCII_NULL;
 
+#if 0
 	const char *EP3_phone_str = (const char *) GET_DATA_ADDR(EP3_phone);
 	if (PORTABLE_strncmp(pfw_str, EP3_phone_str, separator_offset) != 0) {
 		L("[EP3 DEF]: Wrong phone: '%s' != '%s'\n", pfw_str, EP3_phone_str);
@@ -118,6 +119,7 @@ static STATUS Check_PFW(const char *p) {
 		L("[EP3 DEF]: Wrong firmware: '%s' != '%s'\n", pfw_str + (separator_offset + 1), EP3_firmware_str);
 		return RESULT_FAIL;
 	}
+#endif
 
 	return RESULT_OK;
 }
