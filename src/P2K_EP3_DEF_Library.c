@@ -9,23 +9,7 @@
 #include <P2K_EP3_File_System.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_DEF_Library.h>
-
-static UINT32 hex2addr(const char *p) {
-	UINT32 addr = 0;
-	while (*p) {
-		char c = *(p++);
-		if (c >= '0' && c <= '9') {
-			addr = (addr << 4) | (c - '0');
-		} else if (c >= 'a' && c <= 'f') {
-			addr = (addr << 4) | (c - 'a' + 10);
-		} else if (c >= 'A' && c <= 'F') {
-			addr = (addr << 4) | (c - 'A' + 10);
-		} else {
-			break;
-		}
-	}
-	return addr;
-}
+#include <P2K_EP3_Text.h>
 
 static STATUS Is_Line_PFW(const char *line) {
 	if (line == NULL || line[0] == ASCII_NULL) {
@@ -77,15 +61,6 @@ static STATUS Is_Line_Content(const char *line) {
 	}
 
 	return RESULT_OK;
-}
-
-static void Skip_To_Next_Line(const char **p) {
-	while (**p && **p != '\n' && **p != '\r') {
-		(*p)++;
-	}
-	while (**p == '\n' || **p == '\r') {
-		(*p)++;
-	}
 }
 
 static STATUS Check_PFW(const char *p) {
@@ -181,7 +156,7 @@ static STATUS Check_Content(const char *p, DEF_LIB_Symbol *symbols, UINT32 i) {
 	if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == 'C') {
 		symbols[i].hash = (symbols[i].hash & DEF_LIB_CONST_TAG_MASK) | DEF_LIB_CONST_TAG_PREFIX;
 	}
-	symbols[i].addr = hex2addr(p + DEF_LIB_PARSER_CONTENT_ADDR);
+	symbols[i].addr = EP3_Text_Hex_To_U32(p + DEF_LIB_PARSER_CONTENT_ADDR);
 	if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == 'T') {
 		symbols[i].addr = symbols[i].addr | 1;
 	}
@@ -222,7 +197,7 @@ static STATUS DEF_Library_Check_Hash_Collisions(const DEF_LIB_Symbol *def_lib, U
 	return RESULT_OK;
 }
 
-static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
+static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *symbols, UINT32 max_count, STATUS parse_consts) {
 	STATUS is_pfw_okay = RESULT_FAIL;
 	STATUS is_ver_okay = RESULT_FAIL;
 	STATUS is_cpu_okay = RESULT_FAIL;
@@ -238,35 +213,46 @@ static UINT32 DEF_Library_Parse(const char *buffer, DEF_LIB_Symbol *def_symbols,
 		} else if (Is_Line_CPU(p) == RESULT_OK) {
 			is_cpu_okay = Check_CPU(p);
 		} else if (Is_Line_Content(p) == RESULT_OK) {
-			// EXL, 02-Nov-2026: Constants ("C" lines) live in a separate namespace.
-			if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) != DEF_LIB_TYPE_CONST) {
-				if (Check_Content(p, def_symbols, i) != RESULT_OK) {
-					L("[EP3 DEF]: Bad content line at symbol: %d\n", i);
+			STATUS is_const = (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == DEF_LIB_TYPE_CONST) ? RESULT_OK : RESULT_FAIL;
+			if (is_const == parse_consts) {
+				if (Check_Content(p, symbols, i) != RESULT_OK) {
+					L("[EP3 DEF]: Bad content line at %s: %d\n", parse_consts == RESULT_OK ? "constant" : "symbol", i);
 					return 0;
 				}
 				i++;
 			}
 		}
 
-		Skip_To_Next_Line(&p);
+		EP3_Text_Skip_To_Next_Line(&p);
 	}
 
-	if (is_pfw_okay != RESULT_OK) {
-		L("[EP3 DEF]: %s\n", "Cannot parse PFW from header.");
-		return 0;
-	}
-	if (is_ver_okay != RESULT_OK) {
-		L("[EP3 DEF]: %s\n", "Cannot parse VER from header.");
-		return 0;
-	}
-	if (is_cpu_okay != RESULT_OK) {
-		L("[EP3 DEF]: %s\n", "Cannot parse CPU from header.");
-		return 0;
+	if (parse_consts == RESULT_OK) {
+		if ((is_pfw_okay != RESULT_OK) || (is_ver_okay != RESULT_OK) || (is_cpu_okay != RESULT_OK)) {
+			L("[EP3 DEF]: %s\n", "Cannot parse the constants header.");
+			return 0;
+		}
+	} else {
+		if (is_pfw_okay != RESULT_OK) {
+			L("[EP3 DEF]: %s\n", "Cannot parse PFW from header.");
+			return 0;
+		}
+		if (is_ver_okay != RESULT_OK) {
+			L("[EP3 DEF]: %s\n", "Cannot parse VER from header.");
+			return 0;
+		}
+		if (is_cpu_okay != RESULT_OK) {
+			L("[EP3 DEF]: %s\n", "Cannot parse CPU from header.");
+			return 0;
+		}
 	}
 
-	DEF_Library_Sort_Symbols(def_symbols, i);
-	if (DEF_Library_Check_Hash_Collisions(def_symbols, i) == RESULT_OK) {
-		L("[EP3 DEF]: Library parsed successfully, symbols: %d\n", i);
+	DEF_Library_Sort_Symbols(symbols, i);
+	if ((parse_consts == RESULT_OK) || (DEF_Library_Check_Hash_Collisions(symbols, i) == RESULT_OK)) {
+		L("[EP3 DEF]: %s parsed successfully, %s: %d\n",
+			parse_consts == RESULT_OK ? "Constants" : "Library",
+			parse_consts == RESULT_OK ? "entries" : "symbols",
+			i
+		);
 		return i;
 	}
 	return 0;
@@ -500,51 +486,11 @@ UINT32 EP3_DEF_Library_Load(DEF_LIB_Symbol *def_symbols, UINT32 max_count) {
 		return 0;
 	}
 
-	UINT32 symbols_count = DEF_Library_Parse(load_addr, def_symbols, max_count);
+	UINT32 symbols_count = DEF_Library_Parse(load_addr, def_symbols, max_count, RESULT_FAIL);
 
 	EP3_Memory_Free(load_addr);
 
 	return symbols_count;
-}
-
-// EXL, 02-Nov-2026: Parse ONLY the constants ("C" lines) into their own table.
-static UINT32 DEF_Library_Parse_Consts(const char *buffer, DEF_LIB_Symbol *const_symbols, UINT32 max_count) {
-	STATUS is_pfw_okay = RESULT_FAIL;
-	STATUS is_ver_okay = RESULT_FAIL;
-	STATUS is_cpu_okay = RESULT_FAIL;
-
-	const char *p = buffer;
-	UINT32 i = 0;
-
-	while (*p && i < max_count) {
-		if (Is_Line_PFW(p) == RESULT_OK) {
-			is_pfw_okay = Check_PFW(p);
-		} else if (Is_Line_VER(p) == RESULT_OK) {
-			is_ver_okay = Check_VER(p);
-		} else if (Is_Line_CPU(p) == RESULT_OK) {
-			is_cpu_okay = Check_CPU(p);
-		} else if (Is_Line_Content(p) == RESULT_OK) {
-			if (*(p + DEF_LIB_PARSER_CONTENT_TYPE) == DEF_LIB_TYPE_CONST) {
-				if (Check_Content(p, const_symbols, i) != RESULT_OK) {
-					L("[EP3 DEF]: Bad content line at constant: %d\n", i);
-					return 0;
-				}
-				i++;
-			}
-		}
-
-		Skip_To_Next_Line(&p);
-	}
-
-	if ((is_pfw_okay != RESULT_OK) || (is_ver_okay != RESULT_OK) || (is_cpu_okay != RESULT_OK)) {
-		L("[EP3 DEF]: %s\n", "Cannot parse the constants header.");
-		return 0;
-	}
-
-	DEF_Library_Sort_Symbols(const_symbols, i);
-	L("[EP3 DEF]: Constants parsed successfully, entries: %d\n", i);
-
-	return i;
 }
 
 UINT32 EP3_DEF_Library_Load_Consts(DEF_LIB_Symbol *const_symbols, UINT32 max_count) {
@@ -563,7 +509,7 @@ UINT32 EP3_DEF_Library_Load_Consts(DEF_LIB_Symbol *const_symbols, UINT32 max_cou
 		return 0;
 	}
 
-	UINT32 const_cnt = DEF_Library_Parse_Consts(buffer, const_symbols, max_count);
+	UINT32 const_cnt = DEF_Library_Parse(buffer, const_symbols, max_count, RESULT_OK);
 
 	EP3_Memory_Free(buffer);
 

@@ -9,6 +9,7 @@
 #include <P2K_EP3_File_System.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_Config.h>
+#include <P2K_EP3_Text.h>
 
 // EXL, 31-Oct-2026: ep3.cfg parser. Same whole-file read + line-walk style as the
 //   ep3.def parser (P2K_EP3_DEF_Library.c). One tokenizer handles settings directives
@@ -16,36 +17,8 @@
 
 #define EP3_CFG_TOO_SMALL              (2)
 
-// EXL, 31-Oct-2026: Same as hex2addr in P2K_EP3_DEF_Library.c, kept local to keep
-//   the config parser self-contained.
-static UINT32 hex2addr(const char *p) {
-	UINT32 addr = 0;
-	while (*p) {
-		char c = *(p++);
-		if (c >= '0' && c <= '9') {
-			addr = (addr << 4) | (c - '0');
-		} else if (c >= 'a' && c <= 'f') {
-			addr = (addr << 4) | (c - 'a' + 10);
-		} else if (c >= 'A' && c <= 'F') {
-			addr = (addr << 4) | (c - 'A' + 10);
-		} else {
-			break;
-		}
-	}
-	return addr;
-}
-
 static void Skip_Spaces(const char **p) {
 	while ((**p == ' ') || (**p == '\t')) {
-		(*p)++;
-	}
-}
-
-static void Skip_To_Next_Line(const char **p) {
-	while (**p && (**p != '\n') && (**p != '\r')) {
-		(*p)++;
-	}
-	while ((**p == '\n') || (**p == '\r')) {
 		(*p)++;
 	}
 }
@@ -75,9 +48,9 @@ static UINT32 Read_Number(const char **p, UINT32 def_val) {
 		return def_val;
 	}
 
-	// EXL, 31-Oct-2026: Decimal or 0xHEX (hex2addr parses both forms).
+	// EXL, 31-Oct-2026: Decimal or 0xHEX (EP3_Text_Hex_To_U32 parses the hex form).
 	if ((token[0] == '0') && ((token[1] == 'x') || (token[1] == 'X'))) {
-		return hex2addr(token + 2);
+		return EP3_Text_Hex_To_U32(token + 2);
 	}
 
 	UINT32 val = 0;
@@ -124,7 +97,7 @@ static void Parse_Autorun(const char *p, EP3_Autorun_Entry_T *entry) {
 	// EXL, 31-Oct-2026: Optional event, must start with "0x" to not eat the args string.
 	Skip_Spaces(&p);
 	if ((p[0] == '0') && (p[1] == 'x')) {
-		entry->event = hex2addr(p + 2);
+		entry->event = EP3_Text_Hex_To_U32(p + 2);
 		char ev_token[16] = { ASCII_NULL };
 		Read_Token(&p, ev_token, sizeof(ev_token));
 	}
@@ -222,7 +195,7 @@ static UINT32 Config_Parse(const char *buffer, EP3_Config_T *config) {
 			}
 		}
 
-		Skip_To_Next_Line(&p);
+		EP3_Text_Skip_To_Next_Line(&p);
 	}
 
 	return autorun_cnt;
@@ -334,7 +307,7 @@ static void Image_Config_Parse(const char *buffer, EP3_Image_Cfg_T *cfg) {
 			}
 		}
 
-		Skip_To_Next_Line(&p);
+		EP3_Text_Skip_To_Next_Line(&p);
 	}
 }
 
@@ -509,7 +482,7 @@ static INT32 CFG_Parse_Int_Token(const char *token) {
 
 	UINT32 val = 0;
 	if ((token[0] == '0') && ((token[1] == 'x') || (token[1] == 'X'))) {
-		val = hex2addr(token + 2);
+		val = EP3_Text_Hex_To_U32(token + 2);
 	} else {
 		while ((token[0] >= '0') && (token[0] <= '9')) {
 			val = (val * 10) + (UINT32) (token[0] - '0');
@@ -571,7 +544,7 @@ STATUS EP3_API_CFG_TXT_ReadOption(
 			}
 		}
 
-		Skip_To_Next_Line(&p);
+		EP3_Text_Skip_To_Next_Line(&p);
 	}
 
 	EP3_Memory_Free(buffer);
