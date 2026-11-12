@@ -17,6 +17,14 @@
 #include <P2K_EP3_SO_Loader.h>
 #include <P2K_EP3_ELF_Loader.h>
 
+#if defined(FTR_LITTLE_ENDIAN)
+#define EP3_PLT_THUMB_BRIDGE_WORD 0xE7FD4778
+#elif defined(FTR_BIG_ENDIAN)
+#define EP3_PLT_THUMB_BRIDGE_WORD 0x4778E7FD
+#else
+#error "ELF loader target endianness must be defined"
+#endif
+
 STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
 	UNUSED(file_handle);
 
@@ -447,9 +455,23 @@ STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 			phys_base + *((Elf32_Word *) (phys_base + rel_table[0].r_offset - virtual_base)) - virtual_base
 		);
 		// EXL, 30-Oct-2026: It has 4778E7FD opcode in Thumb after 4 .plt bytes? If yes, just skip it.
-		plt_jump_tbl_ptr += ((*(plt_jump_tbl_ptr + 5)) == 0x4778E7FD) ? 6 : 5;
+		plt_jump_tbl_ptr += ((*(plt_jump_tbl_ptr + 5)) == EP3_PLT_THUMB_BRIDGE_WORD) ? 6 : 5;
 
-		for (UINT32 i = 0; i * sizeof(Elf32_Rel) < ctx->dyn_tags[DT_PLTRELSZ]; ++i) {
+		for (UINT32 i = 0; i < ctx->dyn_tags[DT_PLTRELSZ] / sizeof(Elf32_Rel); ++i) {
+			// Each relocation owns one PLT entry, even when its symbol cannot be resolved.
+			// Consume an optional Thumb bridge and advance before any path can continue.
+			Elf32_Word *plt_entry = plt_jump_tbl_ptr;
+			if (*plt_entry == EP3_PLT_THUMB_BRIDGE_WORD) {
+				++plt_entry;
+			}
+			plt_jump_tbl_ptr = plt_entry + 3;
+
+			Elf32_Word rel_type = ELF32_R_TYPE(rel_table[i].r_info);
+			if (rel_type != R_ARM_JUMP_SLOT) {
+				D("[EP3 ELF]: Unsupported PLT relocation #%d: type %d.\n", i, rel_type);
+				continue;
+			}
+
 			INT32 sym_idx = (INT32) ELF32_R_SYM(rel_table[i].r_info);
 			const char *sym_str = &ctx->str_table[ctx->sym_table[sym_idx].st_name];
 
@@ -459,34 +481,23 @@ STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 				continue;
 			}
 
-			// EXL, 30-Oct-2026: We need to patch the PLT jump table at runtime.
-			//   This will resolve the launch issues on real ARMv4T, ARM7TDMI-S, and Big-Endian CPUs/MCUs.
-			// E2 8F C6 00 E2 8C CA 00 E5 BC F0 C0 => E5 9F C0 00 E1 2F FF 1C 10 00 00 00
-			{
-				Elf32_Word ARM_ADRL_1 = *(plt_jump_tbl_ptr + 0);
-				Elf32_Word ARM_ADRL_2 = *(plt_jump_tbl_ptr + 1);
-				Elf32_Word ARM_LDR    = *(plt_jump_tbl_ptr + 2);
+			// These are native-endian instruction words, matching the ELF endianness
+			// validated when loading the image on both little- and big-endian targets.
+			Elf32_Word old_insn0 = plt_entry[0];
+			Elf32_Word old_insn1 = plt_entry[1];
+			Elf32_Word old_insn2 = plt_entry[2];
 
-				// add ip, pc, #0, #12    =>   ldr ip, [pc]
-				// add ip, ip, #0, #20    =>   bx ip
-				// ldr pc, [ip, #0xc0]!   =>   10 00 00 00 (function address)
+			// add ip, pc, #0, #12    =>   ldr ip, [pc]
+			// add ip, ip, #0, #20    =>   bx ip
+			// ldr pc, [ip, #0xc0]!   =>   10 00 00 00 (function address)
+			plt_entry[0] = 0xE59FC000;
+			plt_entry[1] = 0xE12FFF1C;
+			plt_entry[2] = ldr_st_addr;
 
-				// EXL, 30-Oct-2026: It has 4778E7FD opcode in Thumb? If yes, just skip it.
-				if (*plt_jump_tbl_ptr == 0x4778E7FD) {
-					plt_jump_tbl_ptr += 1;
-				}
-
-				*(plt_jump_tbl_ptr + 0) = 0xE59FC000;
-				*(plt_jump_tbl_ptr + 1) = 0xE12FFF1C;
-				*(plt_jump_tbl_ptr + 2) = ldr_st_addr;
-
-				D("=> PLT PATCH: %08X: %08X %08X %08X => %08X %08X %08X\n",
-					plt_jump_tbl_ptr, ARM_ADRL_1, ARM_ADRL_2, ARM_LDR,
-					*(plt_jump_tbl_ptr + 0), *(plt_jump_tbl_ptr + 1), *(plt_jump_tbl_ptr + 2)
-				);
-
-				plt_jump_tbl_ptr += 3;
-			}
+			D("=> PLT PATCH: %08X: %08X %08X %08X => %08X %08X %08X\n",
+				plt_entry, old_insn0, old_insn1, old_insn2,
+				plt_entry[0], plt_entry[1], plt_entry[2]
+			);
 
 			*((Elf32_Word *) (phys_base + rel_table[i].r_offset - virtual_base)) = ldr_st_addr;
 		}

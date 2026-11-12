@@ -13,6 +13,7 @@
 * ✅ Environment variables.
 * ✅ Entry point research.
 * 🟨 Cache ARM invalidation research.
+* ✅ Fix PLT patch.
 
 ## Aug, 2026
 
