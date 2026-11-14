@@ -26,7 +26,7 @@ def build_ep3_so_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	def_test_res = a.consts.P2K_SDK_BUILD / 'ep3_test.def'
 	def_lines = def_res.read_text().splitlines()
 	def_fake = [
-		'0x00000002 T EP3_Logger',
+		'0x00000002 T EP3_API_Logger',
 		'0x00000004 T dlopen',
 		'0x00000006 T dlsym',
 		'0x00000008 T dlclose',

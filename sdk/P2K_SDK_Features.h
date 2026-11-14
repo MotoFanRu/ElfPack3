@@ -5,7 +5,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* General Settings */
+/*
+ * EXL, 15-Nov-2026:
+ *
+ * Базовые настройки SDK.
+ */
 #if (0)
 	#define FTR_DONT_DEFINE_SDK_P2K_TYPES                  (0)
 	#define FTR_DONT_DEFINE_SDK_CLIKE_TYPES                (0)
@@ -22,26 +26,42 @@ extern "C" {
 	#define FTR_DONT_DEFINE_DEPRECATED_MACROS              (0)
 	#define FTR_WARN_ON_RAW_DATA_ACCESS                    (0)
 	#define FTR_DONT_DEFINE_ACCESS_MACROS                  (0)
-	#define FTR_DONT_DEFINE_VA_ARGS                        (0)
-	#define FTR_DONT_DEFINE_STDLIB_FUNCTIONS               (0)
+	#define FTR_DONT_DEFINE_EMPTY_STR                      (0)
+	#define FTR_DONT_DEFINE_C_STD_VA_ARGS                  (0)
+	#define FTR_DONT_DEFINE_C_STDLIB_FUNCTIONS             (0)
 #endif
 
-/* EP3 Project */
+/*
+ * EXL, 15-Nov-2026:
+ *
+ * Настройки проекта ElfPack3.
+ */
 #if (0)
 	#define FTR_BIN_LDR                                    (0)
 	#define FTR_ELF_LDR                                    (0)
 	#define FTR_SO_LIB                                     (0)
+	#define FTR_DEBUG                                      (0)
+	#define FTR_LOGGER_JAL                                 (0)
+	#define FTR_LOGGER_SUAPI                               (0)
+	#define FTR_LOGGER_FILE                                "/b/ep3.log"
+	#define FTR_DISKS_A                                    (0)
+	#define FTR_DISKS_AB                                   (0)
+	#define FTR_DISKS_ABC                                  (0)
+	#define FTR_DISKS_ALL                                  (0)
 	#define FTR_ALLOC_SUAPI                                (0)
 	#define FTR_ALLOC_UIS                                  (0)
 	#define FTR_ALLOC_J2ME                                 (0)
-	#define FTR_NO_VSNPRINTF                               (0)
 	#define FTR_LOAD_TO_ADDR                               (0x00000000)
 	#define FTR_EP3_PHONE                                  "E1"
 	#define FTR_EP3_FIRMWARE                               "R373_G_0E.30.49R"
 	#define FTR_EP3_VERSION                                "v1.0 10-Nov-2025"
 #endif
 
-/* Compiler & CPU Settings */
+/*
+ * EXL, 15-Nov-2026:
+ *
+ * Настройки компилятора и процессора.
+ */
 #if (0)
 	#define FTR_ARM_MODE                                   (0)
 	#define FTR_THUMB_MODE                                 (0)
@@ -64,18 +84,6 @@ extern "C" {
 	#define FTR_ARGON                                      (0)
 	#define FTR_ARGON_PLUS                                 (0)
 	#define FTR_ARGON_LV                                   (0)
-#endif
-
-/* Logging Settings */
-#if (0)
-	#define FTR_DEBUG                                      (0)
-	#define FTR_LOGGER                                     (0)
-	#define FTR_LOGGER_NULL                                (0)
-	#define FTR_LOGGER_HOST                                (0)
-	#define FTR_LOGGER_JAL                                 (0)
-	#define FTR_LOGGER_SUAPI                               (0)
-	#define FTR_LOGGER_FILE                                (0)
-	#define FTR_LOGGER_FILE_PREDIFINED                     (0)
 #endif
 
 #ifdef __cplusplus

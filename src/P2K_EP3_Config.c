@@ -6,7 +6,7 @@
 #include <P2K_DL_File_System.h>
 
 #include <P2K_EP3_Base.h>
-#include <P2K_EP3_File_System.h>
+#include <P2K_EP3_Component.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_Config.h>
 #include <P2K_EP3_Text.h>
@@ -209,8 +209,8 @@ STATUS EP3_Config_Load(EP3_Config_T *config) {
 
 	EP3_Config_Defaults(config);
 
-	WCHAR file_path[PATH_MAX_SHORT];
-	if (!EP3_Find_Internal_System_Component(EP3_ELF_LDR_CFG_NAME, file_path)) {
+	WCHAR file_path[PATH_MAX_COMPONENT];
+	if (EP3_Find_Component(EP3_ELF_LDR_CFG_NAME, file_path) != RESULT_OK) {
 		L("[EP3 CFG]: Failed to find '%s' system component, using defaults.\n", EP3_ELF_LDR_CFG_NAME);
 		return RESULT_OK;
 	}
@@ -577,7 +577,7 @@ STATUS EP3_API_CFG_TXT_SaveOption(
 	// EXL, 01-Nov-2026: Render the value text. A STRING must be a single line token.
 	char value_text[EP3_CFG_MAX_VALUE] = { ASCII_NULL };
 	if (type == EP3_CFG_TYPE_INT) {
-		snprintf(value_text, sizeof(value_text), "%d", *((const INT32 *) value));
+		snprintf(value_text, sizeof(value_text), "%d", *((const int *) value));
 	} else {
 		const char *src = (const char *) value;
 		UINT32 len = 0;

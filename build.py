@@ -52,16 +52,17 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-DFTR_EP3_PHONE="{phone}"', f'-DFTR_EP3_FIRMWARE="{firmware}"', f'-DFTR_EP3_VERSION="{version}"',
 	]
 	src_obj = [
+		# TODO: Arrange it and recheck.
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_File_System.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_File_System.o'),
+		#(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Component.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Component.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Environment.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Environment.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Args.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Args.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Entry_Main.c', a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Entry_Main.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Agent_Entry.c', a.consts.P2K_SDK_BUILD / 'P2K_EP3_Agent_Entry.o'),
 	]
 	for src, obj in src_obj:
 		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):
@@ -74,6 +75,8 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-Wl,-T,{recipe.soc.lds.name}',
 		f'-Wl,-Ttext={a.hex.u32s(recipe.addresses.inject)}',
 		f'{a.consts.P2K_SDK_BUILD / "P2K_EP3_Library.a"}',
+		# TODO: Move it to SoC/Recipe
+		f'{a.consts.P2K_SDK_LIB / "libgcc_arm7be_thumb.a"}',
 	]
 	elf_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.elf'
 	objs = [obj for _, obj in src_obj]
@@ -107,6 +110,10 @@ def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-DFTR_EP3_PHONE="{phone}"', f'-DFTR_EP3_FIRMWARE="{firmware}"', f'-DFTR_EP3_VERSION="{version}"',
 	]
 	src_obj = [
+		# TODO: Arrange it and recheck.
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Component.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Component.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',      a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Config.c',           a.consts.P2K_SDK_BUILD / 'P2K_EP3_Config.o'),
 		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Manager.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Manager.o'),
@@ -127,12 +134,11 @@ def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 		f'-Wl,-T,{recipe.soc.lds.name}',
 		f'-Wl,-Ttext={a.hex.u32s(recipe.addresses.loader)}',
 		f'{a.consts.P2K_SDK_BUILD / "P2K_EP3_Library.a"}',
+		# TODO: Move it to SoC/Recipe
+		f'{a.consts.P2K_SDK_LIB / "libgcc_arm7be_thumb.a"}',
 	]
 	elf_res = a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.elf'
 	objs = [obj for _, obj in src_obj]
-	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o')
-	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o')
-	objs.append(a.consts.P2K_SDK_BUILD / 'P2K_EP3_File_System.o')
 	if not a.toolchain.gcc_ld(recipe.toolchain, objs, elf_res, cflags, lflags):
 		a.log.E(f'Cannot link: {elf_res}')
 		return False

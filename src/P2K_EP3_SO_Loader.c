@@ -9,7 +9,7 @@
 
 #include <P2K_EP3_Base.h>
 #include <P2K_EP3_Memory.h>
-#include <P2K_EP3_File_System.h>
+#include <P2K_EP3_Component.h>
 #include <P2K_EP3_Config.h>
 #include <P2K_EP3_Image_Manager.h>
 #include <P2K_EP3_SO_Loader.h>

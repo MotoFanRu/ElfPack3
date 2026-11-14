@@ -73,7 +73,7 @@ static const char app_name_string[APP_NAME_SIZE + 1] = "TestSO2";
 
 // EXL, 31-Oct-2026: Exported to lib1.so (SO -> ELF call), resolved from the ELF exports.
 void ui_notify(int value) {
-	EP3_Logger("[TestSO2]: ui_notify called from .so library, value=%d\n", value);
+	EP3_API_Logger("[TestSO2]: ui_notify called from .so library, value=%d\n", value);
 }
 
 UINT32 EP3_Main(EP3_ImageArgs_T *args) {

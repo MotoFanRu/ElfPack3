@@ -6,7 +6,7 @@
 
 static SU_QUEUE_HANDLE EP3_Reactor_Create_Task_Port_Queue(UINT16 port_id, const char *port_name);
 
-__attribute__((used, section(".text.task.a.entry_point")))
+__attribute__((used, section(".text.ep3.task_a_entry_point")))
 void EP3_Reactor_Task_A(void) {
 	SU_RET_STATUS status;
 
@@ -41,12 +41,13 @@ void EP3_Reactor_Task_A(void) {
 
 			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) func_addr);
 			STATUS status = task_routine((UINTPTR *) args_addr);
+			UNUSED(status);
 			D("[EP3 TAR A]: Returned func_addr=0x%08X, status: %d.\n", func_addr, status);
 		}
 	}
 }
 
-__attribute__((used, section(".text.task.b.entry_point")))
+__attribute__((used, section(".text.ep3.task_b_entry_point")))
 void EP3_Reactor_Task_B(void) {
 	SU_RET_STATUS status;
 
@@ -72,6 +73,8 @@ void EP3_Reactor_Task_B(void) {
 
 			EP3_REACTOR_ROUTINE_T task_routine = ((EP3_REACTOR_ROUTINE_T) func_addr);
 			STATUS status = task_routine((UINTPTR *) args_addr);
+			UNUSED(task_routine);
+			UNUSED(status);
 			D("[EP3 TAR B]: Returned func_addr=0x%08X, status: %d.\n", func_addr, status);
 		}
 	}

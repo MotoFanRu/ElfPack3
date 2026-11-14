@@ -12,9 +12,10 @@ SECTIONS {
 	 */
 
 	.text : {
-		KEEP(*(.text.bin.entry_point))
-		KEEP(*(.text.task.a.entry_point))
-		KEEP(*(.text.task.b.entry_point))
+		KEEP(*(.text.ep3.bin_entry_point))
+		KEEP(*(.text.ep3.elf_entry_point))
+		KEEP(*(.text.ep3.task_a_entry_point))
+		KEEP(*(.text.ep3.task_b_entry_point))
 		*(.text .text.*)
 		*(.rodata .rodata.*)
 		*(.data .data.*)

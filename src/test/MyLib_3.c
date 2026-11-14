@@ -11,7 +11,7 @@ extern int mylib_add(int a, int b);
 int lib3_call(int a, int b) {
 	int result = mylib_add(a, b);
 
-	EP3_Logger("[Lib3]: lib3_call(%d, %d) = %d via lib1.so\n", a, b, result);
+	EP3_API_Logger("[Lib3]: lib3_call(%d, %d) = %d via lib1.so\n", a, b, result);
 
 	return result;
 }

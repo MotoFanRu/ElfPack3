@@ -19,7 +19,7 @@ int mylib_add(int a, int b) {
 	ui_notify(result);
 
 	// EXL, 31-Oct-2026: SO -> firmware call, resolved from the DEF library.
-	EP3_Logger("[MyLib]: Logger from .so library, result=%d\n", result);
+	EP3_API_Logger("[MyLib]: Logger from .so library, result=%d\n", result);
 
 	return result;
 }

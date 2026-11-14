@@ -1,13 +1,36 @@
-# ElfPack 3 Architecture
+# ElfPack3 Architecture
 
 ```mermaid
-flowchart LR
-    subgraph Firmware
+flowchart BT
+    subgraph Phone_Hardware [Phone's Hardware]
         direction TB
-        Phone_Firmware[(Phone's Firmware)]
-        
+        RAM[(RAM)]
+        ROM[(ROM)]
+        IRAM[(IRAM)]
+        IROM[(IROM)]
     end
+    subgraph Original_Firmware [Firmware Original]
+        direction TB
+        Phones_Firmware[(Phone's Firmware)]
+        Registration_Table["app_pra_registration_table[]"]
+        Calculator_Register("APP_CALC_MainRegister()")
+    end
+    subgraph Firmware_Patches [Firmware Patches]
+        direction TB
+        EP3_Register("EP3_Agent_Main_Register_Entry()")
+        APP_Viewer_Register("EP3_APP_Viewer_Register()")
+        Bin_Loader("EP3_API_BIN_Load_Func()")
+    end
+    Phones_Firmware --> Registration_Table
+    Phones_Firmware <-.-> ROM
+    Registration_Table --> EP3_Register
+    EP3_Register --> Calculator_Register
+    EP3_Register --> APP_Viewer_Register
+    EP3_Register --> Bin_Loader
+    Bin_Loader -- ep3.ldr --> RAM
 ```
+
+# Samples for copying
 
 ```mermaid
 flowchart LR

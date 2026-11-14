@@ -35,7 +35,7 @@ class AlephToolchain:
 	P2K_SDK_GCC_MCORE_BIN: Path = P2K_SDK_GCC_MCORE / 'bin'
 
 	GCC_CFLAGS_GENERAL = ['-std=c99', '-nostdinc']
-	GCC_CFLAGS_WARNINGS = ['-Wall', '-Wextra', '-pedantic']
+	GCC_CFLAGS_WARNINGS = ['-Wall', '-Wextra', '-Wpedantic']
 	GCC_CFLAGS_FEATURES = ['-ffreestanding', '-funsigned-char', '-fshort-enums', '-fshort-wchar', '-fpack-struct=4']
 	GCC_CFLAGS_SECTIONS = ['-ffunction-sections', '-fdata-sections']  # It's better do not use it with M-CORE.
 	GCC_CFLAGS_OPTIMIZATIONS = ['-O2']

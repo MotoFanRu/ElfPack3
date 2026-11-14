@@ -6,7 +6,7 @@
 #include <P2K_DL_File_System.h>
 
 #include <P2K_EP3_Base.h>
-#include <P2K_EP3_File_System.h>
+#include <P2K_EP3_Component.h>
 #include <P2K_EP3_Memory.h>
 #include <P2K_EP3_DEF_Library.h>
 #include <P2K_EP3_Text.h>
@@ -281,8 +281,8 @@ static STATUS DEF_Library_Parse(
 
 // EXL, 02-Nov-2026: Read a def-format system file to a heap buffer (caller frees).
 static STATUS DEF_Library_Read_File(const char *file_name, char **out_buffer, UINT32 *out_size) {
-	WCHAR file_path[PATH_MAX_SHORT];
-	if (!EP3_Find_Internal_System_Component(file_name, file_path)) {
+	WCHAR file_path[PATH_MAX_COMPONENT];
+	if (EP3_Find_Component(file_name, file_path) != RESULT_OK) {
 		L("[EP3 DEF]: Failed to find '%s' system component.\n", file_name);
 		return RESULT_FAIL;
 	}

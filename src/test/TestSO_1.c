@@ -66,7 +66,7 @@ static const char app_name_string[APP_NAME_SIZE + 1] = "TestSO";
 // EXL, 31-Oct-2026: Exported to mylib.so (SO -> ELF call), resolved from the ELF
 //   dynamic exports by the loader provider registry.
 void ui_notify(int value) {
-	EP3_Logger("[TestSO]: ui_notify called from .so library, value=%d\n", value);
+	EP3_API_Logger("[TestSO]: ui_notify called from .so library, value=%d\n", value);
 }
 
 // EXL, 31-Oct-2026: dlerror() returns NULL when there is no error (POSIX), but the

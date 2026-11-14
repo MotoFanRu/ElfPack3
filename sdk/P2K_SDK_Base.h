@@ -2,12 +2,13 @@
 #define P2K_SDK_BASE_H
 
 #include "P2K_SDK_Features.h"
+#include "P2K_SDK_Base_Host.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-/* P2K Types (Motorola-style uppercase, fixed-width). */
+/* P2K Types: Motorola-style uppercase, fixed-width style. */
 #if !defined(FTR_DONT_DEFINE_SDK_P2K_TYPES)
 	typedef signed char                INT8;
 	typedef unsigned char              UINT8;
@@ -30,7 +31,7 @@ extern "C" {
 	typedef void                       VOID;
 #endif /* !FTR_DONT_DEFINE_SDK_P2K_TYPES */
 
-/* C-like Types (stdint.h / stddef.h style). */
+/* C-like Types: `stdint.h` and `stddef.h` style. */
 #if !defined(FTR_DONT_DEFINE_SDK_CLIKE_TYPES)
 	typedef signed char                int8_t;
 	typedef unsigned char              uint8_t;
@@ -49,12 +50,9 @@ extern "C" {
 
 	typedef float                      float32_t;  /* IEEE 754 single. */
 	typedef double                     float64_t;  /* IEEE 754 double. */
-#else
-	#include <stdint.h>
-	#include <stddef.h>
 #endif /* !FTR_DONT_DEFINE_SDK_CLIKE_TYPES */
 
-/* Rust-like Types (modern embedded style). */
+/* Rust-like Types: modern embedded style. */
 #if !defined(FTR_DONT_DEFINE_SDK_RUST_TYPES)
 	typedef signed char                i8;
 	typedef unsigned char              u8;
@@ -94,12 +92,16 @@ extern "C" {
 	#define FALSE                      ((BOOL) 0)
 #endif /* !FTR_DONT_DEFINE_SDK_BOOL */
 
-/* RESULT STATUS*/
+/* RESULT STATUS */
 #if !defined(FTR_DONT_DEFINE_SDK_RESULT_STATUS)
+	enum tagSTATUS {
+		RESULT_OK = 0x00,
+		RESULT_FAIL,
+		RESULT_FAIL_WRONG_ARG,
+		RESULT_FAIL_NOT_FOUND,
+		RESULT_FAIL_FILE_NOT_FOUND,
+	};
 	typedef signed int                 STATUS;
-
-	#define RESULT_OK                  (0)
-	#define RESULT_FAIL                (1)
 #endif /* !FTR_DONT_DEFINE_SDK_RESULT_STATUS */
 
 /* BYTE / WORD / DWORD / QWORD */
@@ -120,6 +122,7 @@ extern "C" {
 	#define ARRAY_SIZE(array)          (sizeof(array) / sizeof((array)[0]))
 #endif /* !FTR_DONT_DEFINE_ARRAY_SIZE */
 
+/* Various Limits. */
 #if !defined(FTR_DONT_DEFINE_LIMITS)
 	#define CHAR_BIT                   (8)
 	#define BYTE_BIT                   (8)
@@ -225,26 +228,34 @@ extern "C" {
 	#define WCHAR_MAX                  (USHRT_MAX)
 #endif /* !FTR_DONT_DEFINE_LIMITS */
 
+/* UNUSED */
 #if !defined(FTR_DONT_DEFINE_UNUSED)
 	#define UNUSED(x)                  ((void) (x))
 #endif /* !FTR_DONT_DEFINE_UNUSED */
 
+/* DEPRECATED */
 #if !defined(FTR_DONT_DEFINE_DEPRECATED_MACROS)
 	#define DEPRECATED(x)              __attribute__((deprecated(x)))
 #endif /* !FTR_DONT_DEFINE_DEPRECATED_MACROS */
 
+/* RAW_DATA */
 #if defined(FTR_WARN_ON_RAW_DATA_ACCESS)
-	#define RAW_DATA                   __attribute__((deprecated("Use GET_DATA(x), GET_CONST(x), GET_DATA_ADDR(x)")))
+	#define RAW_DATA                   __attribute__((deprecated("Use GET_DATA(x), GET_DATA_ADDR(x) instead!")))
 #else
 	#define RAW_DATA
 #endif /* FTR_WARN_ON_RAW_DATA_ACCESS */
 
+/* DATA Macros. */
 #if !defined(FTR_DONT_DEFINE_ACCESS_MACROS)
 	#define GET_DATA(x)                ((UINTPTR) (x))
-	#define GET_CONST(x)               ((UINTPTR) (&x))
 	#define GET_DATA_ADDR(x)           ((UINTPTR) (&x))
 	#define GET_FUNC_ADDR(x)           ((UINTPTR) (&x))
 #endif /* !FTR_DONT_DEFINE_ACCESS_MACROS */
+
+/* EMPTY_STR */
+#if !defined(FTR_DONT_DEFINE_EMPTY_STR)
+	#define EMPTY_STR(str)          (!(str) || !(str)[0])
+#endif /* !FTR_DONT_DEFINE_EMPTY_STR */
 
 #ifdef __cplusplus
 }

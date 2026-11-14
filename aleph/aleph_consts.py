@@ -12,6 +12,7 @@ class AlephConsts:
 	P2K_SDK_LDS: Path = P2K_SDK_ROOT / 'lds'
 	P2K_SDK_SRC: Path = P2K_SDK_ROOT / 'src'
 	P2K_SDK_GCC: Path = P2K_SDK_ROOT / 'gcc'
+	P2K_SDK_LIB: Path = P2K_SDK_ROOT / 'lib'
 	P2K_SDK_BUILD: Path = P2K_SDK_ROOT / 'build'
 	P2K_SDK_RELEASE: Path = P2K_SDK_ROOT / 'release'
 

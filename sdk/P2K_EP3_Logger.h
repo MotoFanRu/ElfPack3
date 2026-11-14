@@ -8,11 +8,25 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define LOG_BUFFER_SIZE                (128)
-#define LOG_MESSAGE_ID                 (0x5151)
-#define LOG_FILE_PATH                  L"/b/elf/ep3.log"
+#define LOG_SUAPI_MESSAGE_ID           (0x5151)
 
-extern void EP3_Logger(const char *format, ...);
-extern void EP3_Logger_Unicode(const WCHAR *message);
+/*
+ * EXL, 15-Nov-2026:
+ *
+ * Функция вывода логов, поведение которой можно настроить через макросы:
+ *     FTR_LOGGER_JAL
+ *     FTR_LOGGER_SUAPI
+ *     FTR_LOGGER_FILE
+ * Может принимать переменное количество аргументов.
+ */
+extern void EP3_API_Logger(const char *format, ...);
+
+/*
+ * EXL, 15-Nov-2026:
+ *
+ * Функция вывода юникодных строк в лог.
+ */
+extern void EP3_API_Logger_Unicode(const WCHAR *message);
 
 #ifdef __cplusplus
 }

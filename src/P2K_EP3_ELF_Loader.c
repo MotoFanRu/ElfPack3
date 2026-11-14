@@ -221,8 +221,8 @@ STATUS EP3_ELF_DYN_Load(
 	}
 
 	UINT32 mem_needed = EP3_ELF_Calc_Image(elf_program_headers, elf_header);
-	if (mem_needed <= MEM_SIZE_TOO_SMALL) {
-		D("[EP3 ELF]: Image size is too small: %d, should be > %d.\n", mem_needed, MEM_SIZE_TOO_SMALL);
+	if (mem_needed <= MEMORY_SIZE_TOO_SMALL) {
+		D("[EP3 ELF]: Image size is too small: %d, should be > %d.\n", mem_needed, MEMORY_SIZE_TOO_SMALL);
 		EP3_Memory_Free(elf_program_headers);
 		return RESULT_FAIL;
 	}
@@ -486,6 +486,9 @@ STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 			Elf32_Word old_insn0 = plt_entry[0];
 			Elf32_Word old_insn1 = plt_entry[1];
 			Elf32_Word old_insn2 = plt_entry[2];
+			UNUSED(old_insn0);
+			UNUSED(old_insn1);
+			UNUSED(old_insn2);
 
 			// add ip, pc, #0, #12    =>   ldr ip, [pc]
 			// add ip, ip, #0, #20    =>   bx ip
@@ -509,12 +512,12 @@ STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 // EXL, 31-Oct-2026: DT_INIT + DT_INIT_ARRAY constructors of a module.
 void EP3_ELF_Run_Init(const EP3_DYN_Context *ctx) {
 	if (ctx->dyn_tags[DT_INIT] != 0) {
-#if !defined(FTR_HOST)
+#if !defined(FTR_HOST_BUILD)
 		((void (*)(void)) (ctx->phys_base + ctx->dyn_tags[DT_INIT] - ctx->virtual_base))();
 #endif
 	}
 	if ((ctx->dyn_tags[DT_INIT_ARRAY] != 0) && (ctx->dyn_tags[DT_INIT_ARRAYSZ] != 0)) {
-#if !defined(FTR_HOST)
+#if !defined(FTR_HOST_BUILD)
 		void (**init_array)(void) = (void (**)(void)) (
 			ctx->phys_base + ctx->dyn_tags[DT_INIT_ARRAY] - ctx->virtual_base
 		);
@@ -530,7 +533,7 @@ void EP3_ELF_Run_Init(const EP3_DYN_Context *ctx) {
 // EXL, 31-Oct-2026: DT_FINI_ARRAY (reverse order) + DT_FINI destructors of a module.
 void EP3_ELF_Run_Fini(const EP3_DYN_Context *ctx) {
 	if ((ctx->dyn_tags[DT_FINI_ARRAY] != 0) && (ctx->dyn_tags[DT_FINI_ARRAYSZ] != 0)) {
-#if !defined(FTR_HOST)
+#if !defined(FTR_HOST_BUILD)
 		void (**fini_array)(void) = (void (**)(void)) (
 			ctx->phys_base + ctx->dyn_tags[DT_FINI_ARRAY] - ctx->virtual_base
 		);
@@ -541,7 +544,7 @@ void EP3_ELF_Run_Fini(const EP3_DYN_Context *ctx) {
 #endif
 	}
 	if (ctx->dyn_tags[DT_FINI] != 0) {
-#if !defined(FTR_HOST)
+#if !defined(FTR_HOST_BUILD)
 		((void (*)(void)) (ctx->phys_base + ctx->dyn_tags[DT_FINI] - ctx->virtual_base))();
 #endif
 	}
@@ -658,7 +661,7 @@ static STATUS EP3_ELF_EP3_Load(
 	//   keeps the image; any other result unloads it immediately (failed start).
 	D("[EP3 ELF]: Starting ELF at 0x%08X\n", dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base);
 
-#if !defined(FTR_HOST)
+#if !defined(FTR_HOST_BUILD)
 	UINT32 entry_result = ((EP3_Image_Entry_T) (dyn_ctx.phys_base + elf_header->e_entry - dyn_ctx.virtual_base))(img_args);
 #else
 	UINT32 entry_result = 0;
@@ -804,7 +807,7 @@ void EP3_API_Def_Reload(void) {
 	}
 }
 
-__attribute__((used, section(".text.bin.entry_point")))
+__attribute__((used, section(".text.ep3.elf_entry_point")))
 void EP3_ELF_Loader_MainRegister(void) {
 	L("%s\n", "Hello Moto!");
 
@@ -854,7 +857,7 @@ void EP3_ELF_Loader_MainRegister(void) {
 	// EXL, 31-Oct-2026: Expose the loader API to ELFs through the DEF library table, so
 	//   they call dlopen/dlsym/dlclose/dlerror and the def hot reload like any other
 	//   firmware function.
-	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_Logger"), (UINTPTR) EP3_Logger);
+	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("EP3_API_Logger"), (UINTPTR) EP3_API_Logger);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlopen"), (UINTPTR) EP3_dlopen);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlsym"), (UINTPTR) EP3_dlsym);
 	EP3_DEF_Library_Insert(EP3_Def_Library, &EP3_Def_Cnt, FNV1A32("dlclose"), (UINTPTR) EP3_dlclose);

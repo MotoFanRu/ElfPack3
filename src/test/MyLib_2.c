@@ -15,11 +15,11 @@ static UINT32 lib2_value_at_init = 0;
 static void __attribute__((constructor)) lib2_init(void) {
 	lib2_value_at_init = GET_DATA_ADDR(GLOBAL_VARIABLE);
 
-	EP3_Logger("[Lib2]: Constructor: GLOBAL_VARIABLE = 0x%08X\n", lib2_value_at_init);
+	EP3_API_Logger("[Lib2]: Constructor: GLOBAL_VARIABLE = 0x%08X\n", lib2_value_at_init);
 }
 
 UINT32 lib2_get_value(void) {
-	EP3_Logger("[Lib2]: lib2_get_value: GLOBAL_VARIABLE = 0x%08X\n", GET_DATA_ADDR(GLOBAL_VARIABLE));
+	EP3_API_Logger("[Lib2]: lib2_get_value: GLOBAL_VARIABLE = 0x%08X\n", GET_DATA_ADDR(GLOBAL_VARIABLE));
 
 	return GET_DATA_ADDR(GLOBAL_VARIABLE);
 }

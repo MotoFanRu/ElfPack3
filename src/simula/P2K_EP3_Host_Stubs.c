@@ -6,12 +6,16 @@
 #include <P2K_UIS_Ustring_Portable.h>
 #include <P2K_Logger.h>
 
-#include <P2K_EP3_APP_Entry_Main.h>
+#include <P2K_EP3_Agent_Entry.h>
 #include <P2K_EP3_APP_Viewer.h>
 #include <P2K_EP3_ELF_Loader.h>
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+#include "P2K_C_Lib_Portable.h"
 
 void APP_CALC_MainRegister(void) {
 
@@ -222,15 +226,63 @@ DL_FS_RESULT_T DL_FsFSeekFile(
 	return DL_FS_RESULT_SUCCESS;
 }
 
+void EP3_API_Logger(const char *format, ...) {
+	if (EMPTY_STR(format)) {
+		return;
+	}
+
+	va_list args;
+	va_start(args, format);
+
+	char buffer[LOG_BUFFER_SIZE];
+	//PORTABLE_TINY_vsnprintf(buffer, LOG_BUFFER_SIZE, format, args);
+	vsnprintf(buffer, LOG_BUFFER_SIZE, format, args);
+	buffer[LOG_BUFFER_SIZE - 1] = ASCII_NULL;
+
+	va_end(args);
+
+	fprintf(stderr, "%s", buffer);
+}
+
 const char *EP3_phone_str = "C330";
 const char *EP3_firmware_str = "C330_TA02_G_06.03.25R_elf";
 
 UINT32 EP3_phone;
 UINT32 EP3_firmware;
 
+static BOOL Host_Test_Portable_Integer_Formatting(void) {
+	char buffer[128];
+
+	PORTABLE_TINY_snprintf(
+		buffer, sizeof(buffer), "%ld %lu %lx %08lX %08ld %s",
+		-123456789L, 4294967295UL, 0xABCDEFUL, 0x12UL, -42L, "tail"
+	);
+	if (strcmp(buffer, "-123456789 4294967295 abcdef 00000012 -0000042 tail") != 0) {
+		return FALSE;
+	}
+
+	PORTABLE_TINY_snprintf(
+		buffer, sizeof(buffer), "%lld %llu %llx %016llX %s",
+		-9223372036854775807LL - 1LL,
+		18446744073709551615ULL,
+		0x123ABC9876543210ULL,
+		0x1234ULL,
+		"tail"
+	);
+	return strcmp(
+		buffer,
+		"-9223372036854775808 18446744073709551615 123abc9876543210 0000000000001234 tail"
+	) == 0;
+}
+
 int main(int argc, char *argv[]) {
 	UNUSED(argc);
 	UNUSED(argv);
+
+	if (!Host_Test_Portable_Integer_Formatting()) {
+		fprintf(stderr, "Portable integer formatter test failed.\n");
+		return 1;
+	}
 
 	EP3_phone = (UINT32) &EP3_phone_str[0];
 	EP3_firmware = (UINT32) &EP3_phone_str[0];

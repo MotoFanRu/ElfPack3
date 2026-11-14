@@ -14,6 +14,8 @@
 * ✅ Entry point research.
 * 🟨 Cache ARM invalidation research.
 * ✅ Fix PLT patch.
+* ✅ Test V() on Agent startup.
+* ✅ Test ep3.log functional.
 
 ## Aug, 2026
 
@@ -28,7 +30,7 @@
 * 🟨 SDK Migration.
 
   * ✅ Use typedefs for functions instead of `void *` everywhere.
-  * 🟨 Check EXPORT_LIB, GET_CONST, GET_DATA macros.
+  * 🟨 Check EXPORT_LIB, GET_DATA, GET_DATA_ADDR, GET_FUNC_ADDR macros.
 
 * 🟨 Aleph Library.
 
