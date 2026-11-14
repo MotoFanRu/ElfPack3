@@ -1,33 +1,50 @@
 # ElfPack3 Architecture
 
 ```mermaid
-flowchart BT
+flowchart TB
     subgraph Phone_Hardware [Phone's Hardware]
         direction TB
         RAM[(RAM)]
-        ROM[(ROM)]
         IRAM[(IRAM)]
+        ROM[(ROM)]
         IROM[(IROM)]
     end
     subgraph Original_Firmware [Firmware Original]
         direction TB
         Phones_Firmware[(Phone's Firmware)]
-        Registration_Table["app_pra_registration_table[]"]
-        Calculator_Register("APP_CALC_MainRegister()")
+        logger_config_main_task("logger_config_main_task()")
+        logger_flusher_task("logger_flusher_task()")
+        app_pra_registration_table["app_pra_registration_table[]"]
+        APP_CALC_MainRegister("APP_CALC_MainRegister()")
     end
     subgraph Firmware_Patches [Firmware Patches]
         direction TB
-        EP3_Register("EP3_Agent_Main_Register_Entry()")
-        APP_Viewer_Register("EP3_APP_Viewer_Register()")
-        Bin_Loader("EP3_API_BIN_Load_Func()")
+        EP3_Reactor_Task_A("EP3_Reactor_Task_A()")
+        EP3_Reactor_Task_B("EP3_Reactor_Task_B()")
+        EP3_Agent_Main_Register_Entry("EP3_Agent_Main_Register_Entry()")
+        EP3_APP_Viewer_Register("EP3_APP_Viewer_Register()")
+        subgraph API [API]
+            direction TB
+            EP3_API_BIN_Load("EP3_API_BIN_Load()")
+            EP3_API_View("EP3_API_View()")
+            EP3_API_Send_To_Reactor_Core("EP3_API_Send_To_Reactor_Core()")
+        end
     end
-    Phones_Firmware --> Registration_Table
-    Phones_Firmware <-.-> ROM
-    Registration_Table --> EP3_Register
-    EP3_Register --> Calculator_Register
-    EP3_Register --> APP_Viewer_Register
-    EP3_Register --> Bin_Loader
-    Bin_Loader -- ep3.ldr --> RAM
+    ROM .-> Phones_Firmware
+    Phones_Firmware --> logger_config_main_task
+    Phones_Firmware --> logger_flusher_task
+    Phones_Firmware --> app_pra_registration_table
+    logger_config_main_task --> EP3_Reactor_Task_A
+    logger_flusher_task --> EP3_Reactor_Task_B
+    app_pra_registration_table --> EP3_Agent_Main_Register_Entry
+    EP3_Agent_Main_Register_Entry --> APP_CALC_MainRegister
+    EP3_Agent_Main_Register_Entry --> EP3_APP_Viewer_Register
+    EP3_Agent_Main_Register_Entry --> EP3_API_BIN_Load
+    EP3_APP_Viewer_Register --> EP3_API_View
+    EP3_API_BIN_Load -- ep3.ldr --> RAM
+    EP3_Reactor_Task_A .-> EP3_API_Send_To_Reactor_Core
+    EP3_API_Send_To_Reactor_Core --> EP3_Reactor_Task_A
+    EP3_API_Send_To_Reactor_Core --> EP3_Reactor_Task_B
 ```
 
 # Samples for copying

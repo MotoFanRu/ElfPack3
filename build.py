@@ -44,7 +44,7 @@ def build_ep3_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	a.log.I(f' Build BIN Loader:')
 
-	version = 'v1.0' + ' ' + a.dt.date_today()
+	version = 'EP3_' + a.dt.date_today()
 	phone, firmware = recipe_name.split('_', 1)
 	cflags = [
 		*recipe.soc.opt, *recipe.toolchain.cflags_bin_ldr, *recipe.flags.build, *recipe.flags.bin_ldr,
@@ -53,16 +53,17 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	]
 	src_obj = [
 		# TODO: Arrange it and recheck.
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
-		#(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Component.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Component.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Environment.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Environment.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Args.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Args.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c',   a.consts.P2K_SDK_BUILD / 'P2K_EP3_Task_Reactor.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_APP_Viewer.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_BIN_Loader.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Agent_Entry.c', a.consts.P2K_SDK_BUILD / 'P2K_EP3_Agent_Entry.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_Logger.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_Memory.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Component.c',    a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_Component.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Config.c',    a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_Config.o'),
+		#(a.consts.P2K_SDK_SRC / 'P2K_EP3_Environment.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Environment.o'),
+		#(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Args.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Args.o'),
+		#(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',     a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Task_Reactor.c',   a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_Task_Reactor.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_APP_Viewer.c',     a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_APP_Viewer.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_BIN_Loader.c',     a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_BIN_Loader.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Agent_Entry.c', a.consts.P2K_SDK_BUILD / 'BIN_P2K_EP3_Agent_Entry.o'),
 	]
 	for src, obj in src_obj:
 		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):
@@ -102,7 +103,7 @@ def build_bin_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	a.log.I(f' Build ELF Loader:')
 
-	version = 'v1.0' + ' ' + a.dt.date_today()
+	version = 'EP3_' + a.dt.date_today()
 	phone, firmware = recipe_name.split('_', 1)
 	cflags = [
 		*recipe.soc.opt, *recipe.toolchain.cflags_elf_ldr, *recipe.flags.build, *recipe.flags.elf_ldr,

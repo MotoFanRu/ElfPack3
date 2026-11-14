@@ -76,6 +76,34 @@ static inline char *PORTABLE_u_utoa(const WCHAR *src, char *dst) {
 	return dst;
 }
 
+static inline WCHAR *PORTABLE_u_dirname(const WCHAR *src, WCHAR *dst) {
+	if (src == NULL || dst == NULL) {
+		return dst;
+	}
+
+	INT32 len = PORTABLE_u_strlen(src);
+	INT32 slash_idx = -1;
+
+	for (INT32 i = len - 1; i >= 0; i--) {
+		if (src[i] == (WCHAR) '/') {
+			slash_idx = i;
+			break;
+		}
+	}
+
+	if (slash_idx <= 0) {
+		dst[0] = UNICODE_NULL;
+		return dst;
+	}
+
+	for (INT32 i = 0; i < slash_idx; i++) {
+		dst[i] = src[i];
+	}
+	dst[slash_idx] = UNICODE_NULL;
+
+	return dst;
+}
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

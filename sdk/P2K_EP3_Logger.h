@@ -25,8 +25,10 @@ extern void EP3_API_Logger(const char *format, ...);
  * EXL, 15-Nov-2026:
  *
  * Функция вывода юникодных строк в лог.
+ *
+ * Строка формата должна обязательно содержать '%s'.
  */
-extern void EP3_API_Logger_Unicode(const WCHAR *message);
+extern void EP3_API_Logger_Unicode(const char *format, const WCHAR *message);
 
 #ifdef __cplusplus
 }

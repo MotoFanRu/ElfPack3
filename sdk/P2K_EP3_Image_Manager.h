@@ -27,8 +27,8 @@ extern "C" {
 //   execution speedup) and restores the saved block back on unload. With "leave_it 1"
 //   no save/restore happens and the image stays resident at "load_address".
 typedef struct tagEP3_Image_Cfg {
-	UINT32 load_address;                  // Fixed load address, 0 = system allocator.
-	UINT32 leave_it;                      // 1 = skip save/restore of the original block.
+	UINT32 load_addr;                  // Fixed load address, 0 = system allocator.
+	UINT32 save_mem;                   // 1 = skip save/restore of the original block.
 } EP3_Image_Cfg_T;
 
 typedef enum tagEP3_Image_Type {

@@ -24,6 +24,7 @@
 0x000C8178 T DL_FsSGetFileSize
 0x0014DF60 T DL_KeyQueryKeypadActivity
 0x0040DBE4 T memset
+0x01F9E798 A memcpy
 0x0040DF8C T snprintf
 0x000786F4 T suAcquireSem
 0x000AFFC4 T suAllocMem
@@ -42,6 +43,7 @@
 0x000B0172 T suFreeMem
 0x00077A2A T suReceiveMessageFromQueue
 0x000B125A T suRegisterName
+0x000B1522 T suUnregisterName
 0x0007857A T suReleaseSem
 0x000B042C T suSendMessage
 0x00077FCC T suSleep

@@ -244,12 +244,12 @@ STATUS EP3_ELF_DYN_Load(
 	UINT32 *mem_base = NULL;
 	if (
 		(image_cfg != NULL) &&
-		(image_cfg->load_address != 0) &&
-		((image_cfg->load_address & 0x3) == 0)
+		(image_cfg->load_addr != 0) &&
+		((image_cfg->load_addr & 0x3) == 0)
 	) {
-		mem_base = (UINT32 *) image_cfg->load_address;
+		mem_base = (UINT32 *) image_cfg->load_addr;
 
-		if (!image_cfg->leave_it) {
+		if (image_cfg->save_mem) {
 			ctx->saved_copy = EP3_Memory_Alloc(mem_needed);
 			if (ctx->saved_copy == NULL) {
 				D("[EP3 ELF]: Failed to allocate %d bytes for the original block copy.\n", mem_needed);

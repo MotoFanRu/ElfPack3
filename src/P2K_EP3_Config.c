@@ -280,8 +280,8 @@ STATUS EP3_Config_Load(EP3_Config_T *config) {
 //   decimal) and "leave_it" (decimal). Missing file or fields yield the defaults.
 
 static void Image_Config_Defaults(EP3_Image_Cfg_T *cfg) {
-	cfg->load_address = 0;
-	cfg->leave_it = 0;
+	cfg->load_addr = 0;
+	cfg->save_mem = 0;
 }
 
 static void Image_Config_Parse(const char *buffer, EP3_Image_Cfg_T *cfg) {
@@ -291,14 +291,14 @@ static void Image_Config_Parse(const char *buffer, EP3_Image_Cfg_T *cfg) {
 		if (Is_Line_Content(p) == RESULT_OK) {
 			const char *line = p;
 
-			if (Is_Directive(line, "load_address") == RESULT_OK) {
+			if (Is_Directive(line, "load_addr") == RESULT_OK) {
 				const char *q = line + 12;
-				cfg->load_address = Read_Number(&q, 0);
-				D("[EP3 CFG]: load_address=0x%08X\n", cfg->load_address);
+				cfg->load_addr = Read_Number(&q, 0);
+				D("[EP3 CFG]: load_addr=0x%08X\n", cfg->load_addr);
 			} else if (Is_Directive(line, "leave_it") == RESULT_OK) {
 				const char *q = line + 8;
-				cfg->leave_it = Read_Number(&q, 0);
-				D("[EP3 CFG]: leave_it=%d\n", cfg->leave_it);
+				cfg->save_mem = Read_Number(&q, 0);
+				D("[EP3 CFG]: save_mem=%d\n", cfg->save_mem);
 			} else {
 				char directive[16] = { ASCII_NULL };
 				const char *q = line;
@@ -334,13 +334,13 @@ STATUS EP3_Image_Config_Load(const WCHAR *image_path, EP3_Image_Cfg_T *cfg) {
 	DL_FS_SIZE_T file_size = DL_FsSGetFileSize(cfg_path, DL_FS_OWNER_RESERVED);
 	if (file_size < EP3_CFG_TOO_SMALL) {
 		D("[EP3 CFG]: No per-image config for this image (%d bytes).\n", file_size);
-		return RESULT_OK;
+		return RESULT_FAIL;
 	}
 
 	DL_FS_HANDLE_T file_handle = DL_FsOpenFile(cfg_path, DL_FS_READ_MODE, DL_FS_OWNER_RESERVED);
 	if (file_handle == DL_FS_HANDLE_INVALID) {
 		D("[EP3 CFG]: %s\n", "Failed to open the per-image config.");
-		return RESULT_OK;
+		return RESULT_FAIL;
 	}
 
 	char *buffer = (char *) EP3_Memory_Alloc(file_size + 2);
@@ -377,7 +377,7 @@ STATUS EP3_Image_Config_Load(const WCHAR *image_path, EP3_Image_Cfg_T *cfg) {
 
 	EP3_Memory_Free(buffer);
 
-	L("[EP3 CFG]: Image config: load_address=0x%08X leave_it=%d\n", cfg->load_address, cfg->leave_it);
+	L("[EP3 CFG]: Image config: load_address=0x%08X leave_it=%d\n", cfg->load_addr, cfg->save_mem);
 
 	return RESULT_OK;
 }

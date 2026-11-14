@@ -49,16 +49,21 @@ void EP3_API_Logger(const char *format, ...) {
 	 * проинициализировался и работает.
 	 */
 	{
-		const char *configured_path = "" FTR_LOGGER_FILE "";
-		const char *file_log_path = (EMPTY_STR(configured_path)) ? EP3_ELF_LDR_LOG_NAME : configured_path;
+		const char *defined_path = "" FTR_LOGGER_FILE "";
+		const char *file_log_path =
+			(EMPTY_STR(defined_path)) ? EP3_ELF_LDR_LOG_NAME : defined_path;
 
 		WCHAR file_path[PATH_MAX_COMPONENT];
 		PORTABLE_u_atou(file_log_path, file_path);
-		DL_FS_HANDLE_T file_handle = DL_FsOpenFile(file_path, DL_FS_APPEND_MODE, DL_FS_OWNER_RESERVED);
+		DL_FS_HANDLE_T file_handle = DL_FsOpenFile(
+			file_path, DL_FS_APPEND_MODE, DL_FS_OWNER_RESERVED
+		);
 		if (file_handle != DL_FS_HANDLE_INVALID) {
 			DL_FS_COUNT_T elements_written;
 			const DL_FS_SIZE_T size = PORTABLE_strlen(buffer);
-			DL_FsWriteFile((void *) buffer, size, 1, file_handle, &elements_written);
+			DL_FsWriteFile(
+				(void *) buffer, size, 1, file_handle, &elements_written
+			);
 			DL_FsCloseFile(file_handle);
 		}
 		/*
@@ -72,8 +77,8 @@ void EP3_API_Logger(const char *format, ...) {
 #endif /* FTR_LOGGER_FILE */
 }
 
-void EP3_API_Logger_Unicode(const WCHAR *message) {
+void EP3_API_Logger_Unicode(const char *format, const WCHAR *message) {
 	char buffer[LOG_BUFFER_SIZE];
 	PORTABLE_u_utoa(message, buffer);
-	EP3_API_Logger("%s\n", buffer);
+	EP3_API_Logger(format, buffer);
 }

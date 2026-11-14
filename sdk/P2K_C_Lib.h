@@ -21,6 +21,7 @@ extern int vsprintf(char *buffer, const char *format, va_list arglist);
 extern int vsnprintf(char *buffer, size_t maxlen, const char *format, va_list arglist);
 
 extern void *memset(void *dstpp, int c, size_t len);
+extern void *memcpy(void *dest, const void *src, size_t count);
 
 #endif /* !FTR_DONT_DEFINE_C_STDLIB_FUNCTIONS */
 

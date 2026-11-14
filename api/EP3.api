@@ -1,8 +1,17 @@
+# Should have both BIN and ELF versions.
 EP3_API_Get_Phone
 EP3_API_Get_Firmware
 EP3_API_Get_Version
 
+# Should have both BIN and ELF versions.
 EP3_API_Logger
 EP3_API_Logger_Unicode
 
+# Should have only BIN version.
 EP3_API_View
+EP3_API_Send_To_Reactor_Core
+
+# Should have both BIN and ELF versions?
+EP3_API_BIN_Load
+EP3_API_BIN_Clone_Memory
+EP3_API_BIN_Restore_Memory

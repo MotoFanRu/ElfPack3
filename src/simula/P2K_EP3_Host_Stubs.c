@@ -71,6 +71,12 @@ UINT32 suFindName(const char *name, SU_TIME timeout, SU_RET_STATUS *err) {
 	return 0x00000000;
 }
 
+extern UINT32 suUnregisterName(const char *name) {
+	UNUSED(name);
+
+	return 0x00000001;
+}
+
 void *suAllocMem(SU_SIZE buffer_size, SU_RET_STATUS *error_ptr) {
 	void *buffer = malloc(buffer_size);
 	if (buffer == NULL) {
@@ -242,6 +248,12 @@ void EP3_API_Logger(const char *format, ...) {
 	va_end(args);
 
 	fprintf(stderr, "%s", buffer);
+}
+
+void EP3_API_Logger_Unicode(const char *format, const WCHAR *message) {
+	char buffer[LOG_BUFFER_SIZE];
+	PORTABLE_u_utoa(message, buffer);
+	EP3_API_Logger(format, buffer);
 }
 
 const char *EP3_phone_str = "C330";

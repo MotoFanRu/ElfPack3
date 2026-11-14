@@ -7,6 +7,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/*
+ * EXL, 15-Nov-2026:
+ *
+ * Функции для аллокации и освобождения памяти, поведение которых
+ * настраивается на этапе компиляции.
+ */
 extern void *EP3_Memory_Alloc(UINT32 size);
 extern void EP3_Memory_Free(void *address);
 
