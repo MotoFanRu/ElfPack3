@@ -112,17 +112,17 @@ def build_elf_ldr(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	]
 	src_obj = [
 		# TODO: Arrange it and recheck.
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Logger.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Component.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Component.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'P2K_EP3_Memory.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',      a.consts.P2K_SDK_BUILD / 'P2K_EP3_DEF_Library.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Config.c',           a.consts.P2K_SDK_BUILD / 'P2K_EP3_Config.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Manager.c',    a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Manager.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Environment.c',      a.consts.P2K_SDK_BUILD / 'P2K_EP3_Environment.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Args.c',       a.consts.P2K_SDK_BUILD / 'P2K_EP3_Image_Args.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Events.c',          a.consts.P2K_SDK_BUILD / 'P2K_EP3_Events.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_SO_Loader.c',        a.consts.P2K_SDK_BUILD / 'P2K_EP3_SO_Loader.o'),
-		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',       a.consts.P2K_SDK_BUILD / 'P2K_EP3_ELF_Loader.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Logger.c',         a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Logger.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Component.c',    a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Component.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Memory.c',         a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Memory.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_DEF_Library.c',      a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_DEF_Library.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Config.c',           a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Config.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Manager.c',    a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Image_Manager.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Environment.c',      a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Environment.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Image_Args.c',       a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Image_Args.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_Events.c',          a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_Events.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_SO_Loader.c',        a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_SO_Loader.o'),
+		(a.consts.P2K_SDK_SRC / 'P2K_EP3_ELF_Loader.c',       a.consts.P2K_SDK_BUILD / 'ELF_P2K_EP3_ELF_Loader.o'),
 	]
 	for src, obj in src_obj:
 		if not a.toolchain.gcc_cc(recipe.toolchain, src, obj, cflags):

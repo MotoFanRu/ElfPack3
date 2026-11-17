@@ -13,11 +13,17 @@
 #include <P2K_EP3_PFW_Version.h>
 
 static STATUS Is_Line_PFW(const char *line) {
-	if (line == NULL || line[0] == ASCII_NULL) {
+	if (EMPTY_STR(line)) {
 		return RESULT_FAIL;
 	}
 
-	if (line[0] == '#' && line[1] == ' ' && line[2] == 'P' && line[3] == 'F' && line[4] == 'W') {
+	if (
+		line[0] == '#' &&
+		line[1] == ' ' &&
+		line[2] == 'P' &&
+		line[3] == 'F' &&
+		line[4] == 'W'
+	) {
 		return RESULT_OK;
 	}
 
@@ -25,11 +31,17 @@ static STATUS Is_Line_PFW(const char *line) {
 }
 
 static STATUS Is_Line_VER(const char *line) {
-	if (line == NULL || line[0] == ASCII_NULL) {
+	if (EMPTY_STR(line)) {
 		return RESULT_FAIL;
 	}
 
-	if (line[0] == '#' && line[1] == ' ' && line[2] == 'V' && line[3] == 'E' && line[4] == 'R') {
+	if (
+		line[0] == '#' &&
+		line[1] == ' ' &&
+		line[2] == 'V' &&
+		line[3] == 'E' &&
+		line[4] == 'R'
+	) {
 		return RESULT_OK;
 	}
 
@@ -37,11 +49,17 @@ static STATUS Is_Line_VER(const char *line) {
 }
 
 static STATUS Is_Line_CPU(const char *line) {
-	if (line == NULL || line[0] == ASCII_NULL) {
+	if (EMPTY_STR(line)) {
 		return RESULT_FAIL;
 	}
 
-	if (line[0] == '#' && line[1] == ' ' && line[2] == 'C' && line[3] == 'P' && line[4] == 'U') {
+	if (
+		line[0] == '#' &&
+		line[1] == ' ' &&
+		line[2] == 'C' &&
+		line[3] == 'P' &&
+		line[4] == 'U'
+	) {
 		return RESULT_OK;
 	}
 
@@ -49,15 +67,23 @@ static STATUS Is_Line_CPU(const char *line) {
 }
 
 static STATUS Is_Line_Content(const char *line) {
-	if (line == NULL || line[0] == ASCII_NULL) {
+	if (EMPTY_STR(line)) {
 		return RESULT_FAIL;
 	}
 
-	if (line[0] == '#' || line[0] == '\r' || line[0] == '\n' || line[0] == ' ') {
+	if (
+		line[0] == '#'  ||
+		line[0] == '\r' ||
+		line[0] == '\n' ||
+		line[0] == ' '
+	) {
 		return RESULT_FAIL;
 	}
 
-	if (line[0] != '0' || line[1] != 'x') {
+	if (
+		line[0] != '0' ||
+		line[1] != 'x'
+	) {
 		return RESULT_FAIL;
 	}
 
@@ -77,22 +103,28 @@ static STATUS Check_PFW(const char *p) {
 	if (p_sep == NULL) {
 		return RESULT_FAIL;
 	}
-	UINT32 separator_offset = (UINT32) (p_sep - pfw_str);
-	if (separator_offset == 0) {
+	const UINT32 o_sep = (UINT32) (p_sep - pfw_str);
+	if (o_sep == 0) {
 		return RESULT_FAIL;
 	}
-	pfw_str[separator_offset] = ASCII_NULL;
+	pfw_str[o_sep] = ASCII_NULL;
 
 	const char *EP3_phone_str = EP3_API_Get_Phone();
-	if (PORTABLE_strncmp(pfw_str, EP3_phone_str, separator_offset) != 0) {
-		L("[EP3 DEF]: Wrong phone: '%s' != '%s'\n", pfw_str, EP3_phone_str);
-		// return RESULT_FAIL;
+	if (PORTABLE_strncmp(pfw_str, EP3_phone_str, o_sep) != 0) {
+		L("[EP3 DEF E]: %s\n", "Wrong phone!");
+		L("[EP3 DEF E]:  %s != %s\n", pfw_str, EP3_phone_str);
+		return RESULT_FAIL;
 	}
 
 	const char *EP3_firmware_str = EP3_API_Get_Firmware();
-	if (PORTABLE_strncmp(pfw_str + (separator_offset + 1), EP3_firmware_str, pfw_len - (separator_offset + 1)) != 0) {
-		L("[EP3 DEF]: Wrong firmware: '%s' != '%s'\n", pfw_str + (separator_offset + 1), EP3_firmware_str);
-		// return RESULT_FAIL;
+	if (PORTABLE_strncmp(
+			pfw_str + (o_sep + 1),
+			EP3_firmware_str,
+			pfw_len - (o_sep + 1)
+		) != 0) {
+		L("[EP3 DEF E]: %s\n", "Wrong firmware!");
+		L("[EP3 DEF E]:  %s != %s\n", pfw_str + (o_sep + 1), EP3_firmware_str);
+		return RESULT_FAIL;
 	}
 
 	return RESULT_OK;
@@ -111,14 +143,15 @@ static STATUS Check_VER(const char *p) {
 	if (p_sep == NULL) {
 		return RESULT_FAIL;
 	}
-	UINT32 separator_offset = (UINT32) (p_sep - ver_str);
-	if (separator_offset == 0) {
+	const UINT32 o_sep = (UINT32) (p_sep - ver_str);
+	if (o_sep == 0) {
 		return RESULT_FAIL;
 	}
-	ver_str[separator_offset] = ASCII_NULL;
+	ver_str[o_sep] = ASCII_NULL;
 
-	if (PORTABLE_strncmp(ver_str, DEF_LIB_EP3_VERSION_SLUG, separator_offset) != 0) {
-		L("[EP3 DEF]: Wrong version: '%s' != '%s'\n", ver_str, DEF_LIB_EP3_VERSION_SLUG);
+	if (PORTABLE_strncmp(ver_str, DEF_LIB_EP3_VERSION_SLUG, o_sep) != 0) {
+		L("[EP3 DEF E]: %s\n", "Wrong version!");
+		L("[EP3 DEF E]:  %s != %s\n", ver_str, DEF_LIB_EP3_VERSION_SLUG);
 		return RESULT_FAIL;
 	}
 
@@ -135,7 +168,8 @@ static STATUS Check_CPU(const char *p) {
 	PORTABLE_strncpy(cpu_str, p + DEF_LIB_PARSER_HEADER_VAL, cpu_len);
 
 	if (PORTABLE_strncmp(cpu_str, DEF_LIB_PARSER_HEADER_CPU_NONE, cpu_len) == 0) {
-		L("[EP3 DEF]: Wrong CPU: '%s'!\n", DEF_LIB_PARSER_HEADER_CPU_NONE);
+		L("[EP3 DEF E]: %s\n", "Wrong CPU!");
+		L("[EP3 DEF E]:  cpu_str=%s\n", DEF_LIB_EP3_VERSION_SLUG);
 		return RESULT_FAIL;
 	}
 
@@ -160,7 +194,7 @@ static STATUS Check_Content(const char *p, DEF_LIB_Symbol *symbols, UINT32 i) {
 		symbols[i].addr = symbols[i].addr | 1;
 	}
 
-	D("Added: 0x%08X 0x%08X %s\n", symbols[i].hash, symbols[i].addr, sym_str);
+	D("[EP3 DEF I] Add => 0x%08X 0x%08X %s\n", symbols[i].hash, symbols[i].addr, sym_str);
 
 	return RESULT_OK;
 }

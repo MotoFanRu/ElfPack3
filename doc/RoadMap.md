@@ -16,6 +16,7 @@
 * ✅ Fix PLT patch.
 * ✅ Test V() on Agent startup.
 * ✅ Test ep3.log functional.
+* 🟨 ROM, RAM, IROM, IRAM, and other benchmarks.
 
 ## Aug, 2026
 

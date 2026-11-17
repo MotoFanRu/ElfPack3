@@ -9,17 +9,25 @@ extern "C" {
 
 /*
  * P2K_UIS_EV_DATA_UNION_SIZE
- *
  * padding is sizeof(AFW_EVENT_T) - 0x2C (44 bytes)
- *
  * Check AFW_NewEv(), AFW_NewEvGrp() functions.
  *
  * P2K_UIS_MAX_NUM_VALUES
- *
+ * 40 + 4 + (8 * 10 or 20)
  * Check APP_PHBK_MainCommonNoticeEnter() function.
+ *
+ * P2K_UIS_MAX_NUM_ACTION_LIST_ITEMS
+ * 1 + 1 + 1 + 1 + 12 * 20
+ * EnterSubsidyLockLockedState, MyTelViewEnter
  */
 
 #if defined(FTR_C330)
+	#define P2K_UIS_EV_DATA_UNION_SIZE                     (0xAC)
+	#define P2K_UIS_MAX_NUM_VALUES                         (10)
+	#define P2K_UIS_MAX_NUM_ACTION_LIST_ITEMS              (20)
+#endif /* FTR_C330 */
+
+#if defined(FTR_C350L)
 	#define P2K_UIS_EV_DATA_UNION_SIZE                     (0xAC)
 	#define P2K_UIS_MAX_NUM_VALUES                         (10)
 	#define P2K_UIS_MAX_NUM_ACTION_LIST_ITEMS              (20)
