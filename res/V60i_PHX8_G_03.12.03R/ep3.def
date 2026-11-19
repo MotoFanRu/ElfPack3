@@ -1,0 +1,50 @@
+# Aleph-generated definitions
+# https://github.com/MotoFanRu/P2K-ELF-SDK
+#
+# PFW V60i_PHX8_G_03.12.03R
+# VER EP3_05-Mar-2026
+# CPU MCORE210
+
+0x101440A8 M APP_CALC_MainRegister
+
+0x10013F94 M suRegisterName
+0x10013958 M suFindName
+0x1001363C M suCreateQueue
+0x100135AC M suCreatePortFromQueue
+0x10013564 M suCreateMessage
+0x10013CD8 M suReceiveMessageFromQueue
+0x10013128 M suAllocMem
+0x10013B04 M suFreeMem
+0x10013734 M suDeleteMessage
+0x100141FC M suSendMessage
+
+0x1033AA6C M snprintf
+0x00101400 M memcpy
+0x00101470 M memset
+
+0x100B465C M DL_FsSGetFileSize
+0x100B42F8 M DL_FsOpenFile
+0x100B436A M DL_FsReadFile
+0x100B43A4 M DL_FsWriteFile
+0x100B43DE M DL_FsFSeekFile
+0x100B4338 M DL_FsCloseFile
+
+0x1013F860 M AFW_GetEv
+0x1013F5EC M AFW_CreateInternalQueuedEvPriv
+0x101406E2 M AFW_InquireRoutingStackByRegId
+
+0x101DF1F4 M APP_Register
+0x101DEE3C M APP_HandleFailedAppStart
+0x101DEE84 M APP_HandleUITokenGranted
+0x101DEC24 M APP_HandleEvent
+0x101DEF5A M APP_InitAppData
+0x101DF28E M APP_Start
+0x101DEBD0 M APP_HandleConsumeEvAndExit
+0x101E072A M APP_UtilUISDialogDelete
+0x101DEAB8 M APP_Exit
+
+0x101FEC80 M UIS_MakeContentFromString
+0x101FE628 M UIS_CreateViewer
+
+0xDEADBEEF D GLOBAL_VARIABLE
+0x00000016 C UIS_MY_SUPER_CONST

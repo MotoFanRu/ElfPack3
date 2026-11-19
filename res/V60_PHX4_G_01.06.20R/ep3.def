@@ -5,5 +5,23 @@
 # VER EP3_05-Mar-2026
 # CPU MCORE210
 
+0x101293B8 M APP_CALC_MainRegister
+
+0x1001344C M suCreatePortFromQueue
+0x100139B4 M suFreeMem
+0x10013F70 M suSendMessage
+0x100130D4 M suAllocMem
+0x10013404 M suCreateMessage
+0x10013808 M suFindName
+#0x10013E00 M suRegisterPortName
+0x10013D08 M suRegisterName
+0x100134DC M suCreateQueue
+0x10013A6C M suReceiveMessageFromQueue
+0x100135D4 M suDeleteMessage
+
+0x10278C90 M snprintf
+0x00101400 M memcpy
+0x00101470 M memset
+
 0xDEADBEEF D GLOBAL_VARIABLE
 0x00000016 C UIS_MY_SUPER_CONST

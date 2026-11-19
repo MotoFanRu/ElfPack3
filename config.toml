@@ -3,7 +3,14 @@ specs = { soc = 'PATRIOT', toolchain = 'GCC_MCORE' }
 flags.general = '-DFTR_V60 -DFTR_DEBUG'
 flags.bin_ldr = '-DFTR_ALLOC_SUAPI'
 flags.elf_ldr = '-DFTR_ALLOC_SUAPI'
-addrs = { inject = 0x10333700, loader = 0x11073100, register = 0x1036A700, task_a = 0x10027D68, task_b = 0x100283B6 }
+addrs = { inject = 0x10333700, loader = 0x11073100, register = 0x102950BC, task_a = 0x101FF650, task_b = 0x101FFCF4 }
+
+['V60i_PHX8_G_03.12.03R']
+specs = { soc = 'PATRIOT', toolchain = 'GCC_MCORE' }
+flags.general = '-DFTR_V60I -DFTR_DEBUG'
+flags.bin_ldr = '-DFTR_ALLOC_SUAPI'
+flags.elf_ldr = '-DFTR_ALLOC_SUAPI'
+addrs = { inject = 0x10462400, loader = 0x110C3100, register = 0x1035B188, task_a = 0x102DD674, task_b = 0x102DDCDC }
 
 ['C350L_R312ULS_G_09.10.82R']
 specs = { soc = 'NEPTUNE_ULS', toolchain = 'GCC_ARM' }
