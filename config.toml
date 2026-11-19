@@ -1,3 +1,10 @@
+['V60_PHX4_G_01.06.20R']
+specs = { soc = 'PATRIOT', toolchain = 'GCC_MCORE' }
+flags.general = '-DFTR_V60 -DFTR_DEBUG'
+flags.bin_ldr = '-DFTR_ALLOC_SUAPI'
+flags.elf_ldr = '-DFTR_ALLOC_SUAPI'
+addrs = { inject = 0x10333700, loader = 0x11073100, register = 0x1036A700, task_a = 0x10027D68, task_b = 0x100283B6 }
+
 ['C350L_R312ULS_G_09.10.82R']
 specs = { soc = 'NEPTUNE_ULS', toolchain = 'GCC_ARM' }
 flags.general = '-DFTR_C350L -DFTR_DEBUG'

@@ -1,0 +1,9 @@
+# Aleph-generated definitions
+# https://github.com/MotoFanRu/P2K-ELF-SDK
+#
+# PFW PHX4_G_01.06.20R
+# VER EP3_05-Mar-2026
+# CPU MCORE210
+
+0xDEADBEEF D GLOBAL_VARIABLE
+0x00000016 C UIS_MY_SUPER_CONST

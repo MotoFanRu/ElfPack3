@@ -12,10 +12,11 @@
 
 MEMORY {
 	IROM        (rx ) : ORIGIN = 0x00000000, LENGTH = 0x00010000 /*   64 KiB */
-	IRAM        (rwx) : ORIGIN = 0x00100000, LENGTH = 0x00006800 /*   26 KiB */
+	IRAM        (rwx) : ORIGIN = 0x00100000, LENGTH = 0x00016800 /*   90 KiB */
 
 	ROM         (rx ) : ORIGIN = 0x10000000, LENGTH = 0x00800000 /*    8 MiB */ /* 4, 8 MiB */
-	RAM         (rwx) : ORIGIN = 0x11000000, LENGTH = 0x00200000 /*    2 MiB */ /* 256, 512, 768 KiB, 1, 2 MiB */
+	RAM1        (rwx) : ORIGIN = 0x11000000, LENGTH = 0x00200000 /*    2 MiB */ /* 256, 512, 768 KiB, 1, 2 MiB */
+	RAM2        (rwx) : ORIGIN = 0x12000000, LENGTH = 0x00200000 /*    2 MiB */ /* 256, 512, 768 KiB, 1, 2 MiB */
 }
 
 /* Generate Big-Endian M-CORE ELFs. */

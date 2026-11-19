@@ -68,6 +68,8 @@ static const APP_STATE_TRANSIT_T app_state_trans_table[] = {
 static const AFW_EVENT_CODE_T app_event_reg_table[] = {
 #if defined(FTR_C650)
 	0x000003D9
+#elif defined(FTR_A830)
+	0x0000039A
 #else
 	0x000003C9
 #endif
