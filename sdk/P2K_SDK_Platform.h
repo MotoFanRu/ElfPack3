@@ -13,11 +13,11 @@ extern "C" {
  * Check AFW_NewEv(), AFW_NewEvGrp() functions.
  *
  * P2K_UIS_MAX_NUM_VALUES
- * 40 + 4 + (8 * 10 or 20)
+ * 40 + 4 + (8 * (10 or 20))
  * Check APP_PHBK_MainCommonNoticeEnter() function.
  *
  * P2K_UIS_MAX_NUM_ACTION_LIST_ITEMS
- * 1 + 1 + 1 + 1 + 12 * 20
+ * 1 + 1 + 1 + 1 + (12 * (20 or 30))
  * EnterSubsidyLockLockedState, MyTelViewEnter
  */
 
@@ -33,6 +33,12 @@ extern "C" {
 	#define P2K_UIS_MAX_NUM_ACTION_LIST_ITEMS              (20)
 #endif /* FTR_C330 */
 
+#if defined(FTR_C650)
+	#define P2K_UIS_EV_DATA_UNION_SIZE                     (0xFC)
+	#define P2K_UIS_MAX_NUM_VALUES                         (20)
+	#define P2K_UIS_MAX_NUM_ACTION_LIST_ITEMS              (30)
+#endif /* FTR_C330 */
+
 #if defined(FTR_E1)
 	#define P2K_UIS_EV_DATA_UNION_SIZE                     (0xFC)
 	#define P2K_UIS_MAX_NUM_VALUES                         (20)
@@ -46,8 +52,8 @@ extern "C" {
 #endif /* FTR_E1 */
 
 #if \
-	!defined(P2K_UIS_EV_DATA_UNION_SIZE) || \
-	!defined(P2K_UIS_MAX_NUM_VALUES) || \
+	!defined(P2K_UIS_EV_DATA_UNION_SIZE)                   || \
+	!defined(P2K_UIS_MAX_NUM_VALUES)                       || \
 	!defined(P2K_UIS_MAX_NUM_ACTION_LIST_ITEMS)
 		#error "Please determine P2K platform struct/union type sizes."
 #endif /* All Platform Defines. */

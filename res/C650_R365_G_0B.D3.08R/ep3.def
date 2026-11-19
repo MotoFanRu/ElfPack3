@@ -198,3 +198,23 @@
 0x105CC206 T uisFreeMemory
 0x10901958 T UtilLogStringData
 0x10867508 T vsprintf
+
+
+0x10115620 T APP_CALC_MainRegister
+
+0x1011121C T APP_HandleFailedAppStart
+0x10110E1A T APP_HandleConsumeEvAndExit
+
+0x1009585C T DL_FsSGetFileSize
+
+0x1056DA7E T suReceiveMessageFromQueue
+0x1056D890 T suCreateQueue
+0x1056DF5E T suRegisterName
+0x103A5472 T suCreatePortFromQueue
+0x1056E0A2 T suFindName
+0x1056D940 T suDeleteMessage
+0x1056D904 T suCreateMessage
+0x103A5554 T suSendMessage
+
+0xDEADBEEF D GLOBAL_VARIABLE
+0x00000016 C UIS_MY_SUPER_CONST

@@ -5,6 +5,15 @@ flags.bin_ldr = '-DFTR_ALLOC_SUAPI'
 flags.elf_ldr = '-DFTR_ALLOC_SUAPI'
 addrs = { inject = 0x10590000, loader = 0x12140000, register = 0x1036A700, task_a = 0x10027D68, task_b = 0x100283B6 }
 
+['C650_R365_G_0B.D3.08R']
+specs = { soc = 'NEPTUNE_LTE', toolchain = 'GCC_ARM' }
+flags.general = '-DFTR_C650 -DFTR_DEBUG'
+flags.bin_ldr = '-DFTR_ALLOC_SUAPI'
+flags.elf_ldr = '-DFTR_ALLOC_SUAPI'
+addrs = { inject = 0x10901700, loader = 0x123F0700, register = 0x10346560, task_a = 0x1056E2AC, task_b = 0x1071BDB4 }
+
+
+
 # TODO: Only for debugging. Delete it later.
 ['A830_TALON_U_61.06.00I']
 specs = { soc = 'RAINBOW', toolchain = 'GCC_MCORE' }

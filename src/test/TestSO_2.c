@@ -66,7 +66,11 @@ static const APP_STATE_TRANSIT_T app_state_trans_table[] = {
 };
 
 static const AFW_EVENT_CODE_T app_event_reg_table[] = {
+#if defined(FTR_C650)
+	0x000003D9
+#else
 	0x000003C9
+#endif
 };
 
 static const char app_name_string[APP_NAME_SIZE + 1] = "TestSO2";
@@ -206,7 +210,7 @@ static SYN_RETURN_STATUS_T AppStart(
 	D("[TestSO2]: %s, p_evg=0x%08X, reg_id=0x%04X, reg_hdl=0x%08X\n", "Enter!", p_evg, reg_id, reg_hdl);
 
 	AFW_EVENT_T *event = AFW_GetEv(p_evg);
-	if (event->ev_code != 0x000003C9) {
+	if (event->ev_code != app_event_reg_table[0]) {
 		D("[TestSO2]: Unknown event ev_code=0x%08X\n", event->ev_code);
 		return SYN_FAIL;
 	}
