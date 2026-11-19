@@ -36,9 +36,8 @@ static void *Bump_Alloc(Bump_T *bump, UINT32 size) {
 	return ptr;
 }
 
-static void Bump_Put_Wstr(Bump_T *bump, const WCHAR **slot, const WCHAR *src) {
-	UINT32 len = (UINT32) PORTABLE_u_strlen(src) + 1;
-	WCHAR *dst = (WCHAR *) Bump_Alloc(bump, len * sizeof(WCHAR));
+static void Bump_Put_Wstr_Len(Bump_T *bump, const WCHAR **slot, const WCHAR *src, UINT32 len) {
+	WCHAR *dst = (WCHAR *) Bump_Alloc(bump, (len + 1) * sizeof(WCHAR));
 	if (dst == NULL) {
 		*slot = NULL;
 		return;
@@ -46,7 +45,12 @@ static void Bump_Put_Wstr(Bump_T *bump, const WCHAR **slot, const WCHAR *src) {
 	for (UINT32 i = 0; i < len; ++i) {
 		dst[i] = src[i];
 	}
+	dst[len] = UNICODE_NULL;
 	*slot = dst;
+}
+
+static void Bump_Put_Wstr(Bump_T *bump, const WCHAR **slot, const WCHAR *src) {
+	Bump_Put_Wstr_Len(bump, slot, src, (UINT32) PORTABLE_u_strlen(src));
 }
 
 static void Bump_Put_Wstr_From_Char(Bump_T *bump, const WCHAR **slot, const char *src, UINT32 len) {
@@ -142,8 +146,8 @@ EP3_ImageArgs_T *EP3_ImageArgs_Build(const WCHAR *path, const char *params, UINT
 	}
 
 	UINT32 total = sizeof(EP3_ImageArgs_T) + ((argc + 1) * sizeof(WCHAR *)) + ((env_cnt + 1) * sizeof(WCHAR *)) +
-		(path_len * sizeof(WCHAR)) + (dir_len * sizeof(WCHAR)) +
-		((argv_bytes_len + env_bytes_len) * sizeof(WCHAR)) + 8;
+		((path_len + dir_len + 1 + argv_bytes_len + env_bytes_len) * sizeof(WCHAR)) +
+		((argc + env_cnt + 1) * 2);
 
 	// EXL, 02-Nov-2026: Pass 2 — fill.
 	Bump_T bump;
@@ -165,14 +169,14 @@ EP3_ImageArgs_T *EP3_ImageArgs_Build(const WCHAR *path, const char *params, UINT
 	const WCHAR **envp = (const WCHAR **) Bump_Alloc(&bump, (env_cnt + 1) * sizeof(WCHAR *));
 
 	Bump_Put_Wstr(&bump, &args->path, path);
-	Bump_Put_Wstr(&bump, &args->dir, path);   // Full path, truncated to dir below.
+	Bump_Put_Wstr_Len(&bump, &args->dir, path, dir_len);
 	args->event = event;
 	args->img_man = &EP3_Image_Manager;
 	args->api = &EP3_Loader_Api;
 
-	// EXL, 02-Nov-2026: Truncate the dir copy to the last '/'.
-	if (args->dir != NULL) {
-		((WCHAR *) args->dir)[dir_len] = UNICODE_NULL;
+	if ((args->path == NULL) || (args->dir == NULL) || (argv == NULL) || (envp == NULL)) {
+		EP3_Memory_Free(bump.base);
+		return NULL;
 	}
 
 	if (argv != NULL) {
