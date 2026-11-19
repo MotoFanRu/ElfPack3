@@ -27,6 +27,7 @@
 
 STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
 	UNUSED(file_handle);
+	UNUSED(elf_header);
 
 #if defined(FTR_ARM)
 	if (elf_header->e_flags == 0x0200001E) {
@@ -39,8 +40,10 @@ STATUS EP3_ELF_Flavor(DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header) {
 		D("[EP3 ELF]: %s\n", "EP3 ELF loading is OK!");
 		return RESULT_OK;
 	}
+#elif defined(FTR_MCORE)
+	D("[EP3 ELF]: %s\n", "M-CORE ELF loading is OK!");
+	return RESULT_OK;
 #endif
-	// TODO: Check M-CORE ELFs.
 
 	return RESULT_OK;
 }
@@ -183,7 +186,7 @@ static UINT32 EP3_ELF_Calc_Image(Elf32_Phdr *elf_program_headers, Elf32_Ehdr *el
 
 // EXL, 31-Oct-2026: Shared DYN core used by both ELF and .so loading: deploy PT_LOAD
 //   segments, parse the PT_DYNAMIC tags, collect DT_NEEDED entries, load the dependencies
-//   (refcounted .so images) and apply REL + JMPREL/PLT relocations.
+//   (refcounted .so images) and apply architecture-specific relocations.
 STATUS EP3_ELF_DYN_Load(
 	DL_FS_HANDLE_T file_handle, Elf32_Ehdr *elf_header, const EP3_Image_Cfg_T *image_cfg, EP3_DYN_Context *ctx
 ) {
@@ -323,8 +326,7 @@ STATUS EP3_ELF_DYN_Load(
 		}
 	}
 
-	// EXL, 30-Oct-2026: Process the PT_DYNAMIC segment: load dynamic tags then apply relocations.
-	//   ET_DYN (GCC) ELFs only: DT_REL for base relocations, DT_JMPREL for PLT API calls.
+	// EXL, 30-Oct-2026: Process the PT_DYNAMIC segment and collect its dynamic tags.
 	Elf32_Addr dyn_segment = 0;
 
 	for (UINT16 i = 0; i < elf_header->e_phnum; ++i) {
@@ -391,9 +393,70 @@ fail_free_image:
 	return RESULT_FAIL;
 }
 
+#if defined(FTR_MCORE)
+static STATUS EP3_ELF_MCORE_Relocate(EP3_DYN_Context *ctx) {
+	Elf32_Word rela_size = ctx->dyn_tags[DT_RELASZ];
+	if (ctx->dyn_tags[DT_RELA] == 0) {
+		return (rela_size == 0) ? RESULT_OK : RESULT_FAIL;
+	}
+	if ((rela_size % sizeof(Elf32_Rela)) != 0) {
+		D("[EP3 ELF]: Invalid M-CORE RELA size: %d.\n", rela_size);
+		return RESULT_FAIL;
+	}
+
+	Elf32_Rela *rela_table = (Elf32_Rela *) (
+		ctx->phys_base + ctx->dyn_tags[DT_RELA] - ctx->virtual_base
+	);
+	UINT32 rela_count = rela_size / sizeof(Elf32_Rela);
+	UINT32 base_delta = ctx->phys_base - ctx->virtual_base;
+
+	for (UINT32 i = 0; i < rela_count; ++i) {
+		Elf32_Rela *rela = &rela_table[i];
+		Elf32_Word rel_type = ELF32_R_TYPE(rela->r_info);
+		UINT32 *reloc_addr = (UINT32 *) (
+			ctx->phys_base + rela->r_offset - ctx->virtual_base
+		);
+
+		if (rel_type == R_MCORE_RELATIVE) {
+			*reloc_addr = base_delta + rela->r_addend;
+			continue;
+		}
+
+		if ((rel_type == R_MCORE_ADDR32) || (rel_type == R_MCORE_GLOB_DAT)) {
+			UINT32 sym_idx = ELF32_R_SYM(rela->r_info);
+			Elf32_Sym *sym = &ctx->sym_table[sym_idx];
+			UINT32 sym_addr = 0;
+
+			if (sym->st_shndx == SHN_ABS) {
+				sym_addr = sym->st_value;
+			} else if (sym->st_shndx != SHN_UNDEF) {
+				sym_addr = base_delta + sym->st_value;
+			} else {
+				const char *sym_str = &ctx->str_table[sym->st_name];
+				sym_addr = EP3_Resolve_Symbol(sym_str);
+				if ((sym_addr == 0) && (sym->st_value != 0)) {
+					sym_addr = sym->st_value;
+				}
+				if (sym_addr == 0) {
+					sym_addr = base_delta;
+				}
+			}
+
+			*reloc_addr = (rel_type == R_MCORE_ADDR32) ?
+				sym_addr + rela->r_addend : sym_addr;
+			continue;
+		}
+
+		D("[EP3 ELF]: Unsupported M-CORE relocation #%d: type %d.\n", i, rel_type);
+	}
+
+	return RESULT_OK;
+}
+#endif
+
 // EXL, 31-Oct-2026: Second pass of the DYN core: load DT_NEEDED dependencies (all
 //   providers must be registered before this, see the two-pass scheme) and apply
-//   REL + JMPREL/PLT relocations.
+//   ARM REL + JMPREL/PLT or M-CORE RELA relocations.
 STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 	// EXL, 31-Oct-2026: Load DT_NEEDED .so dependencies BEFORE relocations, so the
 	//   newly loaded libraries are available as symbol providers.
@@ -403,6 +466,9 @@ STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 		}
 	}
 
+#if defined(FTR_MCORE)
+	return EP3_ELF_MCORE_Relocate(ctx);
+#else
 	Elf32_Addr phys_base = ctx->phys_base;
 	Elf32_Addr virtual_base = ctx->virtual_base;
 
@@ -507,6 +573,7 @@ STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir) {
 	}
 
 	return RESULT_OK;
+#endif
 }
 
 // EXL, 31-Oct-2026: DT_INIT + DT_INIT_ARRAY constructors of a module.

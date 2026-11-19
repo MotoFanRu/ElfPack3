@@ -85,8 +85,9 @@ extern STATUS EP3_ELF_DYN_Load(
 );
 
 // EXL, 31-Oct-2026: Second pass of the DYN core: load DT_NEEDED dependencies (recursive)
-//   and apply all relocations (REL + JMPREL/PLT). "dir" is the ASCII directory of the
-//   loading module ("" if unknown), the first search location for DT_NEEDED .so files.
+//   and apply relocations (ARM REL + JMPREL/PLT or M-CORE RELA). "dir" is the ASCII
+//   directory of the loading module ("" if unknown), the first search location for
+//   DT_NEEDED .so files.
 extern STATUS EP3_ELF_DYN_Link(EP3_DYN_Context *ctx, const char *dir);
 
 // EXL, 31-Oct-2026: Init/fini helpers for DT_INIT + DT_INIT_ARRAY / DT_FINI_ARRAY + DT_FINI.

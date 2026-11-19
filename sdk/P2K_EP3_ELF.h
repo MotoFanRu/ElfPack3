@@ -127,6 +127,9 @@ typedef struct tagElf32_Dyn {
 #define DT_HASH                        (4)                 // Address of SysV symbol hash table.
 #define DT_STRTAB                      (5)                 // Address of string table.
 #define DT_SYMTAB                      (6)                 // Address of symbol table.
+#define DT_RELA                        (7)                 // Address of Rela relocs.
+#define DT_RELASZ                      (8)                 // Total size of Rela relocs.
+#define DT_RELAENT                     (9)                 // Size of one Rela entry.
 #define DT_STRSZ                       (10)                // Size of string table.
 #define DT_SYMENT                      (11)                // Size of one symbol table entry.
 #define DT_INIT                        (12)                // Address of init function.
@@ -147,6 +150,13 @@ typedef struct tagElf32_Rel {
 	Elf32_Word                         r_info;             // Relocation type and symbol index.
 } Elf32_Rel;
 
+// Relocation table entry with addend (in section of type SHT_RELA).
+typedef struct tagElf32_Rela {
+	Elf32_Addr                         r_offset;           // Address.
+	Elf32_Word                         r_info;             // Relocation type and symbol index.
+	Elf32_Sword                        r_addend;           // Addend.
+} Elf32_Rela;
+
 // How to extract and insert information held in the r_info field.
 #define ELF32_R_SYM(val)               ((val) >> 8)
 #define ELF32_R_TYPE(val)              ((val) & 0xFF)
@@ -158,6 +168,11 @@ typedef struct tagElf32_Rel {
 #define R_ARM_RELATIVE                 (23)                // Adjust by program base.
 #define R_ARM_RABS32                   (253)               // Word ?S + A For the address of a location in the target segment.
 
+// M-CORE relocation types used by the GCC toolchain.
+#define R_MCORE_ADDR32                 (1)                 // S + A.
+#define R_MCORE_RELATIVE               (9)                 // B + A.
+#define R_MCORE_GLOB_DAT               (11)                // S.
+
 // Symbol table entry binding and types.
 #define STB_LOCAL                      (0)                 // Local symbol.
 #define STB_GLOBAL                     (1)                 // Global symbol.
@@ -167,6 +182,7 @@ typedef struct tagElf32_Rel {
 #define STT_FUNC                       (2)                 // Function.
 
 #define SHN_UNDEF                      (0)                 // Undefined section (import).
+#define SHN_ABS                        (0xFFF1)            // Absolute symbol.
 
 // Symbol table entry.
 typedef struct tagElf32_Sym {
