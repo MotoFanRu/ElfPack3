@@ -19,10 +19,9 @@ def build_ep3_so_lib(a: Aleph, recipe_name: str, recipe: Recipe) -> bool:
 	asm_obj = a.consts.P2K_SDK_BUILD / asm_src.name.replace('.S', '.o')
 	def_res = a.consts.P2K_SDK_RES / recipe_name / 'ep3.def'
 
-	# EXL, 31-Oct-2026: The stub libep3.so is fake anyway, so provide fake addresses for
-	#   the symbols the test ELFs import but the recipe ep3.def does not list (EP3_Logger,
-	#   dl* API). Real addresses are resolved at runtime from the on-device ep3.def and
-	#   the DEF library inserts, so these values are never executed.
+	# EXL, 31-Oct-2026: The stub libep3.so is fake anyway, so provide link-time addresses for
+	#   symbols the test ELFs import but the recipe ep3.def does not list. The loader must
+	#   replace these absolute-symbol placeholders with runtime DEF/API addresses.
 	def_test_res = a.consts.P2K_SDK_BUILD / 'ep3_test.def'
 	def_lines = def_res.read_text().splitlines()
 	def_fake = [

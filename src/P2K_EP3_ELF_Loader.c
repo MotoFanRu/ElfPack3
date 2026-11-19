@@ -428,7 +428,11 @@ static STATUS EP3_ELF_MCORE_Relocate(EP3_DYN_Context *ctx) {
 			UINT32 sym_addr = 0;
 
 			if (sym->st_shndx == SHN_ABS) {
-				sym_addr = sym->st_value;
+				const char *sym_str = &ctx->str_table[sym->st_name];
+				sym_addr = EP3_Resolve_Symbol(sym_str);
+				if (sym_addr == 0) {
+					sym_addr = sym->st_value;
+				}
 			} else if (sym->st_shndx != SHN_UNDEF) {
 				sym_addr = base_delta + sym->st_value;
 			} else {
